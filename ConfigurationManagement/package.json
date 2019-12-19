@@ -1,0 +1,13 @@
+{
+  "name": "com.arman.foundation.configuration_management",
+  "version": "1.0.0",
+  "displayName": "Configuration Management",
+  "description": "The base package for Configuration Management",
+  "unity": "2019.1",
+  "dependencies": {
+ },
+  "author": {
+    "name": "Iman Jahandideh",
+    "email": "jahandideh_iman@yahoo.com"
+  }
+}
