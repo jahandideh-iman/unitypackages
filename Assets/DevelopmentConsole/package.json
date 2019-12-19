@@ -1,8 +1,8 @@
 {
-  "name": "Name",
+  "name": "com.arman.foundation.development_console",
   "version": "1.0.0",
-  "displayName": "Display Name",
-  "description": "Description",
+  "displayName": "Development Console",
+  "description": "Development Console",
   "unity": "2019.1",
   "dependencies": {
  },
