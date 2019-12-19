@@ -1,0 +1,14 @@
+{
+    "name": "Arman.DevelopmentConsole.Example",
+    "references": [
+        "GUID:7f7634b5c58f5ca4fb5ce85ce941cb6c"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": []
+}
