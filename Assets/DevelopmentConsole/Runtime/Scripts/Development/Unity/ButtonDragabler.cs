@@ -29,7 +29,6 @@ namespace Arman.Presentation
         {
             if(mustCheckForDrag)
             {
-                Debug.Log(Vector2.Distance(eventData.position, eventData.pressPosition));
                 if (Vector2.Distance(eventData.position, eventData.pressPosition) >= dragThreshold)
                 {
                     isDraging = true;
