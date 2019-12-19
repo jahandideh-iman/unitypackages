@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Match3.Foundation.Base.Configuration
+namespace Arman.Foundation.Core.ConfigurationManagement
 {
     public class DynamicConfigurer<T> : Configurer<T>
     {

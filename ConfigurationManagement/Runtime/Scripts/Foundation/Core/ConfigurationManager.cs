@@ -1,9 +1,7 @@
 ﻿
+using Arman.Foundation.Core.ServiceLocating;
 
-
-using Match3.Foundation.Base.ServiceLocating;
-
-namespace Match3.Foundation.Base.Configuration
+namespace Arman.Foundation.Core.ConfigurationManagement
 {
     public interface ConfigurationManager : Service
     {

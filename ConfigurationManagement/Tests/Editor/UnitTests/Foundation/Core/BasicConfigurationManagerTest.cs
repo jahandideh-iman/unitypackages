@@ -1,7 +1,8 @@
-﻿using NUnit.Framework;
+﻿using Arman.Foundation.Core.ConfigurationManagement;
+using NUnit.Framework;
 
 
-namespace KitchenParadise.Foundation.Base.Configuration
+namespace Arman.Tests.Foundation.Core.ConfigurationManagement
 {
 
     class TypeA { }

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Match3.Foundation.Base.Configuration
+namespace Arman.Foundation.Core.ConfigurationManagement
 {
     public class CompositeConfigurer<T> : Configurer<T>
     {

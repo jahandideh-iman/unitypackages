@@ -1,13 +1,9 @@
-﻿
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using Match3.Foundation.Base.Configuration;
+﻿using Arman.Foundation.Core.ConfigurationManagement;
 using UnityEngine;
 
-namespace Match3.Foundation.Unity.Configuration
+namespace Arman.Foundation.Unity.Configuration
 {
-    [CreateAssetMenu(fileName = "ConfigurationMaster", menuName = "PandasCanPlay/Configuration/UnityConfigurationMaster")]
+    [CreateAssetMenu(fileName = "ConfigurationMaster", menuName = "Arman/Configuration/UnityConfigurationMaster")]
     public class UnityConfigurationMaster : ScriptableConfiguration
     {
         [AutoFillAssetArray("scriptableConfigurers")]

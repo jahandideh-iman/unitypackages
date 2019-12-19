@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 
-namespace Match3.Foundation.Base.Configuration
+namespace Arman.Foundation.Core.ConfigurationManagement
 {
     public class BasicConfigurationManager : ConfigurationManager
     {

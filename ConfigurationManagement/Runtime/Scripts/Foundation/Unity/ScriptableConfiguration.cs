@@ -1,7 +1,7 @@
-﻿using Match3.Foundation.Base.Configuration;
+﻿using Arman.Foundation.Core.ConfigurationManagement;
 using UnityEngine;
 
-namespace Match3.Foundation.Unity.Configuration
+namespace Arman.Foundation.Unity.Configuration
 {
     public abstract class ScriptableConfiguration : ScriptableObject, Configurer
     {

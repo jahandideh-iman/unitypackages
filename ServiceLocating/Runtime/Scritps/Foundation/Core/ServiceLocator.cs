@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 
 
-namespace Arman.Foundation.Base.ServiceLocating
+namespace Arman.Foundation.Core.ServiceLocating
 {
     public class ServiceLocator
     {

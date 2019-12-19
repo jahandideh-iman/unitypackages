@@ -1,8 +1,8 @@
 ﻿
-using Match3.Foundation.Base.Configuration;
+using Arman.Foundation.Core.ConfigurationManagement;
 using UnityEngine;
 
-namespace Match3.Foundation.Unity.Configuration
+namespace Arman.Foundation.Unity.Configuration
 {
     public class UnityConfigurationManager : MonoBehaviour, ConfigurationManager
     {

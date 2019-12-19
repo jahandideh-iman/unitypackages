@@ -1,5 +1,5 @@
 ﻿
-namespace Match3.Foundation.Base.Configuration
+namespace Arman.Foundation.Core.ConfigurationManagement
 {
     public  interface Configurer
     {
