@@ -2,7 +2,7 @@
 using Arman.Foundation.Core.PersistentDataManagement;
 using Arman.Utility.Core;
 using NUnit.Framework;
-
+using System;
 
 namespace Arman.Tests.Foundation.Core.PersistentDataManagement
 {
@@ -10,18 +10,38 @@ namespace Arman.Tests.Foundation.Core.PersistentDataManagement
     public class FakeSerializer : PersistentDataSerializer
     {
         int serializedCalls;
-
+        public PersistentDataWrapper givenWrapper;
 
         public bool IsSerializedCalledOnce()
         {
             return serializedCalls == 1;
         }
 
-        public void Serialize()
+        public bool IsSerialized()
         {
+            return serializedCalls > 0;
+        }
+
+        public void Serialize(PersistentDataWrapper persistentDataWrapper)
+        {
+            givenWrapper = persistentDataWrapper;
             serializedCalls++;
         }
     }
+
+    public class EmptyPersistentDataWrapper : PersistentDataWrapper
+    {
+        public void SaveInt(string key, int value)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void SaveString(string key, string value)
+        {
+            throw new System.NotImplementedException();
+        }
+    }
+
 
     public class BasicPersistentDataManagerTest
     {
@@ -80,17 +100,52 @@ namespace Arman.Tests.Foundation.Core.PersistentDataManagement
             Assert.That(serializerB.IsSerializedCalledOnce(), Is.False);
         }
 
-        //[Test]
-        //public void SaveAllShouldGivePersistentDataInterfaceToSerializers()
-        //{
-        //    manager.SetPersistentDataHandler()
-        //    manager.Register(serializerA);
-        //    manager.Register(serializerB);
+        [Test]
+        public void SaveingShouldGivePersistentDataWrapperToSerializers()
+        {
+            var persistentDataWrapper = new EmptyPersistentDataWrapper();
+            manager.SetPersistentDataHandler(persistentDataWrapper);
+            manager.Register(serializerA);
+            manager.Register(serializerB);
 
-        //    manager.SaveAll();
+            manager.SaveAll();
 
-        //    Assert.That(serializerA.IsSerializedCalledOnce(), Is.True);
-        //    Assert.That(serializerB.IsSerializedCalledOnce(), Is.True);
-        //}
+            Assert.That(serializerA.givenWrapper, Is.SameAs(persistentDataWrapper));
+            Assert.That(serializerB.givenWrapper, Is.SameAs(persistentDataWrapper));
+        }
+
+
+        [Test]
+        public void SavingAnUnregisterChannelShouldRaiseAnException()
+        {
+            var action = new TestDelegate(() =>
+            {
+                manager.Save(new NamedChannel("UnregisteredChannel"));
+            });
+
+            Assert.Throws(
+                Is.InstanceOf<PersistentDataChannelNotFoundException>(),
+                action);
+
+            Assert.That(serializerA.IsSerialized(), Is.False);
+            Assert.That(serializerB.IsSerialized(), Is.False);
+        }
+
+        [Test]
+        public void RegisteringASerializerOnTwoChannelsShouldRaiseAnException()
+        {
+            var action = new TestDelegate(() =>
+                {
+                    manager.Register(serializerA, channelA);
+                    manager.Register(serializerA, channelB);
+                }
+            );
+
+            Assert.Throws(
+                Is.InstanceOf<PersistentDataSerializerAlreadyRegisterException>(),
+                action);
+
+            // TODO: Shoud I not assert that serializerA is not registered in channelB?
+        }
     }
 }
