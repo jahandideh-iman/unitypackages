@@ -6,5 +6,6 @@ namespace Arman.Foundation.Core.PersistentDataManagement
     public interface PersistentDataIOStreamFactory
     {
         StreamWriter CreateWriteStreamFor(Channel channel);
+        StreamReader CreateReadStreamFor(Channel channel);
     }
 }

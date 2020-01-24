@@ -7,10 +7,8 @@ using System.Collections.Generic;
 
 namespace Arman.Tests.Foundation.Core.PersistentDataManagement
 {
-
-
     [TestFixture]
-    public class BasicPersistentDataManagerSavingFuncionalityTest : BasicPersistentDataManagerTestContext
+    public class BasicPersistentDataManagerTest_Saving : BasicPersistentDataManagerTestContext
     {
 
         [Test]
@@ -59,7 +57,7 @@ namespace Arman.Tests.Foundation.Core.PersistentDataManagement
             int clearCallCounts = 0;
             persistentDataWrapper.onClearAction = () => clearCallCounts++;
 
-            manager.SetPersistentDataHandler(persistentDataWrapper);
+            manager.SetPersistentDataWrapper(persistentDataWrapper);
             manager.Register(serializerA, channelA);
             manager.Register(serializerB, channelB);
 
@@ -76,7 +74,7 @@ namespace Arman.Tests.Foundation.Core.PersistentDataManagement
             int clearCallCounts = 0;
             persistentDataWrapper.onClearAction = () => clearCallCounts++;
 
-            manager.SetPersistentDataHandler(persistentDataWrapper);
+            manager.SetPersistentDataWrapper(persistentDataWrapper);
             manager.Register(serializerA, channelA);
 
 
@@ -90,11 +88,11 @@ namespace Arman.Tests.Foundation.Core.PersistentDataManagement
         {
             var persistentDataWrapper = new PersistentDataWrapperMock();
 
-            var givenWrappers = new Dictionary<PersistentDataSerializer, PersistentDataWrapper>();
+            var givenWrappers = new Dictionary<PersistentDataSerializer, WritablePersistentDataWrapper>();
             serializerA.onSerializeAction = (w) => givenWrappers.Add(serializerA, w);
             serializerB.onSerializeAction = (w) => givenWrappers.Add(serializerB, w);
 
-            manager.SetPersistentDataHandler(persistentDataWrapper);
+            manager.SetPersistentDataWrapper(persistentDataWrapper);
             manager.Register(serializerA);
             manager.Register(serializerB);
 
@@ -106,41 +104,43 @@ namespace Arman.Tests.Foundation.Core.PersistentDataManagement
 
         // TODO: Try to refactor this.
         [Test]
-        public void SavingAllShouldCallPersistentDataWrapperAfterCallingAllSerializers()
+        public void SavingAllShouldWriteDataToPersistentDataWrapperAfterCallingAllSerializers()
         {
             var dataWrapper = new PersistentDataWrapperMock();
 
-            bool writeIsCalledLast = false;
-            serializerA.onSerializeAction = (d) => writeIsCalledLast = false;
-            serializerB.onSerializeAction = (d) => writeIsCalledLast = false;
-            dataWrapper.onWriteAction = (w) => writeIsCalledLast = true;
+            int step = 0;
+            int writeStep = -1;
+            serializerA.onSerializeAction = (d) => step++;
+            serializerB.onSerializeAction = (d) => step++;
+            dataWrapper.onWriteAction = (w) => writeStep = step;
 
-            manager.SetPersistentDataHandler(dataWrapper);
+            manager.SetPersistentDataWrapper(dataWrapper);
             manager.Register(serializerA);
             manager.Register(serializerB);
 
             manager.SaveAll();
 
-            Assert.That(writeIsCalledLast);
+            Assert.That(writeStep, Is.EqualTo(2));
         }
 
 
         // TODO: Try to refactor this.
         [Test]
-        public void SavingAChannelShouldCallPersistentDataWrapperAfterCallingChannelsSerializers()
+        public void SavingAChannelShouldWriteDataToPersistentDataWrapperAfterCallingChannelsSerializers()
         {
             var dataWrapper = new PersistentDataWrapperMock();
 
-            bool writeIsCalledLast = false;
-            serializerA.onSerializeAction = (d) => writeIsCalledLast = false;
-            dataWrapper.onWriteAction = (w) => writeIsCalledLast = true;
+            int step = 0;
+            int writeStep = -1;
+            serializerA.onSerializeAction = (d) => step++;
+            dataWrapper.onWriteAction = (w) => writeStep = step;
 
-            manager.SetPersistentDataHandler(dataWrapper);
+            manager.SetPersistentDataWrapper(dataWrapper);
             manager.Register(serializerA, channelA);
 
             manager.Save(channelA);
 
-            Assert.That(writeIsCalledLast);
+            Assert.That(writeStep, Is.EqualTo(1));
         }
 
         [Test]
@@ -154,8 +154,8 @@ namespace Arman.Tests.Foundation.Core.PersistentDataManagement
 
             manager.SaveAll();
 
-            Assert.That(streamFactory.CreateIsCalledOnceFor(channelA));
-            Assert.That(streamFactory.CreateIsCalledOnceFor(channelB));
+            Assert.That(streamFactory.CreateWriteStreamIsCalledOnceFor(channelA));
+            Assert.That(streamFactory.CreateWriteStreamIsCalledOnceFor(channelB));
         }
 
         [Test]
@@ -170,8 +170,8 @@ namespace Arman.Tests.Foundation.Core.PersistentDataManagement
 
             manager.Save(channelA);
 
-            Assert.That(streamFactory.CreateIsCalledOnceFor(channelA), Is.True);
-            Assert.That(streamFactory.CreateIsCalledOnceFor(channelB), Is.False);
+            Assert.That(streamFactory.CreateWriteStreamIsCalledOnceFor(channelA), Is.True);
+            Assert.That(streamFactory.CreateWriteStreamIsCalledOnceFor(channelB), Is.False);
         }
     }
 }

@@ -27,7 +27,7 @@ namespace Arman.Tests.Foundation.Core.PersistentDataManagement
             channelA = new NamedChannel("ChannelA");
             channelB = new NamedChannel("ChannelB");
 
-            manager.SetPersistentDataHandler(new EmptyPersistentDataWrapper());
+            manager.SetPersistentDataWrapper(new EmptyPersistentDataWrapper());
             manager.SetPersistentDataIOStreamFactory(new EmptyPersistetDataIOStreamFactory());
         }
     }

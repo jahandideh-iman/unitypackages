@@ -19,9 +19,9 @@ namespace Arman.Foundation.Core.PersistentDataManagement
 
         Channel defaultChannel = new InternalChannel();
 
-        public void SetPersistentDataHandler(PersistentDataWrapper handler)
+        public void SetPersistentDataWrapper(PersistentDataWrapper wrapper)
         {
-            this.persistentDataWrapper = handler;
+            this.persistentDataWrapper = wrapper;
         }
 
         public void SetPersistentDataIOStreamFactory(PersistentDataIOStreamFactory factory)
@@ -59,9 +59,28 @@ namespace Arman.Foundation.Core.PersistentDataManagement
             persistentDataWrapper.Clear();
 
             foreach (var serializer in channelSerializers[channel].Items())
-                serializer.Serialize(persistentDataWrapper);
+                serializer.SerializeTo(persistentDataWrapper);
 
             persistentDataWrapper.WriteTo(persistentDataIOStreamFactory.CreateWriteStreamFor(channel));
+        }
+
+
+        public void LoadAll()
+        {
+            foreach (var channel in channelSerializers.Keys)
+                Load(channel);
+        }
+
+        public void Load(Channel channel)
+        {
+            if (ChannelDoesNotExists(channel))
+                throw new PersistentDataChannelNotFoundException(channel);
+
+            persistentDataWrapper.Clear();
+            persistentDataWrapper.ReadFrom(persistentDataIOStreamFactory.CreateReadStreamFor(channel));
+
+            foreach (var serializer in channelSerializers[channel].Items())
+                serializer.DeserializeFrom(persistentDataWrapper);
         }
 
         public bool Contains(PersistentDataSerializer serializer)
@@ -84,6 +103,7 @@ namespace Arman.Foundation.Core.PersistentDataManagement
             if (ChannelDoesNotExists(channel))
                 channelSerializers.Add(channel, new BasicContainer<PersistentDataSerializer>());
         }
+
     }
 
 }

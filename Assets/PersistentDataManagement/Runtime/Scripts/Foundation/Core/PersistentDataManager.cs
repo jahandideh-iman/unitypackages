@@ -4,7 +4,7 @@ namespace Arman.Foundation.Core.PersistentDataManagement
 {
     public interface PersistentDataManager
     {
-        void SetPersistentDataHandler(PersistentDataWrapper handler);
+        void SetPersistentDataWrapper(PersistentDataWrapper wrapper);
         void SetPersistentDataIOStreamFactory(PersistentDataIOStreamFactory factory);
 
         void Register(PersistentDataSerializer serializer);
@@ -12,8 +12,11 @@ namespace Arman.Foundation.Core.PersistentDataManagement
 
         bool Contains(PersistentDataSerializer serializer);
 
-        void Save(Channel channel);
         void SaveAll();
+        void Save(Channel channel);
+
+        void LoadAll();
+        void Load(Channel channel);
     }
 
 }

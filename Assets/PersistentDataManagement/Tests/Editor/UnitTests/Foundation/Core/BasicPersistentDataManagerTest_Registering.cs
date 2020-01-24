@@ -4,7 +4,7 @@ using NUnit.Framework;
 namespace Arman.Tests.Foundation.Core.PersistentDataManagement
 {
     [TestFixture]
-    public class BasicPersistentDataManagerRegisterationTest : BasicPersistentDataManagerTestContext
+    public class BasicPersistentDataManagerTest_Registering : BasicPersistentDataManagerTestContext
     {
         [Test]
         public void HasTheRegisterSerializersWithoutChannel()

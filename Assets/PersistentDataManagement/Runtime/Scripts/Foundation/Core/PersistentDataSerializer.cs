@@ -2,7 +2,8 @@
 {
     public interface PersistentDataSerializer
     {
-        void Serialize(PersistentDataWrapper persistentDataWrapper);
+        void SerializeTo(WritablePersistentDataWrapper persistentDataWrapper);
+        void DeserializeFrom(ReadablePersistentDataWrapper persistentDataWrapper);
     }
 
 }
