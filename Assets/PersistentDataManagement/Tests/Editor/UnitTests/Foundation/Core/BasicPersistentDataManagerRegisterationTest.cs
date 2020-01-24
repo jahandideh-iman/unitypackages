@@ -1,0 +1,44 @@
+﻿using Arman.Foundation.Core.PersistentDataManagement;
+using NUnit.Framework;
+
+namespace Arman.Tests.Foundation.Core.PersistentDataManagement
+{
+    [TestFixture]
+    public class BasicPersistentDataManagerRegisterationTest : BasicPersistentDataManagerTestContext
+    {
+        [Test]
+        public void HasTheRegisterSerializersWithoutChannel()
+        {
+            manager.Register(serializerA);
+            manager.Register(serializerB);
+
+            Assert.That(manager.Contains(serializerA));
+            Assert.That(manager.Contains(serializerB));
+        }
+
+        [Test]
+        public void HasTheRegisterSerializersWithChannel()
+        {
+            manager.Register(serializerA, channelA);
+            manager.Register(serializerB, channelB);
+
+            Assert.That(manager.Contains(serializerA));
+            Assert.That(manager.Contains(serializerB));
+        }
+
+        [Test]
+        public void RegisteringASerializerOnTwoChannelsShouldRaiseAnException()
+        {
+            var action = new TestDelegate(() =>
+            {
+                manager.Register(serializerA, channelA);
+                manager.Register(serializerA, channelB);
+            }
+            );
+
+            Assert.That(action, Throws.Exception.InstanceOf<PersistentDataSerializerAlreadyRegisterException>());
+
+            // TODO: Shoud I not assert that serializerA is not registered in channelB?
+        }
+    }
+}

@@ -3,26 +3,40 @@ using Arman.Utility.Core;
 
 namespace Arman.Foundation.Core.PersistentDataManagement
 {
+
+    using SerializerContainer = Container<PersistentDataSerializer>;
+
     public class BasicPersistentDataManager : PersistentDataManager
     {
-        PersistentDataWrapper persistentDataWrapper;
-        Container<PersistentDataSerializer> allSerializers = new BasicContainer<PersistentDataSerializer>();
+        private class InternalChannel : Channel
+        { }
 
-        Dictionary<Channel, Container<PersistentDataSerializer>> channelSerializers = new Dictionary<Channel, Container<PersistentDataSerializer>>();
+        PersistentDataIOStreamFactory persistentDataIOStreamFactory;
+        PersistentDataWrapper persistentDataWrapper;
+
+        SerializerContainer allSerializers = new BasicContainer<PersistentDataSerializer>();
+        Dictionary<Channel, SerializerContainer> channelSerializers = new Dictionary<Channel, SerializerContainer>();
+
+        Channel defaultChannel = new InternalChannel();
 
         public void SetPersistentDataHandler(PersistentDataWrapper handler)
         {
             this.persistentDataWrapper = handler;
         }
 
+        public void SetPersistentDataIOStreamFactory(PersistentDataIOStreamFactory factory)
+        {
+            this.persistentDataIOStreamFactory = factory;
+        }
+
         public void Register(PersistentDataSerializer serializer)
         {
-            allSerializers.Add(serializer);
+            Register(serializer, defaultChannel);
         }
 
         public void Register(PersistentDataSerializer serializer, Channel channel)
         {
-            if (IsSerializerRegisted(serializer))
+            if (IsSerializerRegistered(serializer))
                 throw new PersistentDataSerializerAlreadyRegisterException(serializer);
 
             TryCreateChannelData(channel);
@@ -31,20 +45,10 @@ namespace Arman.Foundation.Core.PersistentDataManagement
             allSerializers.Add(serializer);
         }
 
-        private bool IsSerializerRegisted(PersistentDataSerializer serializer)
-        {
-            return allSerializers.Contains(serializer);
-        }
-
-        public bool Contains(PersistentDataSerializer serializer)
-        {
-            return allSerializers.Contains(serializer);
-        }
-
         public void SaveAll()
         {
-            foreach (var serializer in allSerializers.Items())
-                serializer.Serialize(persistentDataWrapper);
+            foreach (var channel in channelSerializers.Keys)
+                Save(channel);
         }
 
         public void Save(Channel channel)
@@ -52,8 +56,22 @@ namespace Arman.Foundation.Core.PersistentDataManagement
             if (ChannelDoesNotExists(channel))
                 throw new PersistentDataChannelNotFoundException(channel);
 
+            persistentDataWrapper.Clear();
+
             foreach (var serializer in channelSerializers[channel].Items())
                 serializer.Serialize(persistentDataWrapper);
+
+            persistentDataWrapper.WriteTo(persistentDataIOStreamFactory.CreateWriteStreamFor(channel));
+        }
+
+        public bool Contains(PersistentDataSerializer serializer)
+        {
+            return allSerializers.Contains(serializer);
+        }
+
+        private bool IsSerializerRegistered(PersistentDataSerializer serializer)
+        {
+            return allSerializers.Contains(serializer);
         }
 
         private bool ChannelDoesNotExists(Channel channel)
