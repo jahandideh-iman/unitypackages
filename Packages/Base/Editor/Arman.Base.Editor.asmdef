@@ -1,7 +1,6 @@
 {
     "name": "Arman.Base.Editor",
-    "references": [
-    ],
+    "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

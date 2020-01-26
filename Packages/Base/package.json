@@ -1,13 +1,12 @@
 {
-  "name": "com.arman.foundation.base",
+  "name": "com.arman.foundation.package_basics",
   "version": "1.0.0",
-  "displayName": "Base",
+  "displayName": "Package Basics",
   "description": "Description",
   "unity": "2019.1",
-  "dependencies": {
- },
   "author": {
     "name": "Iman Jahandideh",
     "email": "jahandideh_iman@yahoo.com"
-  }
+  },
+  "hideInEditor": false
 }

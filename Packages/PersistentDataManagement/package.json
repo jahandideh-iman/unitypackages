@@ -1,14 +1,15 @@
 {
   "name": "com.arman.foundation.persistent_data_managemement",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "displayName": "Persistent Data Managemement",
   "description": "Description",
   "unity": "2019.1",
   "dependencies": {
-  "com.arman.foundation.base" : "1.0.0"
- },
+    "com.arman.foundation.package_basics": "0.1.0"
+  },
   "author": {
     "name": "Iman Jahandideh",
     "email": "jahandideh_iman@yahoo.com"
-  }
+  },
+  "hideInEditor": false
 }
