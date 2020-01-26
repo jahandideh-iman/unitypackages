@@ -9,15 +9,32 @@ namespace Arman.Foundation.Core.PersistentDataManagement
         public void WriteTo(StreamWriter stream) { }
 
         public void ReadFrom(StreamReader stream) { }
-        public int LoadInt(string key) { return 0; }
 
-        public string LoadString(string key) { return ""; }
+        public bool HasKey(string key) { return false; }
+
+        public int ReadInt(string key) { return 0; }
+
+        public string ReadString(string key) { return ""; }
+
+        public float ReadtFloat(string key) { return 0f; }
+
+        public bool ReadBoolean(string key) { return false; }
 
 
-        public void SaveInt(string key, int value) { }
+        public WritablePersistentDataWrapper WriteInt(string key, int value) { return this; }
 
-        public void SaveString(string key, string value) { }
+        public WritablePersistentDataWrapper WriteString(string key, string value) { return this; }
 
+        public WritablePersistentDataWrapper WriteFloat(string key, float value) { return this; }
+
+        public WritablePersistentDataWrapper WriteBoolean(string key, bool value) { return this; }
+
+        public void BeginReadingBlock(string key) { }
+
+        public void EndReadingBlock() { }
+
+        public WritablePersistentDataWrapper BeginWritingBlock(string key) { return this; }
+        public WritablePersistentDataWrapper EndWritingBlock() { return this; }
     }
 
 }

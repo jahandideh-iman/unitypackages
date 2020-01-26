@@ -28,26 +28,70 @@ namespace Arman.Mocks.Foundation.Core.PersistentDataManagement
             onReadAction(stream);
         }
 
-        public int LoadInt(string key)
+
+        public bool HasKey(string key)
         {
             throw new NotImplementedException();
         }
 
-        public string LoadString(string key)
+        public int ReadInt(string key)
         {
             throw new NotImplementedException();
         }
 
-
-        public void SaveInt(string key, int value)
+        public float ReadtFloat(string key)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
-        public void SaveString(string key, string value)
+        public bool ReadBoolean(string key)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
+        public string ReadString(string key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void BeginReadingBlock(string key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void EndReadingBlock()
+        {
+            throw new NotImplementedException();
+        }
+
+        public WritablePersistentDataWrapper WriteInt(string key, int value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public WritablePersistentDataWrapper WriteFloat(string key, float value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public WritablePersistentDataWrapper WriteBoolean(string key, bool value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public WritablePersistentDataWrapper WriteString(string key, string value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public WritablePersistentDataWrapper BeginWritingBlock(string key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public WritablePersistentDataWrapper EndWritingBlock()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
