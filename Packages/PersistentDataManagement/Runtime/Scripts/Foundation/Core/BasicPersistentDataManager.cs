@@ -9,7 +9,12 @@ namespace Arman.Foundation.Core.PersistentDataManagement
     public class BasicPersistentDataManager : PersistentDataManager
     {
         private class InternalChannel : Channel
-        { }
+        {
+            public override string ToString()
+            {
+                return "_internal";
+            }
+        }
 
         PersistentDataIOStreamFactory persistentDataIOStreamFactory;
         PersistentDataWrapper persistentDataWrapper;
@@ -61,7 +66,10 @@ namespace Arman.Foundation.Core.PersistentDataManagement
             foreach (var serializer in channelSerializers[channel].Items())
                 serializer.SerializeTo(persistentDataWrapper);
 
-            persistentDataWrapper.WriteTo(persistentDataIOStreamFactory.CreateWriteStreamFor(channel));
+            using (var writeStream = persistentDataIOStreamFactory.CreateWriteStreamFor(channel))
+            {
+                persistentDataWrapper.WriteTo(writeStream);
+            }
         }
 
 
@@ -76,11 +84,14 @@ namespace Arman.Foundation.Core.PersistentDataManagement
             if (ChannelDoesNotExists(channel))
                 throw new PersistentDataChannelNotFoundException(channel);
 
-            persistentDataWrapper.Clear();
-            persistentDataWrapper.ReadFrom(persistentDataIOStreamFactory.CreateReadStreamFor(channel));
+            using (var readStream = persistentDataIOStreamFactory.CreateReadStreamFor(channel))
+            {
+                persistentDataWrapper.Clear();
+                persistentDataWrapper.ReadFrom(readStream);
 
-            foreach (var serializer in channelSerializers[channel].Items())
-                serializer.DeserializeFrom(persistentDataWrapper);
+                foreach (var serializer in channelSerializers[channel].Items())
+                    serializer.DeserializeFrom(persistentDataWrapper);
+            }
         }
 
         public bool Contains(PersistentDataSerializer serializer)
