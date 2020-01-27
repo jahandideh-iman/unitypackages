@@ -1,9 +1,9 @@
 {
-    "name": "Arman.Base.Tests.Editor",
+    "name": "Arman.PackageBasics.Tests.Editor",
     "references": [
-        "UnityEngine.TestRunner",
-        "UnityEditor.TestRunner",
-        "Arman.Base.Runtime"
+        "GUID:27619889b8ba8c24980f49ee34dbb44a",
+        "GUID:0acc523941302664db1f4e527237feb3",
+        "GUID:d234ec889e11dff47b82ac2af6040263"
     ],
     "includePlatforms": [
         "Editor"
