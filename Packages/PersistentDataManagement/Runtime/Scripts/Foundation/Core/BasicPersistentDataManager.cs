@@ -28,6 +28,20 @@ namespace Arman.Foundation.Core.PersistentDataManagement
 
         int saveVersion;
 
+        public BasicPersistentDataManager()
+        {
+        }
+
+        public BasicPersistentDataManager(
+            PersistentDataIOStreamFactory persistentDataIOStreamFactory,
+            PersistentDataWrapper persistentDataWrapper, 
+            int saveVersion)
+        {
+            this.persistentDataIOStreamFactory = persistentDataIOStreamFactory;
+            this.persistentDataWrapper = persistentDataWrapper;
+            this.saveVersion = saveVersion;
+        }
+
         public void SetSaveVersion(int version)
         {
             this.saveVersion = version;

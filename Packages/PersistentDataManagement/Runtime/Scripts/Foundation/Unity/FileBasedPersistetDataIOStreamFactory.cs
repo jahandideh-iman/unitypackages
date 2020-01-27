@@ -5,11 +5,11 @@ namespace Arman.Foundation.Core.PersistentDataManagement
 {
     public class FileBasedPersistetDataIOStreamFactory : PersistentDataIOStreamFactory
     {
-        public string relativePath;
+        public string path;
 
-        public FileBasedPersistetDataIOStreamFactory(string relativePath)
+        public FileBasedPersistetDataIOStreamFactory(string path)
         {
-            this.relativePath = relativePath;
+            this.path = path;
         }
 
         public StreamReader CreateReadStreamFor(Channel channel)
@@ -26,7 +26,7 @@ namespace Arman.Foundation.Core.PersistentDataManagement
 
         private string FilePathFor(Channel channel)
         {
-            return Path.Combine(relativePath, channel.ToString());
+            return Path.Combine(path, channel.ToString());
         }
     }
 
