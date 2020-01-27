@@ -56,17 +56,17 @@ namespace Arman.Mocks.Foundation.Core.PersistentDataManagement
 
         public void BeginReadingBlock(string key)
         {
-            throw new NotImplementedException();
+            
         }
 
         public void EndReadingBlock()
         {
-            throw new NotImplementedException();
+            
         }
 
         public WritablePersistentDataWrapper WriteInt(string key, int value)
         {
-            throw new NotImplementedException();
+            return this;
         }
 
         public WritablePersistentDataWrapper WriteFloat(string key, float value)
@@ -86,12 +86,12 @@ namespace Arman.Mocks.Foundation.Core.PersistentDataManagement
 
         public WritablePersistentDataWrapper BeginWritingBlock(string key)
         {
-            throw new NotImplementedException();
+            return this;
         }
 
         public WritablePersistentDataWrapper EndWritingBlock()
         {
-            throw new NotImplementedException();
+            return this;
         }
     }
 }

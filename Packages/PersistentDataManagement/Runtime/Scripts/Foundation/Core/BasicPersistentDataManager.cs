@@ -3,11 +3,13 @@ using Arman.Utility.Core;
 
 namespace Arman.Foundation.Core.PersistentDataManagement
 {
-
+    using System;
     using SerializerContainer = Container<PersistentDataSerializer>;
 
     public class BasicPersistentDataManager : PersistentDataManager
     {
+        // NOTE: The name (ToString) of the channel must never be used by other channel.
+        // TODO: Find a way to guarantee that it never can happen.
         private class InternalChannel : Channel
         {
             public override string ToString()
@@ -23,6 +25,13 @@ namespace Arman.Foundation.Core.PersistentDataManagement
         Dictionary<Channel, SerializerContainer> channelSerializers = new Dictionary<Channel, SerializerContainer>();
 
         Channel defaultChannel = new InternalChannel();
+
+        int saveVersion;
+
+        public void SetSaveVersion(int version)
+        {
+            this.saveVersion = version;
+        }
 
         public void SetPersistentDataWrapper(PersistentDataWrapper wrapper)
         {
@@ -63,15 +72,32 @@ namespace Arman.Foundation.Core.PersistentDataManagement
 
             persistentDataWrapper.Clear();
 
-            foreach (var serializer in channelSerializers[channel].Items())
-                serializer.SerializeTo(persistentDataWrapper);
+            WriteMetaDataTo(persistentDataWrapper);
+            WriteDataTo(persistentDataWrapper, channelSerializers[channel].Items());
 
             using (var writeStream = persistentDataIOStreamFactory.CreateWriteStreamFor(channel))
-            {
                 persistentDataWrapper.WriteTo(writeStream);
-            }
+            
         }
 
+        void WriteMetaDataTo(WritablePersistentDataWrapper dataWrapper)
+        {
+            dataWrapper.BeginWritingBlock("MetaData");
+
+            dataWrapper.WriteInt("Version", saveVersion);
+
+            dataWrapper.EndWritingBlock();
+        }
+
+        private void WriteDataTo(PersistentDataWrapper persistentDataWrapper, IEnumerable<PersistentDataSerializer> serializers)
+        {
+            persistentDataWrapper.BeginWritingBlock("Data");
+
+            foreach (var serializer in serializers)
+                serializer.SerializeTo(persistentDataWrapper);
+
+            persistentDataWrapper.EndWritingBlock();
+        }
 
         public void LoadAll()
         {
@@ -89,8 +115,10 @@ namespace Arman.Foundation.Core.PersistentDataManagement
                 persistentDataWrapper.Clear();
                 persistentDataWrapper.ReadFrom(readStream);
 
+                persistentDataWrapper.BeginReadingBlock("Data");
                 foreach (var serializer in channelSerializers[channel].Items())
                     serializer.DeserializeFrom(persistentDataWrapper);
+                persistentDataWrapper.EndReadingBlock();
             }
         }
 

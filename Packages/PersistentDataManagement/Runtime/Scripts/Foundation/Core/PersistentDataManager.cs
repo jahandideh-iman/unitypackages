@@ -4,6 +4,7 @@ namespace Arman.Foundation.Core.PersistentDataManagement
 {
     public interface PersistentDataManager
     {
+        void SetSaveVersion(int version);
         void SetPersistentDataWrapper(PersistentDataWrapper wrapper);
         void SetPersistentDataIOStreamFactory(PersistentDataIOStreamFactory factory);
 
