@@ -1,13 +1,12 @@
 {
   "name": "com.arman.foundation.service_locating",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "displayName": "Service Locating",
   "description": "The base package for services",
   "unity": "2019.1",
-  "dependencies": {
- },
   "author": {
     "name": "Iman Jahandideh",
     "email": "jahandideh_iman@yahoo.com"
-  }
+  },
+  "hideInEditor": false
 }

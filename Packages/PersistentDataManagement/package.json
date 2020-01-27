@@ -5,7 +5,8 @@
   "description": "Description",
   "unity": "2019.1",
   "dependencies": {
-    "com.arman.foundation.package_basics": "0.1.0"
+    "com.arman.foundation.package_basics": "0.1.0",
+    "com.arman.foundation.service_locating": "0.1.0"
   },
   "author": {
     "name": "Iman Jahandideh",
