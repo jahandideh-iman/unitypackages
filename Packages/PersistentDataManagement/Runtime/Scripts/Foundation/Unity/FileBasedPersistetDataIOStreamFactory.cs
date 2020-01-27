@@ -1,7 +1,8 @@
-﻿using Arman.Utility.Core;
+﻿using Arman.Foundation.Core.PersistentDataManagement;
+using Arman.Utility.Core;
 using System.IO;
 
-namespace Arman.Foundation.Core.PersistentDataManagement
+namespace Arman.Foundation.Unity.PersistentDataManagement
 {
     public class FileBasedPersistetDataIOStreamFactory : PersistentDataIOStreamFactory
     {
