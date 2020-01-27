@@ -23,14 +23,13 @@ namespace Arman.Foundation.Unity.PersistentDataManagement
         {
             root.Clear();
             blockStack.Clear();
+            blockStack.Push(root);
         }
-
 
         public void WriteTo(StreamWriter stream)
         {
             stream.Write(root.ToJsonString());
         }
-
 
         public void ReadFrom(StreamReader stream)
         {
@@ -40,7 +39,7 @@ namespace Arman.Foundation.Unity.PersistentDataManagement
 
         public bool HasKey(string key)
         {
-            return root.ContainsKey(key);
+            return CurrentBlock().ContainsKey(key);
         }
 
         public int ReadInt(string key)
