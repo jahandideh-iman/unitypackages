@@ -1,7 +1,7 @@
 {
   "name": "com.arman.foundation.package_name",
   "version": "1.0.0",
-  "displayName": "Display Name",
+  "displayName": "Package Template",
   "description": "Description",
   "unity": "2019.1",
   "dependencies": {
