@@ -11,6 +11,12 @@ namespace Arman.Mocks.Foundation.Core.PersistentDataManagement
 
         int serializedCalls = 0;
         int deserializedCalls = 0;
+        string key;
+
+        public PersistentDataSerializerMock(string key)
+        {
+            this.key = key;
+        }
 
         public bool IsSerializedCalledOnce()
         {
@@ -32,6 +38,11 @@ namespace Arman.Mocks.Foundation.Core.PersistentDataManagement
             return deserializedCalls > 0;
         }
 
+        public string Key()
+        {
+            return key;
+        }
+
         public void SerializeTo(WritablePersistentDataWrapper persistentDataWrapper)
         {
             serializedCalls++;
@@ -43,5 +54,6 @@ namespace Arman.Mocks.Foundation.Core.PersistentDataManagement
             deserializedCalls++;
             onDeserializeAction(persistentDataWrapper);
         }
+
     }
 }

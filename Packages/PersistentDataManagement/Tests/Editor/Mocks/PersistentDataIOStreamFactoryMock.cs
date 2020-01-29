@@ -11,6 +11,12 @@ namespace Arman.Mocks.Foundation.Core.PersistentDataManagement
         Dictionary<Channel, int> createWriteStreamCounts = new Dictionary<Channel, int>();
         Dictionary<Channel, int> createReadStreamCounts = new Dictionary<Channel, int>();
 
+
+        public bool HasReadableStreamFor(Channel channel)
+        {
+            return true;
+        }
+
         public StreamWriter CreateWriteStreamFor(Channel channel)
         {
             if (createWriteStreamCounts.ContainsKey(channel) == false)

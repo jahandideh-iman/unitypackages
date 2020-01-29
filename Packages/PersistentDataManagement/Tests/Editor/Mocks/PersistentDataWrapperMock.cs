@@ -31,7 +31,7 @@ namespace Arman.Mocks.Foundation.Core.PersistentDataManagement
 
         public bool HasKey(string key)
         {
-            throw new NotImplementedException();
+            return true;
         }
 
         public int ReadInt(string key)

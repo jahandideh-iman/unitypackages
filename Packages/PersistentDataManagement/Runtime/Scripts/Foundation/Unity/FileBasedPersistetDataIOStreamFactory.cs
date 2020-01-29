@@ -13,6 +13,12 @@ namespace Arman.Foundation.Unity.PersistentDataManagement
             this.path = path;
         }
 
+
+        public bool HasReadableStreamFor(Channel channel)
+        {
+            return File.Exists(FilePathFor(channel));
+        }
+
         public StreamReader CreateReadStreamFor(Channel channel)
         {
             FileStream fs = new FileStream(FilePathFor(channel), FileMode.Open);

@@ -17,6 +17,13 @@ namespace Arman.Samples.PersistentDataManagement
             this.persistentDataExample = persistentDataExample;
         }
 
+
+        public string Key()
+        {
+            return "ExampleSerializer";
+        }
+
+
         public void DeserializeFrom(ReadablePersistentDataWrapper persistentDataWrapper)
         {
             persistentDataExample.intValue = persistentDataWrapper.ReadInt("int");

@@ -14,7 +14,10 @@ namespace Arman.Foundation.Core.PersistentDataManagement
         {
             return new StreamWriter(new MemoryStream());
         }
+
+        public bool HasReadableStreamFor(Channel channel)
+        {
+            return true;
+        }
     }
-
-
 }

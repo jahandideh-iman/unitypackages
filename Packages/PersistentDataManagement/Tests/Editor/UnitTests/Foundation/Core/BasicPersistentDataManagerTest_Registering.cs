@@ -19,8 +19,8 @@ namespace Arman.Tests.Foundation.Core.PersistentDataManagement
         [Test]
         public void HasTheRegisterSerializersWithChannel()
         {
-            manager.Register(serializerA, channelA);
-            manager.Register(serializerB, channelB);
+            manager.Register(serializerA, channel1);
+            manager.Register(serializerB, channel2);
 
             Assert.That(manager.Contains(serializerA));
             Assert.That(manager.Contains(serializerB));
@@ -31,8 +31,8 @@ namespace Arman.Tests.Foundation.Core.PersistentDataManagement
         {
             var action = new TestDelegate(() =>
             {
-                manager.Register(serializerA, channelA);
-                manager.Register(serializerA, channelB);
+                manager.Register(serializerA, channel1);
+                manager.Register(serializerA, channel2);
             }
             );
 

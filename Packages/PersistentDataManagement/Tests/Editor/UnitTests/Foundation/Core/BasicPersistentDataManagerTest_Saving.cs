@@ -15,7 +15,7 @@ namespace Arman.Tests.Foundation.Core.PersistentDataManagement
         public void SavingAllShouldCallSerializeOnAllSerializers()
         {
             manager.Register(serializerA);
-            manager.Register(serializerB, channelB);
+            manager.Register(serializerB, channel2);
 
             manager.SaveAll();
 
@@ -26,10 +26,10 @@ namespace Arman.Tests.Foundation.Core.PersistentDataManagement
         [Test]
         public void SavingAChannelShoudCallSerializeOnAllTheRegisteredSerializersOnThatChannel()
         {
-            manager.Register(serializerA, channelA);
-            manager.Register(serializerB, channelB);
+            manager.Register(serializerA, channel1);
+            manager.Register(serializerB, channel2);
 
-            manager.Save(channelA);
+            manager.Save(channel1);
 
             Assert.That(serializerA.IsSerializedCalledOnce(), Is.True);
             Assert.That(serializerB.IsSerializedCalledOnce(), Is.False);
@@ -58,8 +58,8 @@ namespace Arman.Tests.Foundation.Core.PersistentDataManagement
             persistentDataWrapper.onClearAction = () => clearCallCounts++;
 
             manager.SetPersistentDataWrapper(persistentDataWrapper);
-            manager.Register(serializerA, channelA);
-            manager.Register(serializerB, channelB);
+            manager.Register(serializerA, channel1);
+            manager.Register(serializerB, channel2);
 
             manager.SaveAll();
 
@@ -75,10 +75,10 @@ namespace Arman.Tests.Foundation.Core.PersistentDataManagement
             persistentDataWrapper.onClearAction = () => clearCallCounts++;
 
             manager.SetPersistentDataWrapper(persistentDataWrapper);
-            manager.Register(serializerA, channelA);
+            manager.Register(serializerA, channel1);
 
 
-            manager.Save(channelA);
+            manager.Save(channel1);
 
             Assert.That(clearCallCounts, Is.EqualTo(1));
         }
@@ -136,9 +136,9 @@ namespace Arman.Tests.Foundation.Core.PersistentDataManagement
             dataWrapper.onWriteAction = (w) => writeStep = step;
 
             manager.SetPersistentDataWrapper(dataWrapper);
-            manager.Register(serializerA, channelA);
+            manager.Register(serializerA, channel1);
 
-            manager.Save(channelA);
+            manager.Save(channel1);
 
             Assert.That(writeStep, Is.EqualTo(1));
         }
@@ -149,13 +149,13 @@ namespace Arman.Tests.Foundation.Core.PersistentDataManagement
             var streamFactory = new PersistentDataIOStreamFactoryMock();
 
             manager.SetPersistentDataIOStreamFactory(streamFactory);
-            manager.Register(serializerA, channelA);
-            manager.Register(serializerB, channelB);
+            manager.Register(serializerA, channel1);
+            manager.Register(serializerB, channel2);
 
             manager.SaveAll();
 
-            Assert.That(streamFactory.CreateWriteStreamIsCalledOnceFor(channelA));
-            Assert.That(streamFactory.CreateWriteStreamIsCalledOnceFor(channelB));
+            Assert.That(streamFactory.CreateWriteStreamIsCalledOnceFor(channel1));
+            Assert.That(streamFactory.CreateWriteStreamIsCalledOnceFor(channel2));
         }
 
         [Test]
@@ -165,13 +165,13 @@ namespace Arman.Tests.Foundation.Core.PersistentDataManagement
 
             manager.SetPersistentDataIOStreamFactory(streamFactory);
 
-            manager.Register(serializerA, channelA);
-            manager.Register(serializerB, channelB);
+            manager.Register(serializerA, channel1);
+            manager.Register(serializerB, channel2);
 
-            manager.Save(channelA);
+            manager.Save(channel1);
 
-            Assert.That(streamFactory.CreateWriteStreamIsCalledOnceFor(channelA), Is.True);
-            Assert.That(streamFactory.CreateWriteStreamIsCalledOnceFor(channelB), Is.False);
+            Assert.That(streamFactory.CreateWriteStreamIsCalledOnceFor(channel1), Is.True);
+            Assert.That(streamFactory.CreateWriteStreamIsCalledOnceFor(channel2), Is.False);
         }
     }
 }

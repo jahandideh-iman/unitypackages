@@ -8,13 +8,12 @@ namespace Arman.Foundation.Core.PersistentDataManagement
 
         void WriteTo(StreamWriter stream);
         void ReadFrom(StreamReader stream);
-
-        bool HasKey(string key);
-
     }
 
     public interface ReadablePersistentDataWrapper
     {
+        bool HasKey(string key);
+
         int ReadInt(string key);
         float ReadtFloat(string key);
         bool ReadBoolean(string key);

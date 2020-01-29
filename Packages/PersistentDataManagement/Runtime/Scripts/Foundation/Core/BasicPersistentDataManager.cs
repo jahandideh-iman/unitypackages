@@ -108,8 +108,16 @@ namespace Arman.Foundation.Core.PersistentDataManagement
             persistentDataWrapper.BeginWritingBlock("Data");
 
             foreach (var serializer in serializers)
-                serializer.SerializeTo(persistentDataWrapper);
+                Serialize(serializer, persistentDataWrapper);
 
+
+            persistentDataWrapper.EndWritingBlock();
+        }
+
+        private void Serialize(PersistentDataSerializer serializer, WritablePersistentDataWrapper persistentDataWrapper)
+        {
+            persistentDataWrapper.BeginWritingBlock(serializer.Key());
+            serializer.SerializeTo(persistentDataWrapper);
             persistentDataWrapper.EndWritingBlock();
         }
 
@@ -124,14 +132,29 @@ namespace Arman.Foundation.Core.PersistentDataManagement
             if (ChannelDoesNotExists(channel))
                 throw new PersistentDataChannelNotFoundException(channel);
 
+            if (persistentDataIOStreamFactory.HasReadableStreamFor(channel) == false)
+                return;
+
             using (var readStream = persistentDataIOStreamFactory.CreateReadStreamFor(channel))
             {
                 persistentDataWrapper.Clear();
                 persistentDataWrapper.ReadFrom(readStream);
 
                 persistentDataWrapper.BeginReadingBlock("Data");
+
                 foreach (var serializer in channelSerializers[channel].Items())
-                    serializer.DeserializeFrom(persistentDataWrapper);
+                    TryDeserialize(serializer, persistentDataWrapper);
+
+                persistentDataWrapper.EndReadingBlock();
+            }
+        }
+
+        private void TryDeserialize(PersistentDataSerializer serializer, ReadablePersistentDataWrapper persistentDataWrapper)
+        {
+            if (persistentDataWrapper.HasKey(serializer.Key()))
+            {
+                persistentDataWrapper.BeginReadingBlock(serializer.Key());
+                serializer.DeserializeFrom(persistentDataWrapper);
                 persistentDataWrapper.EndReadingBlock();
             }
         }

@@ -13,22 +13,29 @@ namespace Arman.Tests.Foundation.Core.PersistentDataManagement
         protected PersistentDataSerializerMock serializerA;
         protected PersistentDataSerializerMock serializerB;
 
-        protected Channel channelA;
-        protected Channel channelB;
+        protected Channel channel1;
+        protected Channel channel2;
 
         [SetUp]
         public void Setup()
         {
             manager = new BasicPersistentDataManager();
 
-            serializerA = new PersistentDataSerializerMock();
-            serializerB = new PersistentDataSerializerMock();
+            serializerA = new PersistentDataSerializerMock("A");
+            serializerB = new PersistentDataSerializerMock("B");
 
-            channelA = new NamedChannel("ChannelA");
-            channelB = new NamedChannel("ChannelB");
+            channel1 = new NamedChannel("ChannelA");
+            channel2 = new NamedChannel("ChannelB");
 
             manager.SetPersistentDataWrapper(new EmptyPersistentDataWrapper());
             manager.SetPersistentDataIOStreamFactory(new EmptyPersistetDataIOStreamFactory());
+
+            InternalSetup();
+        }
+
+        protected virtual void InternalSetup()
+        {
+
         }
     }
 }
