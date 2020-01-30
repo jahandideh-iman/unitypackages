@@ -1,11 +1,7 @@
 {
-    "name": "Arman.DevelopmentConsole.Editor",
-    "references": [
-        "GUID:7f7634b5c58f5ca4fb5ce85ce941cb6c"
-    ],
-    "includePlatforms": [
-        "Editor"
-    ],
+    "name": "Arman.InventorySystem.Runtime",
+    "references": [],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,

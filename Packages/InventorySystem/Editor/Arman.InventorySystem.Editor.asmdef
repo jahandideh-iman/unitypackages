@@ -1,8 +1,6 @@
 {
-    "name": "Arman.DevelopmentConsole.Editor",
-    "references": [
-        "GUID:7f7634b5c58f5ca4fb5ce85ce941cb6c"
-    ],
+    "name": "Arman.InventorySystem.Editor",
+    "references": [],
     "includePlatforms": [
         "Editor"
     ],

@@ -1,9 +1,11 @@
 {
-  "name": "com.arman.foundation.package_name",
+  "name": "com.arman.foundation.inventory_system",
   "version": "0.1.0",
-  "displayName": "Package Template",
+  "displayName": "Inventory System",
   "description": "Description",
   "unity": "2019.1",
+  "dependencies": {
+ },
   "author": {
     "name": "Iman Jahandideh",
     "email": "jahandideh_iman@yahoo.com"

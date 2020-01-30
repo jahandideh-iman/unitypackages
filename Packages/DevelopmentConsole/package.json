@@ -1,11 +1,9 @@
 {
   "name": "com.arman.foundation.development_console",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "displayName": "Development Console",
   "description": "Development Console",
   "unity": "2019.1",
-  "dependencies": {
- },
   "author": {
     "name": "Iman Jahandideh",
     "email": "jahandideh_iman@yahoo.com"
