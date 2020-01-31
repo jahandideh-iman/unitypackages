@@ -81,5 +81,31 @@ namespace Arman.Tests.Game.InventorySystem.Core
             inventory.Decrease(itemA, 1);
             Assert.That(mockConstraint.givenValue, Is.EqualTo(5 + 3 - 1));
         }
+
+        [Test]
+        public void ChangingTheValueOfAnItemShouldCallTheGivenCallbackWithCorrectValues()
+        {
+            TestItemType item = null;
+            int value = 0;
+
+            inventory.SetOnValueChangeCallback((i, nv) => { item = i; value = nv;});
+
+            inventory.SetNumberOf(itemA, 5);
+            Assert.That(item, Is.SameAs(itemA));
+            Assert.That(value, Is.EqualTo(5));
+
+            inventory.SetNumberOf(itemB, 3);
+            Assert.That(item, Is.SameAs(itemB));
+            Assert.That(value, Is.EqualTo(3));
+
+            inventory.Increase(itemA, 2);
+            Assert.That(item, Is.SameAs(itemA));
+            Assert.That(value, Is.EqualTo(5 + 2));
+
+
+            inventory.Decrease(itemA, 3);
+            Assert.That(item, Is.SameAs(itemA));
+            Assert.That(value, Is.EqualTo(5 + 2 - 3));
+        }
     }
 }

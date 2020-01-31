@@ -2,6 +2,8 @@
 
 namespace Arman.Game.InventorySystem.Core
 {
+    public delegate void OnItemNumberChanged<T>(T item, int value);
+
     public interface Inventory<T> where T : InventoryItem
     {
         void SetNumberOf(T item, int number);
@@ -14,5 +16,7 @@ namespace Arman.Game.InventorySystem.Core
         void SetConstraint(T item, InventoryItemConstraint constraint);
 
         IEnumerable<T> Items();
+
+        void SetOnValueChangeCallback(OnItemNumberChanged<T> callback);
     }
 }

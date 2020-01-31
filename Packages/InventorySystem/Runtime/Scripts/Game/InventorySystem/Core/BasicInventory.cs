@@ -17,11 +17,15 @@ namespace Arman.Game.InventorySystem.Core
 
         InventoryItemConstraint defaultConstraint = new EmptyConstraint();
 
+        OnItemNumberChanged<T> onItemNumberChangedCallback = delegate { };
+
         public void SetNumberOf(T item, int number)
         {
             var constraint = ConstraintFor(item);
+            var value = constraint.ApplyTo(number);
+            itemNumbers[item] = value;
 
-            itemNumbers[item] = constraint.ApplyTo(number);
+            onItemNumberChangedCallback(item, value);
         }
 
         public void Increase(T item, int number)
@@ -64,6 +68,11 @@ namespace Arman.Game.InventorySystem.Core
         public IEnumerable<T> Items()
         {
             return itemNumbers.Keys;
+        }
+
+        public void SetOnValueChangeCallback(OnItemNumberChanged<T> callback)
+        {
+            onItemNumberChangedCallback = callback;
         }
     }
 }
