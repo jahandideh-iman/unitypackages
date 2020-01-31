@@ -6,6 +6,7 @@ using NUnit.Framework;
 
 namespace Arman.Tests.Game.InventorySystem.Core
 {
+
     public class BasicInventoryTest
     {
         public class TestItemType : InventoryItem
