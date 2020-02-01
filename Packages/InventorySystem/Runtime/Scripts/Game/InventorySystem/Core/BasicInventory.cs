@@ -17,7 +17,8 @@ namespace Arman.Game.InventorySystem.Core
 
         InventoryItemConstraint defaultConstraint = new EmptyConstraint();
 
-        OnItemNumberChanged<T> onItemNumberChangedCallback = delegate { };
+        OnItemNumberChanged<T> globalOnItemNumberChangedCallback = delegate { };
+        Dictionary<T, OnItemNumberChanged<T>> specificOnItemNumberChangedCallbacks = new Dictionary<T, OnItemNumberChanged<T>>();
 
         public void SetNumberOf(T item, int number)
         {
@@ -25,7 +26,8 @@ namespace Arman.Game.InventorySystem.Core
             var value = constraint.ApplyTo(number);
             itemNumbers[item] = value;
 
-            onItemNumberChangedCallback(item, value);
+            TryCallCallbacksFor(item, value);
+
         }
 
         public void Increase(T item, int number)
@@ -53,6 +55,22 @@ namespace Arman.Game.InventorySystem.Core
             itemConstraints[item] = constraint;
         }
 
+        // WARNING: It creates garbage.
+        public IEnumerable<T> Items()
+        {
+            return new List<T>(itemNumbers.Keys);
+        }
+
+        public void SetGlobalOnValueChangeCallback(OnItemNumberChanged<T> callback)
+        {
+            globalOnItemNumberChangedCallback = callback;
+        }
+
+        public void SetSpecificOnValueChangeCallback(T target, OnItemNumberChanged<T> callback)
+        {
+            specificOnItemNumberChangedCallbacks[target] = callback;
+        }
+
         private InventoryItemConstraint ConstraintFor(T item)
         {
             InventoryItemConstraint constraint;
@@ -65,14 +83,12 @@ namespace Arman.Game.InventorySystem.Core
                 return constraint;
         }
 
-        public IEnumerable<T> Items()
+        private void TryCallCallbacksFor(T item, int value)
         {
-            return itemNumbers.Keys;
-        }
+            globalOnItemNumberChangedCallback.Invoke(item, value);
 
-        public void SetOnValueChangeCallback(OnItemNumberChanged<T> callback)
-        {
-            onItemNumberChangedCallback = callback;
+            if (specificOnItemNumberChangedCallbacks.ContainsKey(item))
+                specificOnItemNumberChangedCallbacks[item].Invoke(item, value);
         }
     }
 }

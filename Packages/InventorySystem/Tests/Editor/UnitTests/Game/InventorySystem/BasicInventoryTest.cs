@@ -83,12 +83,12 @@ namespace Arman.Tests.Game.InventorySystem.Core
         }
 
         [Test]
-        public void ChangingTheValueOfAnItemShouldCallTheGivenCallbackWithCorrectValues()
+        public void ChangingTheValueOfAnItemShouldCallTheGivenGlobalCallbackWithCorrectValues()
         {
             TestItemType item = null;
             int value = 0;
 
-            inventory.SetOnValueChangeCallback((i, nv) => { item = i; value = nv;});
+            inventory.SetGlobalOnValueChangeCallback((i, nv) => { item = i; value = nv;});
 
             inventory.SetNumberOf(itemA, 5);
             Assert.That(item, Is.SameAs(itemA));
@@ -106,6 +106,46 @@ namespace Arman.Tests.Game.InventorySystem.Core
             inventory.Decrease(itemA, 3);
             Assert.That(item, Is.SameAs(itemA));
             Assert.That(value, Is.EqualTo(5 + 2 - 3));
+        }
+
+        [Test]
+        public void ChangingTheValueOfAnItemShouldCallTheGivenSpecificCallbackWithCorrectValues()
+        {
+            TestItemType item = null;
+            int value = 0;
+
+            inventory.SetSpecificOnValueChangeCallback(itemA, (i, nv) => { item = i; value = nv; });
+
+            inventory.SetNumberOf(itemA, 5);
+            Assert.That(item, Is.SameAs(itemA));
+            Assert.That(value, Is.EqualTo(5));
+
+            // Should not be call on ItemB.
+            inventory.SetNumberOf(itemB, 3);
+            Assert.That(item, Is.SameAs(itemA));
+            Assert.That(value, Is.EqualTo(5));
+
+            inventory.Increase(itemA, 2);
+            Assert.That(item, Is.SameAs(itemA));
+            Assert.That(value, Is.EqualTo(5 + 2));
+
+
+            inventory.Decrease(itemA, 3);
+            Assert.That(item, Is.SameAs(itemA));
+            Assert.That(value, Is.EqualTo(5 + 2 - 3));
+        }
+
+        [Test]
+        public void CanChangeValuesWhileIteratingTheItems()
+        {
+            inventory.SetNumberOf(itemA, 1);
+            inventory.SetNumberOf(itemB, 1);
+
+            foreach(var item in inventory.Items())
+            {
+                inventory.Increase(item, 1);
+                Assert.That(inventory.NumberOf(item), Is.EqualTo(2));
+            }
         }
     }
 }

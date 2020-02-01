@@ -17,6 +17,7 @@ namespace Arman.Game.InventorySystem.Core
 
         IEnumerable<T> Items();
 
-        void SetOnValueChangeCallback(OnItemNumberChanged<T> callback);
+        void SetGlobalOnValueChangeCallback(OnItemNumberChanged<T> callback);
+        void SetSpecificOnValueChangeCallback(T target, OnItemNumberChanged<T> callback);
     }
 }
