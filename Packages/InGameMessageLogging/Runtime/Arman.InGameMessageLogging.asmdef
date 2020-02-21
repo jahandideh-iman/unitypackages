@@ -1,0 +1,16 @@
+{
+    "name": "Arman.InGameMessageLogging",
+    "references": [
+        "GUID:9c6b53a4d5f5b9147a0e75ba44ebc53f",
+        "GUID:c6dcd9240aa3fd64687528d33160ccff"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

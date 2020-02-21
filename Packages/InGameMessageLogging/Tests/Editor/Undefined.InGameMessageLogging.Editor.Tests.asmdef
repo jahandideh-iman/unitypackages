@@ -1,0 +1,14 @@
+{
+    "name": "Undefined.InGameMessageLogging.Editor.Tests",
+    "references": [
+        "Undefined.InGameMessageLogging.Editor",
+        "Undefined.InGameMessageLogging"
+    ],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": []
+}

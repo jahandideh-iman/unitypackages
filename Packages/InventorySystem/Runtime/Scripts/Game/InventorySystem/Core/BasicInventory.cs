@@ -27,7 +27,6 @@ namespace Arman.Game.InventorySystem.Core
             itemNumbers[item] = value;
 
             TryCallCallbacksFor(item, value);
-
         }
 
         public void Increase(T item, int number)
@@ -55,7 +54,7 @@ namespace Arman.Game.InventorySystem.Core
             itemConstraints[item] = constraint;
         }
 
-        // WARNING: It creates garbage.
+        //WARNING: It creates garbage.
         public IEnumerable<T> Items()
         {
             return new List<T>(itemNumbers.Keys);
