@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+﻿using Arman.Foundation.ShopManagement.Core;
+using NUnit.Framework;
+using System;
 using System.Collections.Generic;
 
 namespace Arman.Tests.Foundation.ShopManagement.Core
@@ -7,7 +9,17 @@ namespace Arman.Tests.Foundation.ShopManagement.Core
 
     public class ShopPackageMock : ShopPackage
     {
+        bool isApplied = false;
 
+        public bool IsApplied()
+        {
+            return isApplied;
+        }
+
+        public void Apply()
+        {
+            isApplied = true;
+        }
     }
 
     public class ShopPackageMockA : ShopPackageMock
@@ -19,6 +31,34 @@ namespace Arman.Tests.Foundation.ShopManagement.Core
     {
 
     }
+
+    public class PurchaseHandlerMock : PurchaseHandler
+    {
+        public ShopPackage givenShopPackage;
+
+        bool shoudSucceed = false;
+
+        public void Clear()
+        {
+            givenShopPackage = null;
+        }
+
+        public void Purchase(ShopPackage shopPackage, Action<PurchaseSuccessResult> onSuccess, Action<PurchaseFailureResult> onFailure)
+        {
+            givenShopPackage = shopPackage;
+
+            if (shoudSucceed)
+                onSuccess(null);
+            else
+                onFailure(null);
+        }
+
+        public void ShouldSucceed(bool value)
+        {
+            shoudSucceed = value;
+        }
+    }
+
 
     public class BasicShopCenterTest 
     {
@@ -65,6 +105,77 @@ namespace Arman.Tests.Foundation.ShopManagement.Core
             Assert.That(shopCenter.PackagesOfType<ShopPackageMockB>(), Contains.Item(packageB1));
             Assert.That(shopCenter.PackagesOfType<ShopPackageMockB>(), Contains.Item(packageB2));
             Assert.That(shopCenter.PackagesOfType<ShopPackageMockB>(), Has.Count.EqualTo(2));
+        }
+
+        [Test]
+        public void PurchasingShouldBeDelegatedToDesignatedPurchaseHandler()
+        {
+            var packageA = new ShopPackageMockA();
+            var packageB = new ShopPackageMockB();
+
+            var packageAPurchaseHandler = new PurchaseHandlerMock();
+            var packageBPurchaseHandler = new PurchaseHandlerMock();
+
+            shopCenter.AssignPurchaseHandler<ShopPackageMockA>(packageAPurchaseHandler);
+            shopCenter.AssignPurchaseHandler<ShopPackageMockB>(packageBPurchaseHandler);
+
+            shopCenter.Purchase(packageA, delegate { }, delegate { });
+
+            Assert.That(packageAPurchaseHandler.givenShopPackage, Is.SameAs(packageA));
+            Assert.That(packageBPurchaseHandler.givenShopPackage, Is.Null);
+
+
+            packageAPurchaseHandler.Clear();
+            packageBPurchaseHandler.Clear();
+
+            shopCenter.Purchase(packageB, delegate { }, delegate { });
+
+            Assert.That(packageAPurchaseHandler.givenShopPackage, Is.Null);
+            Assert.That(packageBPurchaseHandler.givenShopPackage, Is.SameAs(packageB));
+        }
+
+        [Test]
+        public void PurchasingShouldApplyThePackageWhenThePurchaseHandlerSucceedsPurchasing()
+        {
+            var package = new ShopPackageMockA();
+            bool isPurchaseSuccessful = false;
+
+            var packagePurchaseHandler = new PurchaseHandlerMock();
+            packagePurchaseHandler.ShouldSucceed(true);
+
+
+            shopCenter.AssignPurchaseHandler<ShopPackageMockA>(packagePurchaseHandler);
+
+            shopCenter.Purchase(
+                package, 
+                onSuccess: (r) => isPurchaseSuccessful = true, 
+                onFailure: delegate { });
+
+
+            Assert.That(isPurchaseSuccessful, Is.True);
+            Assert.That(package.IsApplied(), Is.True);
+        }
+
+        [Test]
+        public void PurchasingShouldNotApplyThePackageWhenThePurchaseHandlerFailsPurchasing()
+        {
+            var package = new ShopPackageMockA();
+            bool isPurchaseFailed = false;
+
+            var packagePurchaseHandler = new PurchaseHandlerMock();
+            packagePurchaseHandler.ShouldSucceed(false);
+
+
+            shopCenter.AssignPurchaseHandler<ShopPackageMockA>(packagePurchaseHandler);
+
+            shopCenter.Purchase(
+                package,
+                onSuccess: delegate { },
+                onFailure: (r) => isPurchaseFailed = true);
+
+
+            Assert.That(isPurchaseFailed, Is.True);
+            Assert.That(package.IsApplied(), Is.False);
         }
     }
 }
