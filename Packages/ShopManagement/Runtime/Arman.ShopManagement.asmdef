@@ -1,6 +1,8 @@
 {
     "name": "Arman.ShopManagement",
-    "references": [],
+    "references": [
+        "GUID:9c6b53a4d5f5b9147a0e75ba44ebc53f"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

@@ -1,4 +1,5 @@
 ﻿
+using Arman.Foundation.Core.ServiceLocating;
 using System;
 using System.Collections.Generic;
 
@@ -7,7 +8,7 @@ namespace Arman.Foundation.ShopManagement.Core
     public interface PurchaseSuccessResult { }
     public interface PurchaseFailureResult { }
 
-    public interface ShopCenter
+    public interface ShopCenter : Service
     {
         void AddPackage(ShopPackage package);
 
