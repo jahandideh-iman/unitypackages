@@ -1,63 +1,13 @@
 ﻿using Arman.Foundation.ShopManagement.Core;
+using Arman.Mocks.Foundation.ShopManagement.Core;
 using NUnit.Framework;
-using System;
 using System.Collections.Generic;
 
 namespace Arman.Tests.Foundation.ShopManagement.Core
 {
+    public class ShopPackageMockA : ShopPackageMock {}
 
-
-    public class ShopPackageMock : ShopPackage
-    {
-        bool isApplied = false;
-
-        public bool IsApplied()
-        {
-            return isApplied;
-        }
-
-        public void Apply()
-        {
-            isApplied = true;
-        }
-    }
-
-    public class ShopPackageMockA : ShopPackageMock
-    {
-
-    }
-
-    public class ShopPackageMockB : ShopPackageMock
-    {
-
-    }
-
-    public class PurchaseHandlerMock : PurchaseHandler
-    {
-        public ShopPackage givenShopPackage;
-
-        bool shoudSucceed = false;
-
-        public void Clear()
-        {
-            givenShopPackage = null;
-        }
-
-        public void Purchase(ShopPackage shopPackage, Action<PurchaseSuccessResult> onSuccess, Action<PurchaseFailureResult> onFailure)
-        {
-            givenShopPackage = shopPackage;
-
-            if (shoudSucceed)
-                onSuccess(null);
-            else
-                onFailure(null);
-        }
-
-        public void ShouldSucceed(bool value)
-        {
-            shoudSucceed = value;
-        }
-    }
+    public class ShopPackageMockB : ShopPackageMock {}
 
 
     public class BasicShopCenterTest 
@@ -81,6 +31,21 @@ namespace Arman.Tests.Foundation.ShopManagement.Core
 
             Assert.That(shopCenter.Packages(), Contains.Item(package1));
             Assert.That(shopCenter.Packages(), Contains.Item(package2));
+        }
+
+        [Test]
+        public void CanRemovePackages()
+        {
+            var package1 = new ShopPackageMock();
+            var package2 = new ShopPackageMock();
+
+            shopCenter.AddPackage(package1);
+            shopCenter.AddPackage(package2);
+
+            shopCenter.RemovePackage(package1); 
+
+            Assert.That(shopCenter.Packages(), Has.No.Member(package1));
+            Assert.That(shopCenter.Packages(), Has.Member(package2));
         }
 
         [Test]
@@ -176,6 +141,48 @@ namespace Arman.Tests.Foundation.ShopManagement.Core
 
             Assert.That(isPurchaseFailed, Is.True);
             Assert.That(package.IsApplied(), Is.False);
+        }
+
+        [Test]
+        public void PurchasingShouldCallPurchaseSuccessCallbackWhenPurchasingIsSucceeded()
+        {
+            var package = new ShopPackageMockA();
+
+            var packagePurchaseHandler = new PurchaseHandlerMock();
+            packagePurchaseHandler.ShouldSucceed(true);
+            shopCenter.AssignPurchaseHandler<ShopPackageMockA>(packagePurchaseHandler);
+
+            ShopPackage purchasedPackage = null;
+            shopCenter.SetPurchaseSuccessCallback((p, r) => purchasedPackage = p);
+            
+            shopCenter.Purchase(
+                package,
+                onSuccess: delegate { },
+                onFailure: delegate { });
+
+
+            Assert.That(purchasedPackage, Is.SameAs(package));
+        }
+
+        [Test]
+        public void PurchasingShouldCallPurchaseFailureCallbackWhenPurchasingIsFailed()
+        {
+            var package = new ShopPackageMockA();
+
+            var packagePurchaseHandler = new PurchaseHandlerMock();
+            packagePurchaseHandler.ShouldSucceed(false);
+            shopCenter.AssignPurchaseHandler<ShopPackageMockA>(packagePurchaseHandler);
+
+            ShopPackage purchasedPackage = null;
+            shopCenter.SetPurchaseFailureCallback((p, r) => purchasedPackage = p);
+
+            shopCenter.Purchase(
+                package,
+                onSuccess: delegate { },
+                onFailure: delegate { });
+
+
+            Assert.That(purchasedPackage, Is.SameAs(package));
         }
     }
 }

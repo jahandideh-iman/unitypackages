@@ -17,5 +17,10 @@ namespace Arman.Foundation.ShopManagement.Core
 
         ICollection<ShopPackage> Packages();
         ICollection<T> PackagesOfType<T>() where T : ShopPackage;
+
+        void SetPurchaseSuccessCallback(Action<ShopPackage, PurchaseSuccessResult> onPurchaseSucceeded);
+        void SetPurchaseFailureCallback(Action<ShopPackage, PurchaseFailureResult> onPurchaseFailed);
+
+        void RemovePackage(ShopPackage package);
     }
 }
