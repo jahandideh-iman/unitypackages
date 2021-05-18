@@ -53,10 +53,10 @@ namespace Arman.Presentation.UI
         public void OpenPopUp(Window popup)
         {
             AttachToSelf(popup);
+            popup.Init(this);
             SetPopupSortingOrder(popup);
             SetBackgroundPanelTo(popup);
             PushOnStack(popup);
-            popup.Init(this);
         }
 
         private void AttachToSelf(Window popup)
