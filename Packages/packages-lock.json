@@ -6,6 +6,14 @@
       "source": "embedded",
       "dependencies": {}
     },
+    "com.arman.foundation.asset-providing": {
+      "version": "file:Asset Providing",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
+        "com.arman.foundation.service_locating": "0.1.0"
+      }
+    },
     "com.arman.foundation.configuration_management": {
       "version": "file:ConfigurationManagement",
       "depth": 0,
