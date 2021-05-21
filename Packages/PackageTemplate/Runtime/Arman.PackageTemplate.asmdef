@@ -1,5 +1,5 @@
 {
-    "name": "Arman.PackageTemplate.Runtime",
+    "name": "Arman.PackageTemplate",
     "references": [
     ],
     "includePlatforms": [],

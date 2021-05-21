@@ -1,10 +1,8 @@
 ﻿using UnityEngine;
-using UnityEngine.UI;
 using System.Collections.Generic;
 using Arman.Foundation.Core.ServiceLocating;
-using System;
 
-namespace Arman.Presentation.UI
+namespace Arman.UIManagement
 {
     [RequireComponent(typeof(Canvas))]
     public class UIManager : MonoBehaviour, Service
@@ -50,18 +48,19 @@ namespace Arman.Presentation.UI
                 CurrentFocusedWindow().OnBackButtonPressed();
         }
 
-        public void OpenPopUp(Window popup)
+        public T OpenPopUp<T>(T popup) where T : Window
         {
             AttachToSelf(popup);
             popup.Init(this);
             SetPopupSortingOrder(popup);
             SetBackgroundPanelTo(popup);
             PushOnStack(popup);
+            return popup;
         }
 
         private void AttachToSelf(Window popup)
         {
-            popup.transform.SetParent(this.transform, false);
+            popup.transform.SetParent(MainTransform(), false);
         }
 
         private void SetPopupSortingOrder(Window popup)
@@ -132,6 +131,11 @@ namespace Arman.Presentation.UI
         private void DestroyWindow(Window window)
         {
             Destroy(window.gameObject);
+        }
+
+        public Transform MainTransform()
+        {
+            return this.transform;
         }
     }
 }

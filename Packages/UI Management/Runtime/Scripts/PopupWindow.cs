@@ -1,8 +1,7 @@
 ﻿using UnityEngine;
 
-namespace Arman.Presentation.UI
+namespace Arman.UIManagement
 {
-
     public class PopupWindow : Window
     {
         [SerializeField] bool closeOnBackButtonPressed;

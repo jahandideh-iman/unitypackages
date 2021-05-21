@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
+﻿using UnityEngine;
 
-namespace Arman.Presentation.UI
+namespace Arman.UIManagement
 {
     [RequireComponent(typeof(CanvasGroup))]
     public class Panel : Window

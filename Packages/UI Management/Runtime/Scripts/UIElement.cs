@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Arman.Presentation.UI
+namespace Arman.UIManagement
 {
     public class UIElement : MonoBehaviour
     {
