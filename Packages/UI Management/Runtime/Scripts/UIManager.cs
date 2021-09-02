@@ -53,8 +53,8 @@ namespace Arman.UIManagement
             AttachToSelf(popup);
             popup.Init(this);
             SetPopupSortingOrder(popup);
-            SetBackgroundPanelTo(popup);
             PushOnStack(popup);
+            FocusPopupPanelOn(popup);
             return popup;
         }
 
@@ -65,13 +65,18 @@ namespace Arman.UIManagement
 
         private void SetPopupSortingOrder(Window popup)
         {
-            popup.SetSortingOrder(CurrentFocusedWindow().SortingOrder() + sortingOffsetBetweenPopups);
+            popup.SetSorting(
+                CurrentFocusedWindow().SortingOrder() + sortingOffsetBetweenPopups,
+                canvas.sortingLayerID);
         }
 
-        private void SetBackgroundPanelTo(Window window)
+        private void FocusPopupPanelOn(Window window)
         {
             popupBackGroundPanel.SetVisible(true);
-            popupBackGroundPanel.SetSortingOrder(window.SortingOrder() - 1);
+            popupBackGroundPanel.RestoreAlpha();
+            popupBackGroundPanel.SetSorting(window.SortingOrder() - 1, canvas.sortingLayerID);
+
+            window.OnFocused();
         }
 
         public void Close(Window window)
@@ -85,7 +90,8 @@ namespace Arman.UIManagement
             if (FocusedWindowIsMainWindow())
                 HidePopupPanel();
             else
-                SetBackgroundPanelTo(CurrentFocusedWindow());  
+                FocusPopupPanelOn(CurrentFocusedWindow());
+            
         }
 
         public void SetMainCamera(Camera camera)
@@ -136,6 +142,11 @@ namespace Arman.UIManagement
         public Transform MainTransform()
         {
             return this.transform;
+        }
+
+        public Panel BackgroundPanel()
+        {
+            return popupBackGroundPanel;
         }
     }
 }

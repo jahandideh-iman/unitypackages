@@ -10,5 +10,6 @@
   },
   "dependencies": {
     "com.arman.foundation.service_locating": "0.1.0"
-  }
+  },
+  "hideInEditor": false
 }

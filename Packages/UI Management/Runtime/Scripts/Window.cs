@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace Arman.UIManagement
@@ -20,23 +21,27 @@ namespace Arman.UIManagement
 
         protected virtual void InternalInit(UIManager manager)
         {
-
         }
 
         virtual public void OnBackButtonPressed()
         {
-
         }
 
-        public void SetSortingOrder(int order)
+        virtual public void OnFocused()
+        {
+        }
+
+        public void SetSorting(int order, int layer)
         {
             canvas.overrideSorting = true;
             canvas.sortingOrder = order;
+            canvas.sortingLayerID = layer;
         }
 
         public int SortingOrder()
         {
             return canvas.sortingOrder;
         }
+
     }
 }
