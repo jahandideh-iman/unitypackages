@@ -27,7 +27,7 @@ namespace Arman.Samples.PersistentDataManagement
         public void DeserializeFrom(ReadablePersistentDataWrapper persistentDataWrapper)
         {
             persistentDataExample.intValue = persistentDataWrapper.ReadInt("int");
-            persistentDataExample.floatValue = persistentDataWrapper.ReadtFloat("float");
+            persistentDataExample.floatValue = persistentDataWrapper.ReadFloat("float");
             persistentDataExample.stringValue = persistentDataWrapper.ReadString("string");
         }
 

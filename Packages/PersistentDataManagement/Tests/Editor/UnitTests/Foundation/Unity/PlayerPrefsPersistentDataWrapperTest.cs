@@ -28,7 +28,7 @@ namespace Arman.Tests.Foundation.Unity.PersistentDataManagement
         {
             dataWrapper.WriteFloat("Key", 5f);
 
-            Assert.That(dataWrapper.ReadtFloat("Key"), Is.EqualTo(5f));
+            Assert.That(dataWrapper.ReadFloat("Key"), Is.EqualTo(5f));
             Assert.That(dataWrapper.HasKey("Key"), Is.True);
         }
 
@@ -74,7 +74,7 @@ namespace Arman.Tests.Foundation.Unity.PersistentDataManagement
 
             dataWrapper.BeginReadingBlock("outerblock1");
                 Assert.That(dataWrapper.ReadInt("key1"), Is.EqualTo(1));
-                Assert.That(dataWrapper.ReadtFloat("key2"), Is.EqualTo(1f));
+                Assert.That(dataWrapper.ReadFloat("key2"), Is.EqualTo(1f));
                 dataWrapper.BeginReadingBlock("innerblock");
                     Assert.That(dataWrapper.ReadString("innerKey1"), Is.EqualTo("innerValue1"));
                 dataWrapper.EndReadingBlock();
@@ -82,7 +82,7 @@ namespace Arman.Tests.Foundation.Unity.PersistentDataManagement
 
             dataWrapper.BeginReadingBlock("outerblock2");
                 Assert.That(dataWrapper.ReadInt("key1"), Is.EqualTo(2));
-                Assert.That(dataWrapper.ReadtFloat("key2"), Is.EqualTo(2f));
+                Assert.That(dataWrapper.ReadFloat("key2"), Is.EqualTo(2f));
                 dataWrapper.BeginReadingBlock("innerblock");
                     Assert.That(dataWrapper.ReadString("innerKey2"), Is.EqualTo("innerValue2"));
                 dataWrapper.EndReadingBlock();
@@ -109,7 +109,7 @@ namespace Arman.Tests.Foundation.Unity.PersistentDataManagement
 
                 Assert.That(dataWrapper.ReadString("Key1"), Is.EqualTo("value"));
                 Assert.That(dataWrapper.ReadInt("Key2"), Is.EqualTo(2));
-                Assert.That(dataWrapper.ReadtFloat("Key3"), Is.EqualTo(3f));
+                Assert.That(dataWrapper.ReadFloat("Key3"), Is.EqualTo(3f));
                 Assert.That(dataWrapper.ReadBoolean("Key4"), Is.EqualTo(false));
             }
 

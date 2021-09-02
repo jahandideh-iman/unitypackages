@@ -42,9 +42,9 @@ namespace Arman.Foundation.Unity.PersistentDataManagement
             return CurrentBlock().ContainsKey(key);
         }
 
-        public int ReadInt(string key)
+        public int ReadInt(string key, int defaultValue = 0)
         {
-            return CurrentBlock()[key];
+            return HasKey(key) ? (int)CurrentBlock()[key] : defaultValue;
         }
 
         public WritablePersistentDataWrapper WriteInt(string key, int value)
@@ -53,9 +53,9 @@ namespace Arman.Foundation.Unity.PersistentDataManagement
             return this;
         }
 
-        public string ReadString(string key)
+        public string ReadString(string key, string defaultValue = "")
         {
-            return CurrentBlock()[key];
+            return HasKey(key) ? (string)CurrentBlock()[key] : defaultValue;
         }
 
         public WritablePersistentDataWrapper WriteString(string key, string value)
@@ -64,9 +64,9 @@ namespace Arman.Foundation.Unity.PersistentDataManagement
             return this;
         }
 
-        public float ReadtFloat(string key)
+        public float ReadFloat(string key, float defaultValue = 0f)
         {
-            return CurrentBlock()[key];
+            return HasKey(key) ? (float)CurrentBlock()[key] : defaultValue;
         }
 
         public WritablePersistentDataWrapper WriteFloat(string key, float value)
@@ -75,9 +75,9 @@ namespace Arman.Foundation.Unity.PersistentDataManagement
             return this;
         }
 
-        public bool ReadBoolean(string key)
+        public bool ReadBoolean(string key, bool defaultValue = false)
         {
-            return CurrentBlock()[key];
+            return HasKey(key) ? (bool)CurrentBlock()[key] : default;
         }
 
         public WritablePersistentDataWrapper WriteBoolean(string key, bool value)

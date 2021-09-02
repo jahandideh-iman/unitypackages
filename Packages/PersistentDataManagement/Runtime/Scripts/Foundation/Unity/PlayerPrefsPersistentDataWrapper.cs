@@ -42,9 +42,9 @@ namespace Arman.Foundation.Unity.PersistentDataManagement
             return PlayerPrefs.HasKey(ConvertToBlockKey(key));
         }
 
-        public int ReadInt(string key)
+        public int ReadInt(string key, int defaultValue = 0)
         {
-            return PlayerPrefs.GetInt(ConvertToBlockKey(key));
+            return PlayerPrefs.GetInt(ConvertToBlockKey(key), defaultValue);
         }
 
         public WritablePersistentDataWrapper WriteInt(string key, int value)
@@ -53,9 +53,9 @@ namespace Arman.Foundation.Unity.PersistentDataManagement
             return this;
         }
 
-        public string ReadString(string key)
+        public string ReadString(string key, string defaultValue = "")
         {
-            return PlayerPrefs.GetString(ConvertToBlockKey(key));
+            return PlayerPrefs.GetString(ConvertToBlockKey(key), defaultValue);
         }
 
         public WritablePersistentDataWrapper WriteString(string key, string value)
@@ -64,9 +64,9 @@ namespace Arman.Foundation.Unity.PersistentDataManagement
             return this;
         }
 
-        public float ReadtFloat(string key)
+        public float ReadFloat(string key, float defaultValue = 0f)
         {
-            return PlayerPrefs.GetFloat(ConvertToBlockKey(key));
+            return PlayerPrefs.GetFloat(ConvertToBlockKey(key), defaultValue);
         }
 
         public WritablePersistentDataWrapper WriteFloat(string key, float value)
@@ -75,9 +75,9 @@ namespace Arman.Foundation.Unity.PersistentDataManagement
             return this;
         }
 
-        public bool ReadBoolean(string key)
+        public bool ReadBoolean(string key, bool defaultValue = false)
         {
-            return PlayerPrefs.GetInt(ConvertToBlockKey(key)) == 0 ? false : true;
+            return PlayerPrefs.GetInt(ConvertToBlockKey(key), defaultValue ? 1: 0) == 0 ? false : true;
         }
 
         public WritablePersistentDataWrapper WriteBoolean(string key, bool value)

@@ -12,13 +12,13 @@ namespace Arman.Foundation.Core.PersistentDataManagement
 
         public bool HasKey(string key) { return false; }
 
-        public int ReadInt(string key) { return 0; }
+        public int ReadInt(string key, int defaultValue = 0 ) { return 0; }
 
-        public string ReadString(string key) { return ""; }
+        public string ReadString(string key, string defaultValue = "") { return ""; }
 
-        public float ReadtFloat(string key) { return 0f; }
+        public float ReadFloat(string key, float defaultValue = 0f) { return 0f; }
 
-        public bool ReadBoolean(string key) { return false; }
+        public bool ReadBoolean(string key, bool defaultValue = false) { return false; }
 
 
         public WritablePersistentDataWrapper WriteInt(string key, int value) { return this; }
@@ -35,6 +35,8 @@ namespace Arman.Foundation.Core.PersistentDataManagement
 
         public WritablePersistentDataWrapper BeginWritingBlock(string key) { return this; }
         public WritablePersistentDataWrapper EndWritingBlock() { return this; }
+
+
     }
 
 }

@@ -33,5 +33,10 @@ namespace Arman.Utility.Core
         {
             return 1877310944 + EqualityComparer<string>.Default.GetHashCode(name);
         }
+
+        public override string ToString()
+        {
+            return name;
+        }
     }
 }

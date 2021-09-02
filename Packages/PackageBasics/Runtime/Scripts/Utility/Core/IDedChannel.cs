@@ -33,5 +33,10 @@ namespace Arman.Utility.Core
         {
             return 1877310944 + id.GetHashCode();
         }
+
+        public override string ToString()
+        {
+            return id.ToString();
+        }
     }
 }

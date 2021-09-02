@@ -27,6 +27,7 @@ namespace Arman.Foundation.Unity.PersistentDataManagement
 
         public StreamWriter CreateWriteStreamFor(Channel channel)
         {
+            Directory.CreateDirectory(Path.GetDirectoryName(FilePathFor(channel)));
             FileStream fs = new FileStream(FilePathFor(channel), FileMode.Create);
             return new StreamWriter(fs);
         }

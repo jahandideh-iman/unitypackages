@@ -34,25 +34,6 @@ namespace Arman.Mocks.Foundation.Core.PersistentDataManagement
             return true;
         }
 
-        public int ReadInt(string key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public float ReadtFloat(string key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool ReadBoolean(string key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public string ReadString(string key)
-        {
-            throw new NotImplementedException();
-        }
 
         public void BeginReadingBlock(string key)
         {
@@ -92,6 +73,26 @@ namespace Arman.Mocks.Foundation.Core.PersistentDataManagement
         public WritablePersistentDataWrapper EndWritingBlock()
         {
             return this;
+        }
+
+        public int ReadInt(string key, int defaultValue = 0)
+        {
+            throw new NotImplementedException();
+        }
+
+        public float ReadFloat(string key, float defaultValue = 0)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool ReadBoolean(string key, bool defaultValue = false)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string ReadString(string key, string defaultValue = "")
+        {
+            throw new NotImplementedException();
         }
     }
 }

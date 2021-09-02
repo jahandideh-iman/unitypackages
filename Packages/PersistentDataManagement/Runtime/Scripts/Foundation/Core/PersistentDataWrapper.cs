@@ -14,10 +14,10 @@ namespace Arman.Foundation.Core.PersistentDataManagement
     {
         bool HasKey(string key);
 
-        int ReadInt(string key);
-        float ReadtFloat(string key);
-        bool ReadBoolean(string key);
-        string ReadString(string key);
+        int ReadInt(string key, int defaultValue = 0);
+        float ReadFloat(string key, float defaultValue = 0f);
+        bool ReadBoolean(string key, bool defaultValue = false);
+        string ReadString(string key, string defaultValue = "");
 
         void BeginReadingBlock(string key);
         void EndReadingBlock();
