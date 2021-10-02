@@ -1,0 +1,15 @@
+{
+  "name": "com.arman.update-management",
+  "version": "0.1.0-preview",
+  "displayName": "Update Management",
+  "description": "Description",
+  "unity": "2019.1",
+  "author": {
+    "name": "Iman Jahandideh",
+    "email": "jahandideh_iman@yahoo.com"
+  },
+  "dependencies": {
+    "com.arman.foundation.service_locating": "0.1.0",
+    "com.arman.foundation.package_basics": "0.1.0"
+  }
+}

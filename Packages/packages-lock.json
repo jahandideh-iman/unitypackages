@@ -98,6 +98,15 @@
       "source": "embedded",
       "dependencies": {}
     },
+    "com.arman.update-management": {
+      "version": "file:UpdateManagement",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
+        "com.arman.foundation.service_locating": "0.1.0",
+        "com.arman.foundation.package_basics": "0.1.0"
+      }
+    },
     "com.unity.collab-proxy": {
       "version": "1.2.16",
       "depth": 0,
