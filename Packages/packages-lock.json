@@ -67,6 +67,14 @@
       "source": "embedded",
       "dependencies": {}
     },
+    "com.arman.http-connection": {
+      "version": "file:HttpConnection",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
+        "com.arman.foundation.service_locating": "0.1.0"
+      }
+    },
     "com.arman.in-game-message-logging": {
       "version": "file:InGameMessageLogging",
       "depth": 0,

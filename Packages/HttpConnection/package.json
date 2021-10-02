@@ -1,0 +1,14 @@
+{
+  "name": "com.arman.http-connection",
+  "version": "0.1.0-preview",
+  "displayName": "Http Connection",
+  "description": "Description",
+  "unity": "2019.1",
+  "author": {
+    "name": "Iman Jahandideh",
+    "email": "jahandideh_iman@yahoo.com"
+  },
+  "dependencies": {
+    "com.arman.foundation.service_locating": "0.1.0"
+  }
+}
