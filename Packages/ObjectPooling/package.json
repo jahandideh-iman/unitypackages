@@ -1,0 +1,11 @@
+{
+  "name": "com.arman.object-pooling",
+  "version": "0.1.0-preview",
+  "displayName": "Object Pooling",
+  "description": "Description",
+  "unity": "2019.1",
+  "author": {
+    "name": "Iman Jahandideh",
+    "email": "jahandideh_iman@yahoo.com"
+  }
+}

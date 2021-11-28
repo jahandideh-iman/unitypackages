@@ -84,6 +84,12 @@
         "com.arman.unity_utilities": "0.1.0"
       }
     },
+    "com.arman.object-pooling": {
+      "version": "file:ObjectPooling",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.arman.presentation.ui-management": {
       "version": "file:UI Management",
       "depth": 0,
