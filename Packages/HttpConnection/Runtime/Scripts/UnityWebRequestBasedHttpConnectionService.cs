@@ -38,7 +38,7 @@ namespace Arman.HttpConnection
                 case HttpRequestType.POST:
                     var postData = Encoding.UTF8.GetBytes(request.body);
                     // Note: It seems giving request.body directly to UnityWebRequest doesn't work.
-                    webRequest = UnityWebRequest.Post(request.url, "fake");
+                    webRequest = UnityWebRequest.PostWwwForm(request.url, "fake");
                     webRequest.uploadHandler = new UploadHandlerRaw(postData);
                     AddHeaders(webRequest, request.headers);
                     return webRequest;
