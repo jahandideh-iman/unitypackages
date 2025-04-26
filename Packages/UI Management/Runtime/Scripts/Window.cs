@@ -12,7 +12,7 @@ namespace Arman.UIManagement
 
         private Canvas canvas;
 
-        public void Init(UIManager manager)
+        internal void Init(UIManager manager)
         {
             canvas = GetComponent<Canvas>();
             this.uiManager = manager;

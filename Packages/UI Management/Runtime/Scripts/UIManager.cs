@@ -7,7 +7,7 @@ namespace Arman.UIManagement
     [RequireComponent(typeof(Canvas))]
     public class UIManager : MonoBehaviour, Service
     {
-        [SerializeField] private Panel popupBackGroundPanel = default;
+        [SerializeField] private Panel popupBackgroundPanel = default;
         [SerializeField] private int sortingOffsetBetweenPopups = default;
 
         private Canvas canvas;
@@ -22,7 +22,7 @@ namespace Arman.UIManagement
 
         public void Init()
         {
-            popupBackGroundPanel.Init(this);
+            popupBackgroundPanel.Init(this);
             HidePopupPanel();
         }
 
@@ -72,9 +72,9 @@ namespace Arman.UIManagement
 
         private void FocusPopupPanelOn(Window window)
         {
-            popupBackGroundPanel.SetVisible(true);
-            popupBackGroundPanel.RestoreAlpha();
-            popupBackGroundPanel.SetSorting(window.SortingOrder() - 1, canvas.sortingLayerID);
+            popupBackgroundPanel.SetVisible(true);
+            popupBackgroundPanel.RestoreAlpha();
+            popupBackgroundPanel.SetSorting(window.SortingOrder() - 1, canvas.sortingLayerID);
 
             window.OnFocused();
         }
@@ -101,7 +101,7 @@ namespace Arman.UIManagement
 
         private void HidePopupPanel()
         {
-            popupBackGroundPanel.SetVisible(false);
+            popupBackgroundPanel.SetVisible(false);
         }
 
         private bool FocusedWindowIsMainWindow()
@@ -146,7 +146,7 @@ namespace Arman.UIManagement
 
         public Panel BackgroundPanel()
         {
-            return popupBackGroundPanel;
+            return popupBackgroundPanel;
         }
     }
 }
