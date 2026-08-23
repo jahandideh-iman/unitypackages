@@ -2,7 +2,7 @@
 
 namespace Arman.Utility.Core
 {
-    public interface Container<T>
+    public interface IContainer<T>
     {
         U Find<U>() where U : T;
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Arman.ObjectPooling.Core
 {
-    public abstract class BasicObjectPool<T> : ObjectPool<T> where T: Poolable
+    public abstract class BasicObjectPool<T> : IObjectPool<T> where T: IPoolable
     {
         Stack<T> pooledObjects = new Stack<T>();
 

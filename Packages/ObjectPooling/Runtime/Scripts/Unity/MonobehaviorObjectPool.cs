@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Arman.ObjectPooling.Unity
 {
-    public class MonobehaviorObjectPool<T>: MonoBehaviour, ObjectPool<T> where T : Component, Poolable
+    public class MonobehaviorObjectPool<T>: MonoBehaviour, IObjectPool<T> where T : Component, IPoolable
     {
         [SerializeField] T componentPrefab = default;
         [SerializeField] Transform poolingContainer = default;

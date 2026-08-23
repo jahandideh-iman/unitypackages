@@ -38,12 +38,12 @@ namespace Arman.AssetProviding.Data
         }
 
 
-        public override AsyncUnityAssetProvider CreateAsyncProvider()
+        public override IAsyncUnityAssetProvider CreateAsyncProvider()
         {
             return new TableBasedAssetProvider(assetsTable);
         }
 
-        public override SyncUnityAssetProvider CreateSyncProvider()
+        public override ISyncUnityAssetProvider CreateSyncProvider()
         {
             return new TableBasedAssetProvider(assetsTable);
         }

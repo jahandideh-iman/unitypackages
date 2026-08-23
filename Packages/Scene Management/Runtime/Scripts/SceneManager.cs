@@ -3,7 +3,7 @@ using Arman.Foundation.Core.ServiceLocating;
 
 namespace Arman.SceneMangement
 {
-    public class SceneManager : Service
+    public class SceneManager : IService
     {
         public void Open(string sceneName)
         {

@@ -9,7 +9,7 @@ namespace Arman.Tests.Foundation.Core.ConfigurationManagement
     class TypeB { }
 
 
-    class FakeMultiConfigurerAB : Configurer<TypeA>, Configurer<TypeB>
+    class FakeMultiConfigurerAB : IConfigurer<TypeA>, IConfigurer<TypeB>
     {
         public void Configure(TypeA entity)
         {
@@ -21,13 +21,13 @@ namespace Arman.Tests.Foundation.Core.ConfigurationManagement
             
         }
 
-        public void RegisterSelf(ConfigurationManager manager)
+        public void RegisterSelf(IConfigurationManager manager)
         {
             
         }
     }
 
-    class FakeConfigurer<T> : Configurer<T>
+    class FakeConfigurer<T> : IConfigurer<T>
     {
 
         public bool configurationCalled = false;
@@ -37,7 +37,7 @@ namespace Arman.Tests.Foundation.Core.ConfigurationManagement
             configurationCalled = true;
         }
 
-        public void RegisterSelf(ConfigurationManager manager)
+        public void RegisterSelf(IConfigurationManager manager)
         {
             
         }

@@ -3,19 +3,19 @@ using System.IO;
 
 namespace Arman.Foundation.Core.PersistentDataManagement
 {
-    public class EmptyPersistetDataIOStreamFactory : PersistentDataIOStreamFactory
+    public class EmptyPersistetDataIOStreamFactory : IPersistentDataIOStreamFactory
     {
-        public StreamReader CreateReadStreamFor(Channel channel)
+        public StreamReader CreateReadStreamFor(IChannel channel)
         {
             return new StreamReader(new MemoryStream());
         }
 
-        public StreamWriter CreateWriteStreamFor(Channel channel)
+        public StreamWriter CreateWriteStreamFor(IChannel channel)
         {
             return new StreamWriter(new MemoryStream());
         }
 
-        public bool HasReadableStreamFor(Channel channel)
+        public bool HasReadableStreamFor(IChannel channel)
         {
             return true;
         }

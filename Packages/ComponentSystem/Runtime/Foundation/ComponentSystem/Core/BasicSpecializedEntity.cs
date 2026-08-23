@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Arman.Foundation.ComponentSystem.Core
 {
-    public class BasicSpecializedEntity<T> : SpecializedEntity<T> where T :Component
+    public class BasicSpecializedEntity<T> : ISpecializedEntity<T> where T :IComponent
     {
         BasicEntity basicEntity = new BasicEntity();
 

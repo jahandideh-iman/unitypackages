@@ -4,7 +4,7 @@ namespace Arman.Game.InventorySystem.Core
 {
     public delegate void OnItemNumberChanged<T>(T item, int value);
 
-    public interface Inventory<T> where T : InventoryItem
+    public interface IInventory<T> where T : IInventoryItem
     {
         void SetNumberOf(T item, int number);
         void Increase(T item, int number);
@@ -13,7 +13,7 @@ namespace Arman.Game.InventorySystem.Core
         int NumberOf(T item);
         bool Has(T item, int number);
 
-        void SetConstraint(T item, InventoryItemConstraint constraint);
+        void SetConstraint(T item, IInventoryItemConstraint constraint);
 
         IEnumerable<T> Items();
 

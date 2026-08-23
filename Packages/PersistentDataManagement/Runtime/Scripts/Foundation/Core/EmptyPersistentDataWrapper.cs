@@ -2,7 +2,7 @@
 
 namespace Arman.Foundation.Core.PersistentDataManagement
 {
-    public class EmptyPersistentDataWrapper : PersistentDataWrapper
+    public class EmptyPersistentDataWrapper : IPersistentDataWrapper
     {
         public void Clear() { }
 
@@ -21,20 +21,20 @@ namespace Arman.Foundation.Core.PersistentDataManagement
         public bool ReadBoolean(string key, bool defaultValue = false) { return false; }
 
 
-        public WritablePersistentDataWrapper WriteInt(string key, int value) { return this; }
+        public IWritablePersistentDataWrapper WriteInt(string key, int value) { return this; }
 
-        public WritablePersistentDataWrapper WriteString(string key, string value) { return this; }
+        public IWritablePersistentDataWrapper WriteString(string key, string value) { return this; }
 
-        public WritablePersistentDataWrapper WriteFloat(string key, float value) { return this; }
+        public IWritablePersistentDataWrapper WriteFloat(string key, float value) { return this; }
 
-        public WritablePersistentDataWrapper WriteBoolean(string key, bool value) { return this; }
+        public IWritablePersistentDataWrapper WriteBoolean(string key, bool value) { return this; }
 
         public void BeginReadingBlock(string key) { }
 
         public void EndReadingBlock() { }
 
-        public WritablePersistentDataWrapper BeginWritingBlock(string key) { return this; }
-        public WritablePersistentDataWrapper EndWritingBlock() { return this; }
+        public IWritablePersistentDataWrapper BeginWritingBlock(string key) { return this; }
+        public IWritablePersistentDataWrapper EndWritingBlock() { return this; }
 
 
     }

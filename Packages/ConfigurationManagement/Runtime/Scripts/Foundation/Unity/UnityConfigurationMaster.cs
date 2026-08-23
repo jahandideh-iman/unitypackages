@@ -11,7 +11,7 @@ namespace Arman.Foundation.Unity.Configuration
 
         public ScriptableConfiguration[] scriptableConfigurers;
 
-        public override void RegisterSelf(ConfigurationManager manager)
+        public override void RegisterSelf(IConfigurationManager manager)
         {
             foreach (var config in scriptableConfigurers)
                 config.RegisterSelf(manager);

@@ -3,7 +3,7 @@
 
 namespace Arman.Utility.Core
 {
-    public class IDedChannel : Channel
+    public class IDedChannel : IChannel
     {
         public readonly int id;
 

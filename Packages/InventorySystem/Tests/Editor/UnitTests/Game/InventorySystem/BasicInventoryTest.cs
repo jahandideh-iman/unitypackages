@@ -9,7 +9,7 @@ namespace Arman.Tests.Game.InventorySystem.Core
 
     public class BasicInventoryTest
     {
-        public class TestItemType : InventoryItem
+        public class TestItemType : IInventoryItem
         { }
 
 

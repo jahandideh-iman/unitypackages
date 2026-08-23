@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Arman.Foundation.Unity.Configuration
 {
-    public class UnityConfigurationManager : MonoBehaviour, ConfigurationManager
+    public class UnityConfigurationManager : MonoBehaviour, IConfigurationManager
     {
         public UnityConfigurationMaster configurationMaster;
 
@@ -22,22 +22,22 @@ namespace Arman.Foundation.Unity.Configuration
             internalConfigManager.Configure<T>(target);
         }
 
-        public bool Contains<T>(Configurer<T> configurer)
+        public bool Contains<T>(IConfigurer<T> configurer)
         {
             return internalConfigManager.Contains<T>(configurer);
         }
 
-        public Configurer<T> FindConfigurer<T>()
+        public IConfigurer<T> FindConfigurer<T>()
         {
             return internalConfigManager.FindConfigurer<T>();
         }
 
-        public void Register<T>(Configurer<T> configurer)
+        public void Register<T>(IConfigurer<T> configurer)
         {
             internalConfigManager.Register<T>(configurer);
         }
 
-        public Configurer<T> RemoveConfigurer<T>()
+        public IConfigurer<T> RemoveConfigurer<T>()
         {
             return internalConfigManager.RemoveConfigurer<T>();
         }

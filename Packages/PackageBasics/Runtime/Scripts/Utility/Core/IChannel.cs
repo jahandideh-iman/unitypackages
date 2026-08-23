@@ -1,7 +1,7 @@
 ﻿
 namespace Arman.Utility.Core
 {
-    public interface Channel
+    public interface IChannel
     {
         bool Equals(object obj);
 

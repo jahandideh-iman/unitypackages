@@ -1,6 +1,6 @@
 ﻿namespace Arman.Game.InventorySystem.Core
 {
-    public class MinMaxInventoryItemConstraint : InventoryItemConstraint
+    public class MinMaxInventoryItemConstraint : IInventoryItemConstraint
     {
         int min;
         int max;

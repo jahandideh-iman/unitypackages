@@ -4,9 +4,9 @@ namespace Arman.Foundation.Core.PersistentDataManagement
 {
     public class PersistentDataChannelNotFoundException : PersistentDataManagerException
     {
-        public Channel channel;
+        public IChannel channel;
 
-        public PersistentDataChannelNotFoundException(Channel channel)
+        public PersistentDataChannelNotFoundException(IChannel channel)
         {
             this.channel = channel;
         }

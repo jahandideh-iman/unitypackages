@@ -12,7 +12,7 @@ namespace Arman.Tests.Foundation.ShopManagement.Core
 
     public class BasicShopCenterTest 
     {
-        ShopCenter shopCenter;
+        IShopCenter shopCenter;
 
         [SetUp]
         public void Setup()
@@ -152,7 +152,7 @@ namespace Arman.Tests.Foundation.ShopManagement.Core
             packagePurchaseHandler.ShouldSucceed(true);
             shopCenter.AssignPurchaseHandler<ShopPackageMockA>(packagePurchaseHandler);
 
-            ShopPackage purchasedPackage = null;
+            IShopPackage purchasedPackage = null;
             shopCenter.SetPurchaseSuccessCallback((p, r) => purchasedPackage = p);
             
             shopCenter.Purchase(
@@ -173,7 +173,7 @@ namespace Arman.Tests.Foundation.ShopManagement.Core
             packagePurchaseHandler.ShouldSucceed(false);
             shopCenter.AssignPurchaseHandler<ShopPackageMockA>(packagePurchaseHandler);
 
-            ShopPackage purchasedPackage = null;
+            IShopPackage purchasedPackage = null;
             shopCenter.SetPurchaseFailureCallback((p, r) => purchasedPackage = p);
 
             shopCenter.Purchase(

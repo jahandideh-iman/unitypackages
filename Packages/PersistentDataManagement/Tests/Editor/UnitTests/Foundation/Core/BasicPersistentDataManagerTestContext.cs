@@ -13,8 +13,8 @@ namespace Arman.Tests.Foundation.Core.PersistentDataManagement
         protected PersistentDataSerializerMock serializerA;
         protected PersistentDataSerializerMock serializerB;
 
-        protected Channel channel1;
-        protected Channel channel2;
+        protected IChannel channel1;
+        protected IChannel channel2;
 
         [SetUp]
         public void Setup()

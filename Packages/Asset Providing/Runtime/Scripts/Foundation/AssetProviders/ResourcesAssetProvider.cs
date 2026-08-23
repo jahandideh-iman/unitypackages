@@ -6,7 +6,7 @@ using Arman.AssetProviding.Utility;
 
 namespace Arman.AssetProviding.Foundation
 {
-    public class ResourcesAssetProvider : SyncUnityAssetProvider, AsyncUnityAssetProvider
+    public class ResourcesAssetProvider : ISyncUnityAssetProvider, IAsyncUnityAssetProvider
     {
         string pathPrefix = "";
 

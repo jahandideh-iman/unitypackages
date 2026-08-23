@@ -6,18 +6,18 @@ using System.IO;
 
 namespace Arman.Mocks.Foundation.Core.PersistentDataManagement
 {
-    public class PersistentDataIOStreamFactoryMock : PersistentDataIOStreamFactory
+    public class PersistentDataIOStreamFactoryMock : IPersistentDataIOStreamFactory
     {
-        Dictionary<Channel, int> createWriteStreamCounts = new Dictionary<Channel, int>();
-        Dictionary<Channel, int> createReadStreamCounts = new Dictionary<Channel, int>();
+        Dictionary<IChannel, int> createWriteStreamCounts = new Dictionary<IChannel, int>();
+        Dictionary<IChannel, int> createReadStreamCounts = new Dictionary<IChannel, int>();
 
 
-        public bool HasReadableStreamFor(Channel channel)
+        public bool HasReadableStreamFor(IChannel channel)
         {
             return true;
         }
 
-        public StreamWriter CreateWriteStreamFor(Channel channel)
+        public StreamWriter CreateWriteStreamFor(IChannel channel)
         {
             if (createWriteStreamCounts.ContainsKey(channel) == false)
                 createWriteStreamCounts.Add(channel, 0);
@@ -27,7 +27,7 @@ namespace Arman.Mocks.Foundation.Core.PersistentDataManagement
         }
 
 
-        public StreamReader CreateReadStreamFor(Channel channel)
+        public StreamReader CreateReadStreamFor(IChannel channel)
         {
             if (createReadStreamCounts.ContainsKey(channel) == false)
                 createReadStreamCounts.Add(channel, 0);
@@ -36,12 +36,12 @@ namespace Arman.Mocks.Foundation.Core.PersistentDataManagement
             return null;
         }
 
-        public bool CreateWriteStreamIsCalledOnceFor(Channel channel)
+        public bool CreateWriteStreamIsCalledOnceFor(IChannel channel)
         {
             return createWriteStreamCounts.ContainsKey(channel) && createWriteStreamCounts[channel] == 1;
         }
 
-        public bool CreateReadStreamIsCalledOnceFor(Channel channel)
+        public bool CreateReadStreamIsCalledOnceFor(IChannel channel)
         {
             return createReadStreamCounts.ContainsKey(channel) && createReadStreamCounts[channel] == 1;
         }

@@ -1,7 +1,7 @@
 ﻿
 namespace Arman.ObjectPooling.Core
 {
-    public interface ObjectPool<T> where T: Poolable
+    public interface IObjectPool<T> where T: IPoolable
     {
         T Acquire();
         void Release(T obj);

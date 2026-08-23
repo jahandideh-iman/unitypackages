@@ -1,7 +1,7 @@
 ﻿
 namespace Arman.ObjectPooling.Core
 {
-    public interface Poolable
+    public interface IPoolable
     {
         void OnAcquired();
         void OnReleased();

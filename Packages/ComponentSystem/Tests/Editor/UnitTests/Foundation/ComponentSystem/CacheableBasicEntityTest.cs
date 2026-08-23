@@ -6,11 +6,11 @@ namespace Arman.Tests.Foundation.ComponentSystem.Core
 {
     public class CacheableBasicEntityTest
     {
-        class CacheMock : Cache
+        class CacheMock : ICache
         {
-            public List<Component> components = new List<Component>();
+            public List<IComponent> components = new List<IComponent>();
 
-            public void TryCache(Component component)
+            public void TryCache(IComponent component)
             {
                 components.Add(component);
             }

@@ -2,9 +2,9 @@
 {
     public class PersistentDataSerializerAlreadyRegisterException : PersistentDataManagerException
     {
-        public PersistentDataSerializer serializer;
+        public IPersistentDataSerializer serializer;
 
-        public PersistentDataSerializerAlreadyRegisterException(PersistentDataSerializer serializer)
+        public PersistentDataSerializerAlreadyRegisterException(IPersistentDataSerializer serializer)
         {
             this.serializer = serializer;
         }

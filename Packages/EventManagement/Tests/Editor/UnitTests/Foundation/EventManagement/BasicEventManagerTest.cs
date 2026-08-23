@@ -6,24 +6,24 @@ namespace Arman.Tests.Foundation.EventManagement
     public class EventManagerTest
     {
 
-        class ListenerMock : EventListener
+        class ListenerMock : IEventListener
         {
-            public GameEvent evt = null;
+            public IGameEvent evt = null;
 
-            public void OnEvent(GameEvent evt, object sender)
+            public void OnEvent(IGameEvent evt, object sender)
             {
                 this.evt = evt;
             }
 
         }
 
-        class EventMock : GameEvent
+        class EventMock : IGameEvent
         {
 
         }
 
 
-        EventManager manager;
+        IEventManager manager;
 
         ListenerMock listener1;
         ListenerMock listener2;
@@ -64,7 +64,7 @@ namespace Arman.Tests.Foundation.EventManagement
             manager.Register(listener1);
             manager.Register(listener2);
 
-            GameEvent evt = new EventMock();
+            IGameEvent evt = new EventMock();
             manager.Propagate(evt, this);
 
             Assert.That(listener1.evt, Is.SameAs(evt));
@@ -77,7 +77,7 @@ namespace Arman.Tests.Foundation.EventManagement
             manager.Register(listener1);
             manager.UnRegister(listener1);
 
-            GameEvent evt = new EventMock();
+            IGameEvent evt = new EventMock();
             manager.Propagate(evt, this);
             manager.Propagate(evt, this);
 

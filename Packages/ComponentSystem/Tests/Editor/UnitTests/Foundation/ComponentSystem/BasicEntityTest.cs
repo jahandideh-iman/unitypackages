@@ -3,11 +3,11 @@ using NUnit.Framework;
 
 namespace Arman.Tests.Foundation.ComponentSystem.Core
 {
-    class ComponentA : Component { };
-    class ComponentB : Component { };
-    class ComponentC : Component { };
+    class ComponentA : IComponent { };
+    class ComponentB : IComponent { };
+    class ComponentC : IComponent { };
 
-    class ComponentParent : Component { };
+    class ComponentParent : IComponent { };
     class ComponentChild : ComponentParent { };
 
     public class BasicEntityTest 

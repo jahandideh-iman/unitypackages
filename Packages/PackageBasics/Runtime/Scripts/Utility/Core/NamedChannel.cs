@@ -2,7 +2,7 @@
 
 namespace Arman.Utility.Core
 {
-    public class NamedChannel : Channel
+    public class NamedChannel : IChannel
     {
         readonly string name;
 

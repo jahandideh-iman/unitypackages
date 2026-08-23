@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Arman.Foundation.Core.ConfigurationManagement
 {
-    public class DynamicConfigurer<T> : Configurer<T>
+    public class DynamicConfigurer<T> : IConfigurer<T>
     {
         private List<Action<T>> configActions = new List<Action<T>>();
 
@@ -38,7 +38,7 @@ namespace Arman.Foundation.Core.ConfigurationManagement
             }
         }
 
-        public void RegisterSelf(ConfigurationManager manager)
+        public void RegisterSelf(IConfigurationManager manager)
         {
             manager.Register(this);
         }

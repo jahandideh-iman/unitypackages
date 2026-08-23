@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Arman.Foundation.ComponentSystem.Core
 {
-    public interface SpecializedEntity<T> where T : Component
+    public interface ISpecializedEntity<T> where T : IComponent
     {
         void AddComponent(T component);
         U GetComponent<U>() where U : T;

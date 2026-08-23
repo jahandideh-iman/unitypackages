@@ -4,7 +4,7 @@ using Object = UnityEngine.Object;
 
 namespace Arman.AssetProviding.Foundation
 {
-    public class ChainedAsyncUnityAssetProvider : ChainedContainer<AsyncUnityAssetProvider>, AsyncUnityAssetProvider
+    public class ChainedAsyncUnityAssetProvider : ChainedContainer<IAsyncUnityAssetProvider>, IAsyncUnityAssetProvider
     {
         public async Task<T> LoadAssetByIdAsync<T>(string id) where T : Object
         {

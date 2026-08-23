@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Arman.ObjectPooling.Unity
 {
-    public class ScriptableObjectPool<T> : ScriptableObject, ObjectPool<T> where T : Component, Poolable
+    public class ScriptableObjectPool<T> : ScriptableObject, IObjectPool<T> where T : Component, IPoolable
     {
         [SerializeField] T componentPrefab = default;
         [SerializeField] int initialReserve = default;

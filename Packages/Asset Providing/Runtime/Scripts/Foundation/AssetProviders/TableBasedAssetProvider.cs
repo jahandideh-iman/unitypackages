@@ -6,7 +6,7 @@ using Object = UnityEngine.Object;
 
 namespace Arman.AssetProviding.Foundation
 {
-    public class TableBasedAssetProvider : SyncUnityAssetProvider, AsyncUnityAssetProvider
+    public class TableBasedAssetProvider : ISyncUnityAssetProvider, IAsyncUnityAssetProvider
     {
         Dictionary<string, Object> objectTable;
 

@@ -3,9 +3,9 @@ using System;
 
 namespace Arman.Mocks.Foundation.ShopManagement.Core
 {
-    public class PurchaseHandlerMock : PurchaseHandler
+    public class PurchaseHandlerMock : IPurchaseHandler
     {
-        public ShopPackage givenShopPackage;
+        public IShopPackage givenShopPackage;
 
         bool shoudSucceed = false;
 
@@ -14,7 +14,7 @@ namespace Arman.Mocks.Foundation.ShopManagement.Core
             givenShopPackage = null;
         }
 
-        public void Purchase(ShopPackage shopPackage, Action<PurchaseSuccessResult> onSuccess, Action<PurchaseFailureResult> onFailure)
+        public void Purchase(IShopPackage shopPackage, Action<IPurchaseSuccessResult> onSuccess, Action<IPurchaseFailureResult> onFailure)
         {
             givenShopPackage = shopPackage;
 

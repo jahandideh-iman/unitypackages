@@ -2,7 +2,7 @@
 
 namespace Arman.Foundation.InGameMessageLogging
 {
-    public interface InGameMessageLogger : Service
+    public interface IInGameMessageLogger : IService
     {
         void Log(string message);
     }
