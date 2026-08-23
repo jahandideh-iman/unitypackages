@@ -1,6 +1,7 @@
 {
   "name": "com.arman.foundation.package_basics",
   "version": "0.1.0",
+  "license": "MIT",
   "displayName": "Package Basics",
   "description": "Description",
   "unity": "2019.1",

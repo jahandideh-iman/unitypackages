@@ -1,6 +1,7 @@
 {
   "name": "com.arman.foundation.scene-management",
   "version": "0.1.0-preview",
+  "license": "MIT",
   "displayName": "Scene Management",
   "description": "Description",
   "unity": "2019.1",

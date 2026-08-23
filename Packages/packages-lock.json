@@ -52,7 +52,7 @@
       "source": "embedded",
       "dependencies": {}
     },
-    "com.arman.foundation.persistent_data_managemement": {
+    "com.arman.foundation.persistent_data_management": {
       "version": "file:PersistentDataManagement",
       "depth": 0,
       "source": "embedded",

@@ -1,6 +1,7 @@
 {
   "name": "com.arman.foundation.event_management",
   "version": "0.1.0",
+  "license": "MIT",
   "displayName": "Event Management",
   "description": "Description",
   "unity": "2019.1",

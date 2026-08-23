@@ -1,6 +1,7 @@
 {
-  "name": "com.arman.foundation.persistent_data_managemement",
+  "name": "com.arman.foundation.persistent_data_management",
   "version": "0.1.0",
+  "license": "MIT",
   "displayName": "Persistent Data Managemement",
   "description": "Description",
   "unity": "2019.1",
