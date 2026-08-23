@@ -1,15 +1,15 @@
 {
-  "name": "com.arman.foundation.scene-management",
+  "name": "com.arman.scene-management",
+  "displayName": "Scene Management",
   "version": "0.1.0-preview",
   "license": "MIT",
-  "displayName": "Scene Management",
-  "description": "Description",
   "unity": "2019.1",
+  "description": "Description",
   "author": {
     "name": "Iman Jahandideh",
-    "email": "jahandidehk.iman@gmail"
+    "email": "jahandidehk.iman@gmail.com"
   },
   "dependencies": {
-    "com.arman.foundation.service_locating": "0.1.0"
+    "com.arman.service-locating": "0.1.0"
   }
 }

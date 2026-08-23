@@ -1,10 +1,10 @@
 {
-  "name": "com.arman.foundation.development_console",
+  "name": "com.arman.development-console",
+  "displayName": "Development Console",
   "version": "0.1.0",
   "license": "MIT",
-  "displayName": "Development Console",
-  "description": "Development Console",
   "unity": "2019.1",
+  "description": "Development Console",
   "author": {
     "name": "Iman Jahandideh",
     "email": "jahandideh_iman@yahoo.com"

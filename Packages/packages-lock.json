@@ -1,75 +1,75 @@
 {
   "dependencies": {
-    "com.arman.component-management": {
+    "com.arman.component-system": {
       "version": "file:ComponentSystem",
       "depth": 0,
       "source": "embedded",
       "dependencies": {}
     },
-    "com.arman.foundation.asset-providing": {
+    "com.arman.asset-providing": {
       "version": "file:Asset Providing",
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "com.arman.foundation.service_locating": "0.1.0"
+        "com.arman.service-locating": "0.1.0"
       }
     },
-    "com.arman.foundation.configuration_management": {
+    "com.arman.configuration-management": {
       "version": "file:ConfigurationManagement",
       "depth": 0,
       "source": "embedded",
       "dependencies": {}
     },
-    "com.arman.foundation.development_console": {
+    "com.arman.development-console": {
       "version": "file:DevelopmentConsole",
       "depth": 0,
       "source": "embedded",
       "dependencies": {}
     },
-    "com.arman.foundation.event_management": {
+    "com.arman.event-management": {
       "version": "file:EventManagement",
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "com.arman.foundation.service_locating": "0.1.0"
+        "com.arman.service-locating": "0.1.0"
       }
     },
-    "com.arman.foundation.inventory_system": {
+    "com.arman.inventory-system": {
       "version": "file:InventorySystem",
       "depth": 0,
       "source": "embedded",
       "dependencies": {}
     },
-    "com.arman.foundation.package_basics": {
+    "com.arman.package-basics": {
       "version": "file:PackageBasics",
       "depth": 0,
       "source": "embedded",
       "dependencies": {}
     },
-    "com.arman.foundation.package_name": {
+    "com.arman.package-template": {
       "version": "file:PackageTemplate",
       "depth": 0,
       "source": "embedded",
       "dependencies": {}
     },
-    "com.arman.foundation.persistent_data_management": {
+    "com.arman.persistent-data-management": {
       "version": "file:PersistentDataManagement",
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "com.arman.foundation.package_basics": "0.1.0",
-        "com.arman.foundation.service_locating": "0.1.0"
+        "com.arman.package-basics": "0.1.0",
+        "com.arman.service-locating": "0.1.0"
       }
     },
-    "com.arman.foundation.scene-management": {
+    "com.arman.scene-management": {
       "version": "file:Scene Management",
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "com.arman.foundation.service_locating": "0.1.0"
+        "com.arman.service-locating": "0.1.0"
       }
     },
-    "com.arman.foundation.service_locating": {
+    "com.arman.service-locating": {
       "version": "file:ServiceLocating",
       "depth": 0,
       "source": "embedded",
@@ -80,7 +80,7 @@
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "com.arman.foundation.service_locating": "0.1.0"
+        "com.arman.service-locating": "0.1.0"
       }
     },
     "com.arman.in-game-message-logging": {
@@ -88,8 +88,8 @@
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "com.arman.foundation.service_locating": "0.1.0",
-        "com.arman.unity_utilities": "0.1.0"
+        "com.arman.service-locating": "0.1.0",
+        "com.arman.unity-utilities": "0.1.0"
       }
     },
     "com.arman.object-pooling": {
@@ -98,12 +98,12 @@
       "source": "embedded",
       "dependencies": {}
     },
-    "com.arman.presentation.ui-management": {
+    "com.arman.ui-management": {
       "version": "file:UI Management",
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "com.arman.foundation.service_locating": "0.1.0"
+        "com.arman.service-locating": "0.1.0"
       }
     },
     "com.arman.shop-management": {
@@ -111,10 +111,10 @@
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "com.arman.foundation.service_locating": "0.1.0"
+        "com.arman.service-locating": "0.1.0"
       }
     },
-    "com.arman.unity_utilities": {
+    "com.arman.unity-utilities": {
       "version": "file:UnityUtilities",
       "depth": 0,
       "source": "embedded",
@@ -125,8 +125,8 @@
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "com.arman.foundation.service_locating": "0.1.0",
-        "com.arman.foundation.package_basics": "0.1.0"
+        "com.arman.service-locating": "0.1.0",
+        "com.arman.package-basics": "0.1.0"
       }
     },
     "com.unity.ai.navigation": {
