@@ -1,9 +1,7 @@
 ﻿
-using Arman.Foundation.Core.ServiceLocating;
-
 namespace Arman.SceneMangement
 {
-    public class SceneManager : IService
+    public class SceneManager
     {
         public void Open(string sceneName)
         {

@@ -5,7 +5,5 @@
   "license": "MIT",
   "unity": "2019.3",
   "description": "Storefront and purchasing logic for in-game shops. Models shop packages (including composite bundles), routes purchases through pluggable purchase handlers, and reports success or failure results. Registers as a locatable service.",
-  "dependencies": {
-    "com.arman.service-locating": "0.1.0"
-  }
+  "dependencies": {}
 }

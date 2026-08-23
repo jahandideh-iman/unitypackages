@@ -1,13 +1,12 @@
 ﻿
 
 
-using Arman.Foundation.Core.ServiceLocating;
 using Arman.Utility.Core;
 
 namespace Arman.UpdateManagement.Foundation
 {
 
-    public interface IUpdateManager : IService
+    public interface IUpdateManager
     {
         void RegisterChannel(IChannel channel);
         void RegisterChannelToParent(IChannel child, IChannel parent);

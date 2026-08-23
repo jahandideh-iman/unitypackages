@@ -10,7 +10,6 @@
     "email": "jahandideh_iman@yahoo.com"
   },
   "dependencies": {
-    "com.arman.service-locating": "0.1.0",
     "com.arman.package-basics": "0.1.0"
   }
 }

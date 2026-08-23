@@ -1,9 +1,8 @@
-﻿using Arman.Foundation.Core.ServiceLocating;
-using Arman.Utility.Core;
+﻿using Arman.Utility.Core;
 
 namespace Arman.Foundation.Core.PersistentDataManagement
 {
-    public interface IPersistentDataManager : IService
+    public interface IPersistentDataManager
     {
         void SetSaveVersion(int version);
         void SetPersistentDataWrapper(IPersistentDataWrapper wrapper);
