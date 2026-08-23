@@ -3,23 +3,23 @@
 
 namespace Arman.Foundation.EventManagement
 {
-    public class BasicEventManager : EventManager
+    public class BasicEventManager : IEventManager
     {
-        private List<EventListener> listeners = new List<EventListener>();
-        List<EventListener> listenersCopy = new List<EventListener>();
+        private List<IEventListener> listeners = new List<IEventListener>();
+        List<IEventListener> listenersCopy = new List<IEventListener>();
 
-        public void Register(EventListener listener)
+        public void Register(IEventListener listener)
         {
             if (listeners.Contains(listener) == false)
                 listeners.Add(listener);
         }
 
-        public void UnRegister(EventListener listener)
+        public void UnRegister(IEventListener listener)
         {
             listeners.Remove(listener);
         }
 
-        public void Propagate(GameEvent evt, object sender)
+        public void Propagate(IGameEvent evt, object sender)
         {
             listenersCopy.Clear();
             listenersCopy.AddRange(listeners);
@@ -28,7 +28,7 @@ namespace Arman.Foundation.EventManagement
                 listener.OnEvent(evt, sender);
         }
 
-        public bool Has(EventListener listener)
+        public bool Has(IEventListener listener)
         {
             return listeners.Contains(listener);
         }

@@ -1,17 +1,17 @@
 {
-  "name": "com.arman.foundation.persistent_data_management",
+  "name": "com.arman.persistent-data-management",
+  "displayName": "Persistent Data Management",
   "version": "0.1.0",
   "license": "MIT",
-  "displayName": "Persistent Data Managemement",
-  "description": "Description",
   "unity": "2019.1",
-  "dependencies": {
-    "com.arman.foundation.package_basics": "0.1.0",
-    "com.arman.foundation.service_locating": "0.1.0"
-  },
+  "description": "Description",
+  "hideInEditor": false,
   "author": {
     "name": "Iman Jahandideh",
     "email": "jahandideh_iman@yahoo.com"
   },
-  "hideInEditor": false
+  "dependencies": {
+    "com.arman.package-basics": "0.1.0",
+    "com.arman.service-locating": "0.1.0"
+  }
 }

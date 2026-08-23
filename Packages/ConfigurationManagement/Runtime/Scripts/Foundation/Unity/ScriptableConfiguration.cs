@@ -3,9 +3,9 @@ using UnityEngine;
 
 namespace Arman.Foundation.Unity.Configuration
 {
-    public abstract class ScriptableConfiguration : ScriptableObject, Configurer
+    public abstract class ScriptableConfiguration : ScriptableObject, IConfigurer
     {
-        public abstract void RegisterSelf(ConfigurationManager manager);
+        public abstract void RegisterSelf(IConfigurationManager manager);
 
 
         // TODO: Move this to a better place.

@@ -75,7 +75,7 @@ namespace Arman.Tests.Foundation.Core.PersistentDataManagement
 
             var persistentDataWrapper = new PersistentDataWrapperMock();
 
-            var givenWrappers = new Dictionary<PersistentDataSerializer, ReadablePersistentDataWrapper>();
+            var givenWrappers = new Dictionary<IPersistentDataSerializer, IReadablePersistentDataWrapper>();
             serializerA.onDeserializeAction = (w) => givenWrappers.Add(serializerA, w);
             serializerB.onDeserializeAction = (w) => givenWrappers.Add(serializerB, w);
 

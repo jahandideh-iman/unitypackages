@@ -3,7 +3,7 @@ using Object = UnityEngine.Object;
 
 namespace Arman.AssetProviding.Foundation
 {
-    public class ChainedSyncUnityAssetProvider : ChainedContainer<SyncUnityAssetProvider>, SyncUnityAssetProvider
+    public class ChainedSyncUnityAssetProvider : ChainedContainer<ISyncUnityAssetProvider>, ISyncUnityAssetProvider
     {
         public T LoadAssetById<T>(string id) where T : Object
         {

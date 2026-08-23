@@ -12,12 +12,22 @@ Each subfolder of `Packages/` is a standalone, publishable UPM package. Unity tr
 
 Consumers get these packages from a registry, **not** by copying folders. See [Distribution and releases](#distribution-and-releases).
 
+### Unity version
+
+Two different version numbers live in this repo and they mean opposite things — don't conflate them:
+
+* **`ProjectSettings/ProjectVersion.txt` = `6000.5.0f1`** — the Editor the sandbox project opens in. Bumped from `2022.3.27f1` on 2026-08-23 to match the only Unity installed on the dev machine. Editing this file only *declares* the intent; the actual upgrade and asset re-import happen the first time the Editor opens the project, and that pass may surface API-deprecation warnings that need fixing.
+* **`"unity"` in each `Packages/<Dir>/package.json` = `2019.1` or `2019.3`** — the *minimum* Editor a consumer needs. These are intentionally low and must **not** be bumped to track the sandbox's Editor; raising one drops backward compatibility for consumers. Raise it only when a package actually starts using an API that requires it.
+
 ## Repo layout
 
 ```
 unitypackages/
 ├── .agents/
-│   └── AGENTS.md            # this file
+│   ├── AGENTS.md            # this file
+│   └── Skills/              # vendored agent skills (canonical, tool-agnostic copy)
+├── .claude/
+│   └── skills/              # mirror of .agents/Skills/ — the copy Claude Code discovers
 ├── Assets/                  # scratch sandbox only — Scenes/, StreamingAssets/
 ├── Packages/
 │   ├── manifest.json        # the sandbox project's own deps (Unity packages)
@@ -25,7 +35,6 @@ unitypackages/
 │   ├── PackageTemplate/     # scaffold for new packages — never published
 │   ├── ServiceLocating/     # ...and 16 other publishable packages
 │   └── <PackageName>/
-├── PackageExports/          # *.tgz build output (npm pack); not the distribution channel
 ├── ProjectSettings/
 ├── UserSettings/
 └── LICENSE                  # MIT, repo-level
@@ -63,40 +72,109 @@ Assemblies are named `Arman.<PackageName>[.<Layer>]`. Be aware the existing nami
 
 | Folder | Package name | Version | Depends on (`com.arman.` elided) |
 |--|--|--|--|
-| `Asset Providing` | `com.arman.foundation.asset-providing` | 0.1.0-preview | foundation.service_locating |
-| `ComponentSystem` | `com.arman.component-management` | 0.1.0 | — |
-| `ConfigurationManagement` | `com.arman.foundation.configuration_management` | 1.0.0 | — |
-| `DevelopmentConsole` | `com.arman.foundation.development_console` | 0.1.0 | — |
-| `EventManagement` | `com.arman.foundation.event_management` | 0.1.0 | foundation.service_locating |
-| `HttpConnection` | `com.arman.http-connection` | 0.1.0-preview | foundation.service_locating |
-| `InGameMessageLogging` | `com.arman.in-game-message-logging` | 0.1.0 | foundation.service_locating, unity_utilities |
-| `InventorySystem` | `com.arman.foundation.inventory_system` | 0.1.0 | — |
+| `Asset Providing` | `com.arman.asset-providing` | 0.1.0-preview | service-locating |
+| `ComponentSystem` | `com.arman.component-system` | 0.1.0 | — |
+| `ConfigurationManagement` | `com.arman.configuration-management` | 1.0.0 | — *(under-declared — see [Known inconsistencies](#known-inconsistencies))* |
+| `DevelopmentConsole` | `com.arman.development-console` | 0.1.0 | — |
+| `EventManagement` | `com.arman.event-management` | 0.1.0 | service-locating |
+| `HttpConnection` | `com.arman.http-connection` | 0.1.0-preview | service-locating |
+| `InGameMessageLogging` | `com.arman.in-game-message-logging` | 0.1.0 | service-locating, unity-utilities |
+| `InventorySystem` | `com.arman.inventory-system` | 0.1.0 | — |
 | `ObjectPooling` | `com.arman.object-pooling` | 0.1.0-preview | — |
-| `PackageBasics` | `com.arman.foundation.package_basics` | 0.1.0 | — |
-| `PackageTemplate` | `com.arman.foundation.package_name` | 0.1.0-preview | — *(private, never published)* |
-| `PersistentDataManagement` | `com.arman.foundation.persistent_data_management` | 0.1.0 | foundation.package_basics, foundation.service_locating |
-| `Scene Management` | `com.arman.foundation.scene-management` | 0.1.0-preview | foundation.service_locating |
-| `ServiceLocating` | `com.arman.foundation.service_locating` | 0.1.0 | — |
-| `ShopManagement` | `com.arman.shop-management` | 0.1.0 | foundation.service_locating |
-| `UI Management` | `com.arman.presentation.ui-management` | 0.1.0-preview | foundation.service_locating |
-| `UnityUtilities` | `com.arman.unity_utilities` | 0.1.0 | — |
-| `UpdateManagement` | `com.arman.update-management` | 0.1.0-preview | foundation.service_locating, foundation.package_basics |
+| `PackageBasics` | `com.arman.package-basics` | 0.1.0 | — |
+| `PackageTemplate` | `com.arman.package-template` | 0.1.0-preview | — *(private, never published)* |
+| `PersistentDataManagement` | `com.arman.persistent-data-management` | 0.1.0 | package-basics, service-locating |
+| `Scene Management` | `com.arman.scene-management` | 0.1.0-preview | service-locating |
+| `ServiceLocating` | `com.arman.service-locating` | 0.1.0 | — |
+| `ShopManagement` | `com.arman.shop-management` | 0.1.0 | service-locating |
+| `UI Management` | `com.arman.ui-management` | 0.1.0-preview | service-locating |
+| `UnityUtilities` | `com.arman.unity-utilities` | 0.1.0 | — |
+| `UpdateManagement` | `com.arman.update-management` | 0.1.0-preview | service-locating, package-basics |
 
-**`com.arman.foundation.service_locating` is the hub — nine packages depend on it.** Treat any change to it as breaking until proven otherwise, and bump/release it before its dependents.
+**`com.arman.service-locating` is the hub — nine packages depend on it.** Treat any change to it as breaking until proven otherwise, and bump/release it before its dependents.
 
 ### Naming
 
-Package ids use three namespaces, applied loosely and **inconsistently** in the existing set:
+**Every package id is `com.arman.<kebab-case-name>` — one flat namespace, no exceptions.**
 
-* `com.arman.foundation.*` — core, mostly Unity-free building blocks.
-* `com.arman.presentation.*` — UI-facing (only `ui-management` today).
-* `com.arman.*` — everything else.
+This was normalised on 2026-08-23. Previously the set mixed three namespaces (`com.arman.foundation.*`, `com.arman.presentation.*`, plain `com.arman.*`) with two separator styles (`service_locating` vs `object-pooling`). The `foundation.` / `presentation.` segments were dropped and every `snake_case` id converted to `kebab-case`.
 
-Separator style is also mixed: some ids use `snake_case` (`service_locating`), others `kebab-case` (`object-pooling`). **Prefer `kebab-case` for new packages** — it is the Unity/npm convention. Do not rename existing ids: a published package name is permanent.
+The rename was safe because **nothing had ever been published** — `git tag` listed zero tags, and under the OpenUPM model (see [Distribution and releases](#distribution-and-releases)) a tag *is* the release. That window is now closed:
+
+⚠️ **From the first published tag onward, a package id is permanent.** Do not rename an id that has ever appeared in a `<package-name>/<version>` tag. Check `git tag` before assuming otherwise.
+
+Note that **assembly** names were deliberately *not* normalised alongside the ids — see [Assembly definitions](#assembly-definitions). A package id and its asmdef names do not have to agree, and several don't.
+
+## Agent tooling: MCP, skills, and the Unity CLI
+
+Adapted from the sibling **PopBalloon** repo's setup, trimmed to what a *code-and-packages* repo
+actually needs. This repo has 149 `.cs` files, 34 asmdefs, and a single throwaway
+`Assets/Scenes/SampleScene.unity` — so Roslyn code navigation matters here and live scene/prefab
+Editor driving does not. PopBalloon's ~77 Unity-Editor MCP tool skills were deliberately **not**
+copied across; see [`Skills/THIRD_PARTY_SKILLS.md`](./Skills/THIRD_PARTY_SKILLS.md).
+
+### Skills
+
+Vendored under `.agents/Skills/` (canonical) and mirrored to `.claude/skills/` (what Claude Code
+discovers). **Edit one, copy to the other** — they must stay identical.
+
+| Skill | Use it for |
+|--|--|
+| `lifeblood-mcp` | Routing between the `lifeblood` MCP tools; read before a multi-step refactor. |
+| `unity-package-management` | Add/remove/upgrade UPM packages via `UnityEditor.PackageManager.Client` instead of hand-editing `Packages/manifest.json`. Applies to this project's *external* deps — the 18 packages it hosts are embedded, not registry-resolved. |
+| `unity-cli` | Editor install, project creation, headless build/test. |
+
+### `lifeblood` — Roslyn code navigation
+
+`lifeblood` is a shared daemon exposing Roslyn semantic analysis over a C# solution. Call
+`lifeblood_analyze` with `projectPath` pointing at the repo root once per session before any other
+`lifeblood_*` tool; write-side tools (`find_references`, `rename`, `diagnose`, `compile_check`)
+additionally need a non-read-only analyze (`readOnly:false`).
+
+Prefer it over `Grep`/`Glob` whenever the question is semantic:
+
+| Instead of | Use |
+|--|--|
+| `Grep` for a symbol | `lifeblood_find_definition`, `lifeblood_find_references` |
+| `Grep` for implementers of an interface | `lifeblood_find_implementations` |
+| Guessing what a change breaks | `lifeblood_blast_radius`, `lifeblood_file_impact`, `lifeblood_test_impact` |
+| Eyeballing asmdef wiring | `lifeblood_asmdef_check`, `lifeblood_cycles` |
+| A cross-package symbol rename | `lifeblood_rename` |
+
+⚠️ **`lifeblood` needs a solution, and this repo has none checked in.** There is no `.sln`/`.slnx`
+or `.csproj` here — Unity has never generated project files for this project, and `Library/` is
+git-ignored. Until someone opens the project in the Editor once (or runs
+`unity command menu --path "Assets/Open C# Project"`), every `lifeblood_*` call will fail to load
+anything. **Generate the solution first, then analyze.** This is also why no `.mcp.json` is
+committed: PopBalloon's pins `sharplens` to `PopBalloon.slnx`, and there is no equivalent path to
+point at here yet.
+
+Because of that gap, the 2026-08-23 interface rename (35 interfaces, 429 call sites across 149
+files) had to be done with masked regex rewriting and manual verification rather than
+`lifeblood_rename`. **Don't repeat that if you can avoid it** — generate the solution and use the
+semantic tool.
+
+### Permissions
+
+No `.claude/settings.json` is committed. If you want the usual allow-list (`git`, `gh`, and the
+`lifeblood` tools, with `lifeblood_execute` denied — it runs arbitrary code), add one yourself;
+`.claude/settings.local.json` is git-ignored for per-machine additions.
+
+### Not carried over from PopBalloon
+
+* **Worktree MCP scripts** (`.agents/Scripts/*.ps1`, `worktree-mcp-guide.md`) — they exist to copy a
+  multi-GB `Library/` cache and drive a second Editor instance. This repo has no meaningful
+  `Library/` and no live-Editor workflow.
+* **Unity-Editor MCP tool skills** (`gameobject-*`, `scene-*`, `assets-*`, `screenshot-*`, `ui*`) and
+  the storefront/ads skills — nothing here for them to act on.
+
+Pull any of these across from `../PopBalloon` if that ever stops being true.
 
 ## Distribution and releases
 
-The `version` field in each `Packages/<Dir>/package.json` is the **single source of truth**. `PackageExports/*.tgz` is build output, not a distribution channel.
+The `version` field in each `Packages/<Dir>/package.json` is the **single source of truth**.
+
+`npm pack` output (`*.tgz`) is a local verification aid, not a distribution channel — it is git-ignored. A `PackageExports/` folder of committed tarballs used to exist and was removed on 2026-08-23; don't reintroduce it.
 
 The registry-hosting design and the CI release flow are specced in the PopBalloon repo (this repo has no `docs/` of its own):
 
@@ -131,7 +209,8 @@ Never prefix a git command with `cd` (e.g. `cd <dir> && git ...`); use `git -C <
 Same conventions as PopBalloon:
 
 * **Curly braces:** Allman (brace on its own line).
-* **PascalCase:** classes, interfaces (`I`-prefixed), methods, properties, public/internal fields.
+* **PascalCase:** classes, interfaces, methods, properties, public/internal fields.
+* **Interfaces are `I`-prefixed.** All 35 were renamed on 2026-08-23 (`Service` → `IService`, `PersistentDataWrapper` → `IPersistentDataWrapper`, …), file names included, via `git mv` so the `.meta` GUIDs survived. Anything without the prefix is a class or struct — don't add an interface that breaks this.
 * **camelCase:** locals and parameters.
 * **`_camelCase`:** private/protected fields, including `[SerializeField]` ones.
 * **`[SerializeField]` on private fields** rather than making them public.
@@ -151,9 +230,10 @@ Same conventions as PopBalloon:
 
 Real, deliberately unfixed. Don't "clean these up" as a side quest — each has a cost, and the asmdef ones break consumer references:
 
-* **`PersistentDataManagement` asmdefs still read `Arman.PersistentDataManagemement`** (misspelled) in three files, including the assembly `name` fields. The *package id* was corrected to `persistent_data_management`; the assembly names were deliberately left, since renaming an assembly is a breaking change for consumers.
+* **`PersistentDataManagement` asmdefs still read `Arman.PersistentDataManagemement`** (misspelled) in three files, including the assembly `name` fields. The *package id* (`com.arman.persistent-data-management`) and `displayName` were corrected; the assembly names were deliberately left, since renaming an assembly is a breaking change for consumers.
 * **`Samples/` and `Documentation/` lack the `~` suffix.** UPM convention is `Samples~`/`Documentation~`, which keeps them out of consumers' import and compilation. As-is, sample asmdefs compile in every consuming project.
 * **`ServiceLocating/Runtime/Scritps/`** — misspelled folder. Renaming churns `.meta` GUIDs.
-* **Four packages still carry the stock template description** ("Replace this string with your own description…"): `ComponentSystem`, `InGameMessageLogging`, `ShopManagement`, `UnityUtilities`. These must be fixed before those packages are published.
+* **Ten publishable packages still carry a placeholder `"description": "Description"`:** `Asset Providing`, `EventManagement`, `HttpConnection`, `InventorySystem`, `ObjectPooling`, `PackageBasics`, `PersistentDataManagement`, `Scene Management`, `UI Management`, `UpdateManagement`. (`PackageTemplate` also has it, which is correct for a scaffold.) Two more are technically-real-but-useless one-liners: `DevelopmentConsole` ("Development Console") and `ServiceLocating` ("The base package for services"). **All of these must be written before the package they belong to is published** — the description is what shows on the OpenUPM listing. The four that *were* stock template text (`ComponentSystem`, `InGameMessageLogging`, `ShopManagement`, `UnityUtilities`) were written on 2026-08-23.
+* **`ConfigurationManagement` under-declares its dependencies.** `IConfigurationManager : IService` and its Runtime asmdef references `ServiceLocating`'s GUID, but its `package.json` has no `dependencies` block at all. This is a genuine bug, not a deliberate inconsistency — it will fail to resolve for a consumer who installs it standalone. Add `"com.arman.service-locating": "0.1.0"` before publishing it.
 * **Only 6 of 18 packages have a README**, 5 have a CHANGELOG.
 * `PackageTemplate` mixes `Arman.PackageTemplate` and `Arman.TemplatePackage` in its own asmdef names.

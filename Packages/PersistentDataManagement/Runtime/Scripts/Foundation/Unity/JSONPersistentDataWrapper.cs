@@ -7,7 +7,7 @@ using NiceJson;
 
 namespace Arman.Foundation.Unity.PersistentDataManagement
 {
-    public class JSONPersistentDataWrapper : PersistentDataWrapper
+    public class JSONPersistentDataWrapper : IPersistentDataWrapper
     {
         private JsonObject root;
         private Stack<JsonObject> blockStack;
@@ -47,7 +47,7 @@ namespace Arman.Foundation.Unity.PersistentDataManagement
             return HasKey(key) ? (int)CurrentBlock()[key] : defaultValue;
         }
 
-        public WritablePersistentDataWrapper WriteInt(string key, int value)
+        public IWritablePersistentDataWrapper WriteInt(string key, int value)
         {
             CurrentBlock().Add(key, value);
             return this;
@@ -58,7 +58,7 @@ namespace Arman.Foundation.Unity.PersistentDataManagement
             return HasKey(key) ? (string)CurrentBlock()[key] : defaultValue;
         }
 
-        public WritablePersistentDataWrapper WriteString(string key, string value)
+        public IWritablePersistentDataWrapper WriteString(string key, string value)
         {
             CurrentBlock().Add(key, value);
             return this;
@@ -69,7 +69,7 @@ namespace Arman.Foundation.Unity.PersistentDataManagement
             return HasKey(key) ? (float)CurrentBlock()[key] : defaultValue;
         }
 
-        public WritablePersistentDataWrapper WriteFloat(string key, float value)
+        public IWritablePersistentDataWrapper WriteFloat(string key, float value)
         {
             CurrentBlock().Add(key, value);
             return this;
@@ -80,13 +80,13 @@ namespace Arman.Foundation.Unity.PersistentDataManagement
             return HasKey(key) ? (bool)CurrentBlock()[key] : default;
         }
 
-        public WritablePersistentDataWrapper WriteBoolean(string key, bool value)
+        public IWritablePersistentDataWrapper WriteBoolean(string key, bool value)
         {
             CurrentBlock().Add(key, value);
             return this;
         }
 
-        public WritablePersistentDataWrapper BeginWritingBlock(string key)
+        public IWritablePersistentDataWrapper BeginWritingBlock(string key)
         {
             var block = new JsonObject();
             CurrentBlock().Add(key, block);
@@ -94,7 +94,7 @@ namespace Arman.Foundation.Unity.PersistentDataManagement
             return this;
         }
 
-        public WritablePersistentDataWrapper EndWritingBlock()
+        public IWritablePersistentDataWrapper EndWritingBlock()
         {
             PopBlock();
             return this;

@@ -5,7 +5,7 @@ namespace Arman.AssetProviding.Data
 {
     public abstract class AssetProviderConfig : ScriptableObject
     {
-        public abstract SyncUnityAssetProvider CreateSyncProvider();
-        public abstract AsyncUnityAssetProvider CreateAsyncProvider();
+        public abstract ISyncUnityAssetProvider CreateSyncProvider();
+        public abstract IAsyncUnityAssetProvider CreateAsyncProvider();
     }
 }

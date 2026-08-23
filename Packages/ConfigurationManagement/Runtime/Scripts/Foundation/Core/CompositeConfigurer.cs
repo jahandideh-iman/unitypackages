@@ -2,11 +2,11 @@
 
 namespace Arman.Foundation.Core.ConfigurationManagement
 {
-    public class CompositeConfigurer<T> : Configurer<T>
+    public class CompositeConfigurer<T> : IConfigurer<T>
     {
-        private List<Configurer<T>> configurers = new List<Configurer<T>>();
+        private List<IConfigurer<T>> configurers = new List<IConfigurer<T>>();
 
-        public void AddConfigurer(Configurer<T> configurer)
+        public void AddConfigurer(IConfigurer<T> configurer)
         {
             this.configurers.Add(configurer);
         }
@@ -17,7 +17,7 @@ namespace Arman.Foundation.Core.ConfigurationManagement
                 configurer.Configure(entity);
         }
 
-        public void RegisterSelf(ConfigurationManager manager)
+        public void RegisterSelf(IConfigurationManager manager)
         {
             manager.Register(this);
         }

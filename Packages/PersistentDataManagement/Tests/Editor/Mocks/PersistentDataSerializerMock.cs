@@ -4,10 +4,10 @@ using System;
 
 namespace Arman.Mocks.Foundation.Core.PersistentDataManagement
 {
-    public class PersistentDataSerializerMock : PersistentDataSerializer
+    public class PersistentDataSerializerMock : IPersistentDataSerializer
     {
-        public Action<WritablePersistentDataWrapper> onSerializeAction = delegate { };
-        public Action<ReadablePersistentDataWrapper> onDeserializeAction = delegate { };
+        public Action<IWritablePersistentDataWrapper> onSerializeAction = delegate { };
+        public Action<IReadablePersistentDataWrapper> onDeserializeAction = delegate { };
 
         int serializedCalls = 0;
         int deserializedCalls = 0;
@@ -43,13 +43,13 @@ namespace Arman.Mocks.Foundation.Core.PersistentDataManagement
             return key;
         }
 
-        public void SerializeTo(WritablePersistentDataWrapper persistentDataWrapper)
+        public void SerializeTo(IWritablePersistentDataWrapper persistentDataWrapper)
         {
             serializedCalls++;
             onSerializeAction(persistentDataWrapper);
         }
 
-        public void DeserializeFrom(ReadablePersistentDataWrapper persistentDataWrapper)
+        public void DeserializeFrom(IReadablePersistentDataWrapper persistentDataWrapper)
         {
             deserializedCalls++;
             onDeserializeAction(persistentDataWrapper);

@@ -4,7 +4,7 @@ using System.IO;
 
 namespace Arman.Foundation.Unity.PersistentDataManagement
 {
-    public class FileBasedPersistetDataIOStreamFactory : PersistentDataIOStreamFactory
+    public class FileBasedPersistetDataIOStreamFactory : IPersistentDataIOStreamFactory
     {
         public string path;
 
@@ -14,25 +14,25 @@ namespace Arman.Foundation.Unity.PersistentDataManagement
         }
 
 
-        public bool HasReadableStreamFor(Channel channel)
+        public bool HasReadableStreamFor(IChannel channel)
         {
             return File.Exists(FilePathFor(channel));
         }
 
-        public StreamReader CreateReadStreamFor(Channel channel)
+        public StreamReader CreateReadStreamFor(IChannel channel)
         {
             FileStream fs = new FileStream(FilePathFor(channel), FileMode.Open);
             return new StreamReader(fs);
         }
 
-        public StreamWriter CreateWriteStreamFor(Channel channel)
+        public StreamWriter CreateWriteStreamFor(IChannel channel)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(FilePathFor(channel)));
             FileStream fs = new FileStream(FilePathFor(channel), FileMode.Create);
             return new StreamWriter(fs);
         }
 
-        private string FilePathFor(Channel channel)
+        private string FilePathFor(IChannel channel)
         {
             return Path.Combine(path, channel.ToString());
         }

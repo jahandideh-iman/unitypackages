@@ -5,7 +5,7 @@ using Arman.Foundation.Core.ServiceLocating;
 namespace Arman.UIManagement
 {
     [RequireComponent(typeof(Canvas))]
-    public class UIManager : MonoBehaviour, Service
+    public class UIManager : MonoBehaviour, IService
     {
         [SerializeField] private Panel popupBackgroundPanel = default;
         [SerializeField] private int sortingOffsetBetweenPopups = default;

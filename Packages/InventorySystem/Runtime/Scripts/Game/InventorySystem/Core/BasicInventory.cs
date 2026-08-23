@@ -2,9 +2,9 @@
 
 namespace Arman.Game.InventorySystem.Core
 {
-    public class BasicInventory<T> : Inventory<T> where T : InventoryItem
+    public class BasicInventory<T> : IInventory<T> where T : IInventoryItem
     {
-        class EmptyConstraint : InventoryItemConstraint
+        class EmptyConstraint : IInventoryItemConstraint
         {
             public int ApplyTo(int value)
             {
@@ -13,9 +13,9 @@ namespace Arman.Game.InventorySystem.Core
         }
 
         Dictionary<T, int> itemNumbers = new Dictionary<T, int>();
-        Dictionary<T, InventoryItemConstraint> itemConstraints = new Dictionary<T, InventoryItemConstraint>();
+        Dictionary<T, IInventoryItemConstraint> itemConstraints = new Dictionary<T, IInventoryItemConstraint>();
 
-        InventoryItemConstraint defaultConstraint = new EmptyConstraint();
+        IInventoryItemConstraint defaultConstraint = new EmptyConstraint();
 
         OnItemNumberChanged<T> globalOnItemNumberChangedCallback = delegate { };
         Dictionary<T, OnItemNumberChanged<T>> specificOnItemNumberChangedCallbacks = new Dictionary<T, OnItemNumberChanged<T>>();
@@ -49,7 +49,7 @@ namespace Arman.Game.InventorySystem.Core
             return itemNumbers[item] >= number;
         }
 
-        public void SetConstraint(T item, InventoryItemConstraint constraint)
+        public void SetConstraint(T item, IInventoryItemConstraint constraint)
         {
             itemConstraints[item] = constraint;
         }
@@ -70,9 +70,9 @@ namespace Arman.Game.InventorySystem.Core
             specificOnItemNumberChangedCallbacks[target] = callback;
         }
 
-        private InventoryItemConstraint ConstraintFor(T item)
+        private IInventoryItemConstraint ConstraintFor(T item)
         {
-            InventoryItemConstraint constraint;
+            IInventoryItemConstraint constraint;
 
             itemConstraints.TryGetValue(item, out constraint);
 

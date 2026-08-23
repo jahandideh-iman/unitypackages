@@ -1,13 +1,13 @@
 {
-  "name": "com.arman.foundation.service_locating",
+  "name": "com.arman.service-locating",
+  "displayName": "Service Locating",
   "version": "0.1.0",
   "license": "MIT",
-  "displayName": "Service Locating",
-  "description": "The base package for services",
   "unity": "2019.1",
+  "description": "The base package for services",
+  "hideInEditor": false,
   "author": {
     "name": "Iman Jahandideh",
     "email": "jahandideh_iman@yahoo.com"
-  },
-  "hideInEditor": false
+  }
 }

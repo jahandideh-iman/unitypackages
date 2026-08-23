@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Arman.ObjectPooling.Unity
 {
-    public class UnityComponentObjectPool<T> : BasicObjectPool<T> where T : Component, Poolable 
+    public class UnityComponentObjectPool<T> : BasicObjectPool<T> where T : Component, IPoolable 
     {
         protected Transform poolingContainer;
         protected T componentPrefab;

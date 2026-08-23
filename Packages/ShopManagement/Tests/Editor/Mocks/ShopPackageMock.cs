@@ -2,7 +2,7 @@
 
 namespace Arman.Mocks.Foundation.ShopManagement.Core
 {
-    public class ShopPackageMock : ShopPackage
+    public class ShopPackageMock : IShopPackage
     {
         bool isApplied = false;
 

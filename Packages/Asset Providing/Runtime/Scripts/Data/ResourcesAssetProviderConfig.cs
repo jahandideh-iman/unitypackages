@@ -8,12 +8,12 @@ namespace Arman.AssetProviding.Data
     {
         [SerializeField] string resourcesPathPrefix;
 
-        public override AsyncUnityAssetProvider CreateAsyncProvider()
+        public override IAsyncUnityAssetProvider CreateAsyncProvider()
         {
             return new ResourcesAssetProvider(resourcesPathPrefix);
         }
 
-        public override SyncUnityAssetProvider CreateSyncProvider()
+        public override ISyncUnityAssetProvider CreateSyncProvider()
         {
             return new ResourcesAssetProvider(resourcesPathPrefix);
         }

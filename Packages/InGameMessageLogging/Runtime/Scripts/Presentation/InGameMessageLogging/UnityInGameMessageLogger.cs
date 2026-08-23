@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Arman.Presentation.InGameMessageLogging
 {
-    public class UnityInGameMessageLogger : MonoBehaviour, InGameMessageLogger
+    public class UnityInGameMessageLogger : MonoBehaviour, IInGameMessageLogger
     {
         public LogMessage loggerMessagePrefab;
 

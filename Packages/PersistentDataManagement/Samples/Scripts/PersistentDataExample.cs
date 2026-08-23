@@ -8,7 +8,7 @@ using UnityEngine.UI;
 namespace Arman.Samples.PersistentDataManagement
 {
 
-    public class ExamplePersistentDataSerializer : PersistentDataSerializer
+    public class ExamplePersistentDataSerializer : IPersistentDataSerializer
     {
         PersistentDataExample persistentDataExample;
 
@@ -24,14 +24,14 @@ namespace Arman.Samples.PersistentDataManagement
         }
 
 
-        public void DeserializeFrom(ReadablePersistentDataWrapper persistentDataWrapper)
+        public void DeserializeFrom(IReadablePersistentDataWrapper persistentDataWrapper)
         {
             persistentDataExample.intValue = persistentDataWrapper.ReadInt("int");
             persistentDataExample.floatValue = persistentDataWrapper.ReadFloat("float");
             persistentDataExample.stringValue = persistentDataWrapper.ReadString("string");
         }
 
-        public void SerializeTo(WritablePersistentDataWrapper persistentDataWrapper)
+        public void SerializeTo(IWritablePersistentDataWrapper persistentDataWrapper)
         {
             persistentDataWrapper.WriteInt("int", persistentDataExample.intValue);
             persistentDataWrapper.WriteFloat("float", persistentDataExample.floatValue);
@@ -40,7 +40,7 @@ namespace Arman.Samples.PersistentDataManagement
     }
     public class PersistentDataExample : MonoBehaviour
     {
-        PersistentDataManager persistentDataManager;
+        IPersistentDataManager persistentDataManager;
 
         public Text intText;
         public Text floatText;

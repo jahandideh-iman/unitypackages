@@ -4,7 +4,7 @@ using Arman.Game.InventorySystem.Core;
 namespace Arman.Mocks.Game.InventorySystem
 {
 
-    public class MockInventoryItemConstraint : InventoryItemConstraint
+    public class MockInventoryItemConstraint : IInventoryItemConstraint
     {
         public int givenValue;
 

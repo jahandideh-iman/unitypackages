@@ -5,21 +5,21 @@ using System.Linq;
 
 namespace Arman.Foundation.ShopManagement.Core
 {
-    public class BasicShopCenter : ShopCenter
+    public class BasicShopCenter : IShopCenter
     {
         class PurchaseHandlingData
         {
             public Type targetPackageType;
 
-            public PurchaseHandler purchaseHandler;
+            public IPurchaseHandler purchaseHandler;
 
-            public PurchaseHandlingData(Type packageType, PurchaseHandler purchaseHandler)
+            public PurchaseHandlingData(Type packageType, IPurchaseHandler purchaseHandler)
             {
                 this.targetPackageType = packageType;
                 this.purchaseHandler = purchaseHandler;
             }
 
-            public bool IsAppliedTo(ShopPackage shopPackage)
+            public bool IsAppliedTo(IShopPackage shopPackage)
             {
                 return 
                     shopPackage.GetType().IsSubclassOf(targetPackageType) ||
@@ -27,28 +27,28 @@ namespace Arman.Foundation.ShopManagement.Core
             }
         }
 
-        List<ShopPackage> packages = new List<ShopPackage>();
+        List<IShopPackage> packages = new List<IShopPackage>();
         List<PurchaseHandlingData> purchaseHandlingDataList = new List<PurchaseHandlingData>();
 
-        Action<ShopPackage,PurchaseSuccessResult> globalOnPurchaseSucceeded = delegate { };
-        Action<ShopPackage,PurchaseFailureResult> globalOnPurchaseFailed = delegate { };
+        Action<IShopPackage,IPurchaseSuccessResult> globalOnPurchaseSucceeded = delegate { };
+        Action<IShopPackage,IPurchaseFailureResult> globalOnPurchaseFailed = delegate { };
 
-        public void AddPackage(ShopPackage package)
+        public void AddPackage(IShopPackage package)
         {
             packages.Add(package);
         }
 
-        public void RemovePackage(ShopPackage package)
+        public void RemovePackage(IShopPackage package)
         {
             packages.Remove(package);
         }
 
-        public void AssignPurchaseHandler<T>(PurchaseHandler purchaseHandler) where T : ShopPackage
+        public void AssignPurchaseHandler<T>(IPurchaseHandler purchaseHandler) where T : IShopPackage
         {
             purchaseHandlingDataList.Add(new PurchaseHandlingData(typeof(T), purchaseHandler));
         }
 
-        public void Purchase(ShopPackage package, Action<PurchaseSuccessResult> onSuccess, Action<PurchaseFailureResult> onFailure)
+        public void Purchase(IShopPackage package, Action<IPurchaseSuccessResult> onSuccess, Action<IPurchaseFailureResult> onFailure)
         {
             var purchaseHandler = FindPurchaseHandlerFor(package);
 
@@ -58,46 +58,46 @@ namespace Arman.Foundation.ShopManagement.Core
                 onFailure: (result) => HandlePurchaseFailure(package, onFailure, result));
         }
 
-        private void HandlePurchaseSuccess(ShopPackage package, Action<PurchaseSuccessResult> onSuccess, PurchaseSuccessResult result)
+        private void HandlePurchaseSuccess(IShopPackage package, Action<IPurchaseSuccessResult> onSuccess, IPurchaseSuccessResult result)
         {
             ApplyPackage(package); 
             onSuccess(result);
             globalOnPurchaseSucceeded.Invoke(package, result);
         }
 
-        private void HandlePurchaseFailure(ShopPackage package, Action<PurchaseFailureResult> onFailure, PurchaseFailureResult result)
+        private void HandlePurchaseFailure(IShopPackage package, Action<IPurchaseFailureResult> onFailure, IPurchaseFailureResult result)
         {
             onFailure(result);
             globalOnPurchaseFailed.Invoke(package, result);
         }
 
-        private void ApplyPackage(ShopPackage package)
+        private void ApplyPackage(IShopPackage package)
         {
             package.Apply();
         }
 
-        public void SetPurchaseSuccessCallback(Action<ShopPackage, PurchaseSuccessResult> onPurchaseSucceeded)
+        public void SetPurchaseSuccessCallback(Action<IShopPackage, IPurchaseSuccessResult> onPurchaseSucceeded)
         {
             this.globalOnPurchaseSucceeded = onPurchaseSucceeded;
         }
 
-        public void SetPurchaseFailureCallback(Action<ShopPackage, PurchaseFailureResult> onPurchaseFailed)
+        public void SetPurchaseFailureCallback(Action<IShopPackage, IPurchaseFailureResult> onPurchaseFailed)
         {
             this.globalOnPurchaseFailed = onPurchaseFailed;
         }
 
-        public ICollection<ShopPackage> Packages()
+        public ICollection<IShopPackage> Packages()
         {
             return packages;
         }
 
-        public ICollection<T> PackagesOfType<T>() where T : ShopPackage
+        public ICollection<T> PackagesOfType<T>() where T : IShopPackage
         {
             return packages.Where(p => p is T).Cast<T>().ToList();
         }
 
 
-        private PurchaseHandler FindPurchaseHandlerFor(ShopPackage package)
+        private IPurchaseHandler FindPurchaseHandlerFor(IShopPackage package)
         {
             foreach (var data in purchaseHandlingDataList)
                 if (data.IsAppliedTo(package))

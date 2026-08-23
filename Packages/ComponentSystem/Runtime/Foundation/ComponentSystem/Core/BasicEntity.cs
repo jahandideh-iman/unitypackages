@@ -3,19 +3,19 @@ using System.Collections.Generic;
 
 namespace Arman.Foundation.ComponentSystem.Core
 {
-    public class BasicEntity : Entity
+    public class BasicEntity : IEntity
     {
-        Component[] compArray = new Component[0];
-        List<Component> compList = new List<Component>(32);
+        IComponent[] compArray = new IComponent[0];
+        List<IComponent> compList = new List<IComponent>(32);
 
-        public void AddComponent(Component component)
+        public void AddComponent(IComponent component)
         {
             compList.Add(component);
             compArray = compList.ToArray();
             OnComponentAdded(component);
         }
 
-        public void AddComponents(params Component[] components)
+        public void AddComponents(params IComponent[] components)
         {
             var length = components.Length;
             for (int i = 0; i < length; ++i)
@@ -27,14 +27,14 @@ namespace Arman.Foundation.ComponentSystem.Core
             compArray = compList.ToArray();
         }
 
-        protected virtual void OnComponentAdded(Component component) { }
+        protected virtual void OnComponentAdded(IComponent component) { }
 
-        public IEnumerable<Component> AllComponents()
+        public IEnumerable<IComponent> AllComponents()
         {
             return compArray;
         }
 
-        public T GetComponent<T>() where T : Component
+        public T GetComponent<T>() where T : IComponent
         {
             var count = compArray.Length;
             for (int i = 0; i < count; ++i)
@@ -44,7 +44,7 @@ namespace Arman.Foundation.ComponentSystem.Core
             return default(T);
         }
 
-        public T GetComponentFromEnd<T>() where T : Component
+        public T GetComponentFromEnd<T>() where T : IComponent
         {
             var count = compArray.Length;
             for (int i = count-1; i >= 0; --i)
@@ -54,7 +54,7 @@ namespace Arman.Foundation.ComponentSystem.Core
             return default(T);
         }
 
-        public T GetComponent<T>(int index) where T : Component
+        public T GetComponent<T>(int index) where T : IComponent
         {
             return (T)compArray[index];
         }

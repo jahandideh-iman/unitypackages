@@ -8,7 +8,7 @@ namespace Arman.Foundation.Core.ServiceLocating
     {
         private static ServiceLocator instance;
 
-        private List<Service> services = new List<Service>();
+        private List<IService> services = new List<IService>();
 
         public static void Init()
         {
@@ -26,24 +26,24 @@ namespace Arman.Foundation.Core.ServiceLocating
             instance = null;
         }
 
-        public static void Register(Service service)
+        public static void Register(IService service)
         {
             instance.services.Add(service);
         }
 
-        public static void UnRegister<T>() where T : Service
+        public static void UnRegister<T>() where T : IService
         {
             var service = Find<T>();
             instance.services.Remove(service);
         }
 
-        public static void Replace<T>(T service) where T : Service
+        public static void Replace<T>(T service) where T : IService
         {
             UnRegister<T>();
             Register(service);
         }
 
-        public static T Find<T>() where T : Service
+        public static T Find<T>() where T : IService
         {
             foreach (var service in instance.services)
                 if (service is T)

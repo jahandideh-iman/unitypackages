@@ -1,12 +1,10 @@
 {
-  "name": "com.arman.foundation.inventory_system",
+  "name": "com.arman.inventory-system",
+  "displayName": "Inventory System",
   "version": "0.1.0",
   "license": "MIT",
-  "displayName": "Inventory System",
-  "description": "Description",
   "unity": "2019.1",
-  "dependencies": {
- },
+  "description": "Description",
   "author": {
     "name": "Iman Jahandideh",
     "email": "jahandideh_iman@yahoo.com"

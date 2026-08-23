@@ -1,13 +1,13 @@
 {
-  "name": "com.arman.foundation.package_basics",
+  "name": "com.arman.package-basics",
+  "displayName": "Package Basics",
   "version": "0.1.0",
   "license": "MIT",
-  "displayName": "Package Basics",
-  "description": "Description",
   "unity": "2019.1",
+  "description": "Description",
+  "hideInEditor": false,
   "author": {
     "name": "Iman Jahandideh",
     "email": "jahandideh_iman@yahoo.com"
-  },
-  "hideInEditor": false
+  }
 }

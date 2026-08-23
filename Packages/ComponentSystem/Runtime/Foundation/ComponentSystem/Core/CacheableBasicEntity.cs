@@ -1,11 +1,11 @@
 ﻿namespace Arman.Foundation.ComponentSystem.Core
 {
-    public interface Cache
+    public interface ICache
     {
-        void TryCache(Component component);
+        void TryCache(IComponent component);
     }
 
-    public class CacheableBasicEntity<T> : BasicEntity where T : Cache
+    public class CacheableBasicEntity<T> : BasicEntity where T : ICache
     {
         readonly T cache;
 
@@ -14,7 +14,7 @@
             this.cache = cache;
         }
 
-        protected override void OnComponentAdded(Component component)
+        protected override void OnComponentAdded(IComponent component)
         {
             cache.TryCache(component);
         }

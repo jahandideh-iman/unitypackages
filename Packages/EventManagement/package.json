@@ -1,15 +1,15 @@
 {
-  "name": "com.arman.foundation.event_management",
+  "name": "com.arman.event-management",
+  "displayName": "Event Management",
   "version": "0.1.0",
   "license": "MIT",
-  "displayName": "Event Management",
-  "description": "Description",
   "unity": "2019.1",
+  "description": "Description",
   "author": {
     "name": "Iman Jahandideh",
     "email": "jahandideh_iman@yahoo.com"
   },
   "dependencies": {
-    "com.arman.foundation.service_locating": "0.1.0"
+    "com.arman.service-locating": "0.1.0"
   }
 }

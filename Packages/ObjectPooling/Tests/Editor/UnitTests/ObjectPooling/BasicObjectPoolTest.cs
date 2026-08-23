@@ -4,7 +4,7 @@ using NUnit.Framework;
 namespace Arman.Tests.ObjectPooling.Core
 {
 
-    public class MockObject : Poolable
+    public class MockObject : IPoolable
     {
         public int id;
 

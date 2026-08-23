@@ -7,7 +7,7 @@ using UnityEngine.Networking;
 
 namespace Arman.HttpConnection
 {
-    public class UnityWebRequestBasedHttpConnectionService : MonoBehaviour, HttpConnectionService
+    public class UnityWebRequestBasedHttpConnectionService : MonoBehaviour, IHttpConnectionService
     {
         // A temporary way to detecting timeout error by callers.
         // TODO: Find a better way.

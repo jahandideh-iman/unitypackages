@@ -10,53 +10,53 @@ using System.Collections.Generic;
 // TODO: Refactor this.
 namespace Arman.UpdateManagement.Foundation
 {
-    public delegate void ChannelStateChanged(Channel channel, bool isPaused);
-    public class BasicUpdateManager : UpdateManager
+    public delegate void ChannelStateChanged(IChannel channel, bool isPaused);
+    public class BasicUpdateManager : IUpdateManager
     {
         public event ChannelStateChanged ChannelStateChangedEvent = delegate { };
 
         class ChannelData
         {
-            public Channel channel;
+            public IChannel channel;
             public ChannelData parrent;
             public float timeScale;
             public bool isPaused;
-            public List<Updatable> updatables;
+            public List<IUpdatable> updatables;
 
-            public void AddUpdatable(Updatable updatable)
+            public void AddUpdatable(IUpdatable updatable)
             {
                 updatables.Add(updatable);
             }
 
-            public void RemoveUpdatable(Updatable updatable)
+            public void RemoveUpdatable(IUpdatable updatable)
             {
                 updatables.RemoveAll(u => updatable.Equals(u));
             }
         }
 
 
-        Dictionary<Channel, ChannelData> channelsData = new Dictionary<Channel, ChannelData>();
+        Dictionary<IChannel, ChannelData> channelsData = new Dictionary<IChannel, ChannelData>();
 
-        List<Updatable> updatablesTemp = new List<Updatable>();
+        List<IUpdatable> updatablesTemp = new List<IUpdatable>();
 
-        public void RegisterChannel(Channel channel)
+        public void RegisterChannel(IChannel channel)
         {
             AddChannelDataIfIsNew(channel);
         }
 
-        public void RegisterChannelToParent(Channel child, Channel parent)
+        public void RegisterChannelToParent(IChannel child, IChannel parent)
         {
             AddChannelDataIfIsNew(child);
             ChannelDataFor(child).parrent = ChannelDataFor(parent);
         }
 
-        public void RegisterUpdatable(Updatable updatable, Channel channel)
+        public void RegisterUpdatable(IUpdatable updatable, IChannel channel)
         {
             AddChannelDataIfIsNew(channel);
             ChannelDataFor(channel).AddUpdatable(updatable);
         }
 
-        public void UnRegisterUpdatable(Updatable updatable)
+        public void UnRegisterUpdatable(IUpdatable updatable)
         {
             var data = ChannelDataFor(updatable);
             if (data == null)
@@ -65,7 +65,7 @@ namespace Arman.UpdateManagement.Foundation
             data.RemoveUpdatable(updatable);
         }
 
-        public void Pause(Channel channel)
+        public void Pause(IChannel channel)
         {
             if (HasChannel(channel))
             {
@@ -74,7 +74,7 @@ namespace Arman.UpdateManagement.Foundation
             }
         }
 
-        public void Resume(Channel channel)
+        public void Resume(IChannel channel)
         {
             if (HasChannel(channel))
             {
@@ -84,7 +84,7 @@ namespace Arman.UpdateManagement.Foundation
             }
         }
 
-        public void SetChannelTimeScale(Channel channel, float scale)
+        public void SetChannelTimeScale(IChannel channel, float scale)
         {
             // NOTE: The effects of parent's time scales must be considered.
             throw new NotImplementedException();
@@ -92,7 +92,7 @@ namespace Arman.UpdateManagement.Foundation
             //ChannelDataFor(channel).timeScale = scale;
         }
 
-        public bool Has(Updatable updatable)
+        public bool Has(IUpdatable updatable)
         {
             foreach (var data in channelsData.Values)
                 if (data.updatables.Contains(updatable))
@@ -122,7 +122,7 @@ namespace Arman.UpdateManagement.Foundation
                 updatablesTemp[i].UpdateTime(amount * data.timeScale);
         }
 
-        public bool IsChannelGloballyPaused(Channel channel)
+        public bool IsChannelGloballyPaused(IChannel channel)
         {
             return IsChannelDataGloballyPaused(ChannelDataFor(channel));
         }
@@ -141,17 +141,17 @@ namespace Arman.UpdateManagement.Foundation
             return false;
         }
 
-        private ChannelData ChannelDataFor(Channel channel)
+        private ChannelData ChannelDataFor(IChannel channel)
         {
             return channelsData[channel];
         }
 
-        private bool HasChannel(Channel channel)
+        private bool HasChannel(IChannel channel)
         {
             return channelsData.ContainsKey(channel);
         }
 
-        private ChannelData ChannelDataFor(Updatable updatable)
+        private ChannelData ChannelDataFor(IUpdatable updatable)
         {
             foreach (var data in channelsData.Values)
                 if (data.updatables.Contains(updatable))
@@ -160,7 +160,7 @@ namespace Arman.UpdateManagement.Foundation
             return null;
         }
 
-        private void AddChannelDataIfIsNew(Channel channel)
+        private void AddChannelDataIfIsNew(IChannel channel)
         {
             if (HasChannel(channel))
                 return;
@@ -168,13 +168,13 @@ namespace Arman.UpdateManagement.Foundation
             channelsData.Add(channel, CreateDefaultChannelDataFor(channel));
         }
 
-        private ChannelData CreateDefaultChannelDataFor(Channel channel)
+        private ChannelData CreateDefaultChannelDataFor(IChannel channel)
         {
             return new ChannelData()
             {
                 isPaused = false,
                 timeScale = 1f,
-                updatables = new List<Updatable>(),
+                updatables = new List<IUpdatable>(),
                 channel = channel
             };
         }

@@ -5,9 +5,9 @@ using System.Collections.Generic;
 
 namespace Arman.Foundation.ShopManagement.Core
 {
-    public class CompositeShopPackage : ShopPackage
+    public class CompositeShopPackage : IShopPackage
     {
-        List<ShopPackage> packages = new List<ShopPackage>();
+        List<IShopPackage> packages = new List<IShopPackage>();
 
         public void Apply()
         {
@@ -15,12 +15,12 @@ namespace Arman.Foundation.ShopManagement.Core
                 package.Apply();
         }
 
-        public void Add(ShopPackage package)
+        public void Add(IShopPackage package)
         {
             packages.Add(package);
         }
 
-        public ICollection<ShopPackage> Packages()
+        public ICollection<IShopPackage> Packages()
         {
             return packages;
         }

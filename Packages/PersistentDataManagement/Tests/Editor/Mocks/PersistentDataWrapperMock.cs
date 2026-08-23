@@ -5,7 +5,7 @@ using System.IO;
 
 namespace Arman.Mocks.Foundation.Core.PersistentDataManagement
 {
-    public class PersistentDataWrapperMock : PersistentDataWrapper
+    public class PersistentDataWrapperMock : IPersistentDataWrapper
     {
         public Action<StreamWriter> onWriteAction = delegate { };
         public Action<StreamReader> onReadAction = delegate { };
@@ -45,32 +45,32 @@ namespace Arman.Mocks.Foundation.Core.PersistentDataManagement
             
         }
 
-        public WritablePersistentDataWrapper WriteInt(string key, int value)
+        public IWritablePersistentDataWrapper WriteInt(string key, int value)
         {
             return this;
         }
 
-        public WritablePersistentDataWrapper WriteFloat(string key, float value)
+        public IWritablePersistentDataWrapper WriteFloat(string key, float value)
         {
             throw new NotImplementedException();
         }
 
-        public WritablePersistentDataWrapper WriteBoolean(string key, bool value)
+        public IWritablePersistentDataWrapper WriteBoolean(string key, bool value)
         {
             throw new NotImplementedException();
         }
 
-        public WritablePersistentDataWrapper WriteString(string key, string value)
+        public IWritablePersistentDataWrapper WriteString(string key, string value)
         {
             throw new NotImplementedException();
         }
 
-        public WritablePersistentDataWrapper BeginWritingBlock(string key)
+        public IWritablePersistentDataWrapper BeginWritingBlock(string key)
         {
             return this;
         }
 
-        public WritablePersistentDataWrapper EndWritingBlock()
+        public IWritablePersistentDataWrapper EndWritingBlock()
         {
             return this;
         }

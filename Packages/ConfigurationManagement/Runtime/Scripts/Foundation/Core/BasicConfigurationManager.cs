@@ -3,11 +3,11 @@ using System.Collections.Generic;
 
 namespace Arman.Foundation.Core.ConfigurationManagement
 {
-    public class BasicConfigurationManager : ConfigurationManager
+    public class BasicConfigurationManager : IConfigurationManager
     {
-        private Dictionary<Type, Configurer> configurers = new Dictionary<Type, Configurer>();
+        private Dictionary<Type, IConfigurer> configurers = new Dictionary<Type, IConfigurer>();
 
-        public void Register<T>(Configurer<T> configurer)
+        public void Register<T>(IConfigurer<T> configurer)
         {
             configurers[typeof(T)] = configurer;
         }
@@ -17,21 +17,21 @@ namespace Arman.Foundation.Core.ConfigurationManagement
             FindConfigurer<T>().Configure(target);
         }
         
-        public bool Contains<T>(Configurer<T> configurer)
+        public bool Contains<T>(IConfigurer<T> configurer)
         {
             return configurers.ContainsKey(typeof(T));
         }
 
-        public Configurer<T> FindConfigurer<T>()
+        public IConfigurer<T> FindConfigurer<T>()
         {
             if (configurers.ContainsKey(typeof(T)) == false)
                 return null;
 
-            return configurers[typeof(T)] as Configurer<T>;
+            return configurers[typeof(T)] as IConfigurer<T>;
         }
 
 
-        public Configurer<T> RemoveConfigurer<T>()
+        public IConfigurer<T> RemoveConfigurer<T>()
         {
             var configurer = FindConfigurer<T>();
 
