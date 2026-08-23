@@ -76,3 +76,7 @@ lerna-debug.log*
 # npm pack build output (not a distribution channel; releases are git tags)
 /PackageExports/
 *.tgz
+
+# Claude Code: per-machine settings and worktrees (project settings.json IS tracked)
+/.claude/settings.local.json
+/.claude/worktrees/
