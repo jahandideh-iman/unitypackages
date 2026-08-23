@@ -1,6 +1,7 @@
 {
   "name": "com.arman.foundation.inventory_system",
   "version": "0.1.0",
+  "license": "MIT",
   "displayName": "Inventory System",
   "description": "Description",
   "unity": "2019.1",
