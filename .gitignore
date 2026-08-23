@@ -72,3 +72,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
+
+# npm pack build output (not a distribution channel; releases are git tags)
+/PackageExports/
+*.tgz
