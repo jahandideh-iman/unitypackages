@@ -1,11 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
-using Arman.Foundation.Core.ServiceLocating;
 
 namespace Arman.UIManagement
 {
     [RequireComponent(typeof(Canvas))]
-    public class UIManager : MonoBehaviour, IService
+    public class UIManager : MonoBehaviour
     {
         [SerializeField] private Panel popupBackgroundPanel = default;
         [SerializeField] private int sortingOffsetBetweenPopups = default;

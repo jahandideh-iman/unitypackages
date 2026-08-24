@@ -1,8 +1,6 @@
-﻿using Arman.Foundation.Core.ServiceLocating;
-
-namespace Arman.AssetProviding.Foundation
+﻿namespace Arman.AssetProviding.Foundation
 {
-    public interface IAssetProviderService : IService
+    public interface IAssetProviderService
     {
         ISyncUnityAssetProvider ISyncUnityAssetProvider { get; }
         IAsyncUnityAssetProvider IAsyncUnityAssetProvider { get; }

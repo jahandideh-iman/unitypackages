@@ -1,8 +1,7 @@
 {
     "name": "Arman.PersistentDataManagemement.Samples",
     "references": [
-        "GUID:0ee13f74875fc7741b7cfbfbfe30ad8c",
-        "GUID:9c6b53a4d5f5b9147a0e75ba44ebc53f"
+        "GUID:0ee13f74875fc7741b7cfbfbfe30ad8c"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

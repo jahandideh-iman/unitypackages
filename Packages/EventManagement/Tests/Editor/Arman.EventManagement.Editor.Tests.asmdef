@@ -2,8 +2,7 @@
     "name": "Arman.EventManagement.Editor.Tests",
     "references": [
         "GUID:740e967614bf5624b93fc68973a03364",
-        "GUID:0acc523941302664db1f4e527237feb3",
-        "GUID:9c6b53a4d5f5b9147a0e75ba44ebc53f"
+        "GUID:0acc523941302664db1f4e527237feb3"
     ],
     "includePlatforms": [
         "Editor"

@@ -1,9 +1,7 @@
 ﻿
-using Arman.Foundation.Core.ServiceLocating;
-
 namespace Arman.Foundation.EventManagement
 {
-    public interface IEventManager : IService
+    public interface IEventManager
     {
         void Propagate(IGameEvent evt, object sender);
         void Register(IEventListener listener);

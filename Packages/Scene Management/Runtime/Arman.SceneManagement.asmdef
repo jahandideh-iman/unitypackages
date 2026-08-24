@@ -1,9 +1,7 @@
 {
     "name": "Arman.SceneManagement",
     "rootNamespace": "",
-    "references": [
-        "Arman.ServiceLocating.Runtime"
-    ],
+    "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

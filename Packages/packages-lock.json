@@ -4,9 +4,7 @@
       "version": "file:Asset Providing",
       "depth": 0,
       "source": "embedded",
-      "dependencies": {
-        "com.arman.service-locating": "0.1.0"
-      }
+      "dependencies": {}
     },
     "com.arman.component-system": {
       "version": "file:ComponentSystem",
@@ -30,24 +28,19 @@
       "version": "file:EventManagement",
       "depth": 0,
       "source": "embedded",
-      "dependencies": {
-        "com.arman.service-locating": "0.1.0"
-      }
+      "dependencies": {}
     },
     "com.arman.http-connection": {
       "version": "file:HttpConnection",
       "depth": 0,
       "source": "embedded",
-      "dependencies": {
-        "com.arman.service-locating": "0.1.0"
-      }
+      "dependencies": {}
     },
     "com.arman.in-game-message-logging": {
       "version": "file:InGameMessageLogging",
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "com.arman.service-locating": "0.1.0",
         "com.arman.unity-utilities": "0.1.0"
       }
     },
@@ -80,17 +73,14 @@
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "com.arman.package-basics": "0.1.0",
-        "com.arman.service-locating": "0.1.0"
+        "com.arman.package-basics": "0.1.0"
       }
     },
     "com.arman.scene-management": {
       "version": "file:Scene Management",
       "depth": 0,
       "source": "embedded",
-      "dependencies": {
-        "com.arman.service-locating": "0.1.0"
-      }
+      "dependencies": {}
     },
     "com.arman.service-locating": {
       "version": "file:ServiceLocating",
@@ -102,17 +92,13 @@
       "version": "file:ShopManagement",
       "depth": 0,
       "source": "embedded",
-      "dependencies": {
-        "com.arman.service-locating": "0.1.0"
-      }
+      "dependencies": {}
     },
     "com.arman.ui-management": {
       "version": "file:UI Management",
       "depth": 0,
       "source": "embedded",
-      "dependencies": {
-        "com.arman.service-locating": "0.1.0"
-      }
+      "dependencies": {}
     },
     "com.arman.unity-utilities": {
       "version": "file:UnityUtilities",
@@ -125,7 +111,6 @@
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "com.arman.service-locating": "0.1.0",
         "com.arman.package-basics": "0.1.0"
       }
     },

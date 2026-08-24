@@ -1,9 +1,8 @@
-﻿using Arman.Foundation.Core.ServiceLocating;
-using System;
+﻿using System;
 
 namespace Arman.HttpConnection
 {
-    public interface IHttpConnectionService : IService
+    public interface IHttpConnectionService
     {
         void Request(HttpRequest request, Action<string> onSuccess, Action<string> onFailure);
 

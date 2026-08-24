@@ -1,9 +1,7 @@
 ﻿
-using Arman.Foundation.Core.ServiceLocating;
-
 namespace Arman.Foundation.Core.ConfigurationManagement
 {
-    public interface IConfigurationManager : IService
+    public interface IConfigurationManager
     {
         void Register<T>(IConfigurer<T> configurer);
         IConfigurer<T> FindConfigurer<T>();

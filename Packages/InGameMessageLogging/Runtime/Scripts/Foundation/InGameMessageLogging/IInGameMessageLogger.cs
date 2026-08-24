@@ -1,8 +1,6 @@
-﻿using Arman.Foundation.Core.ServiceLocating;
-
-namespace Arman.Foundation.InGameMessageLogging
+﻿namespace Arman.Foundation.InGameMessageLogging
 {
-    public interface IInGameMessageLogger : IService
+    public interface IInGameMessageLogger
     {
         void Log(string message);
     }
