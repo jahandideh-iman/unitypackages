@@ -77,3 +77,10 @@ crashlytics-build.properties
 # Claude Code worktrees
 /.claude/worktrees/
 /.worktrees/
+
+# AI/LLM CLI Tool metadata & caches
+.claude/
+.qwen/
+.aider*
+.cursor/
+.copilot/
