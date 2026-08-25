@@ -1,7 +1,8 @@
 {
     "name": "Arman.ConfigurationManagement.Editor",
+    "rootNamespace": "",
     "references": [
-        "GUID:290bd8942510c634d8f8b8c36291d4f6"
+        "Arman.ConfigurationManagement"
     ],
     "includePlatforms": [
         "Editor"
@@ -12,5 +13,6 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": []
+    "versionDefines": [],
+    "noEngineReferences": false
 }

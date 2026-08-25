@@ -1,6 +1,9 @@
 {
-    "name": "Arman.ConfigurationManagement.Runtime",
-    "references": [],
+    "name": "Arman.PersistentDataManagemement",
+    "rootNamespace": "",
+    "references": [
+        "Arman.PackageBasics"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
@@ -8,5 +11,6 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": []
+    "versionDefines": [],
+    "noEngineReferences": false
 }

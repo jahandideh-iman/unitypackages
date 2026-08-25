@@ -1,7 +1,8 @@
 {
     "name": "Arman.InGameMessageLogging",
+    "rootNamespace": "",
     "references": [
-        "GUID:c6dcd9240aa3fd64687528d33160ccff"
+        "Arman.UnityUtilities"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

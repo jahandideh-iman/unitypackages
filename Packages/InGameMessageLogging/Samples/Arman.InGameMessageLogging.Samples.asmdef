@@ -1,7 +1,8 @@
 {
     "name": "Arman.InGameMessageLogging.Samples",
+    "rootNamespace": "",
     "references": [
-        "GUID:b59571e180e3e224d9b3206e3991648a"
+        "Arman.InGameMessageLogging"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

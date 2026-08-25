@@ -1,9 +1,10 @@
 {
     "name": "Arman.ConfigurationManagement.Tests.Editor",
+    "rootNamespace": "",
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "Arman.ConfigurationManagement.Runtime"
+        "Arman.ConfigurationManagement"
     ],
     "includePlatforms": [
         "Editor"
@@ -18,5 +19,6 @@
     "defineConstraints": [
         "UNITY_INCLUDE_TESTS"
     ],
-    "versionDefines": []
+    "versionDefines": [],
+    "noEngineReferences": false
 }

@@ -1,7 +1,8 @@
 {
     "name": "Arman.PersistentDataManagemement.Samples",
+    "rootNamespace": "",
     "references": [
-        "GUID:0ee13f74875fc7741b7cfbfbfe30ad8c"
+        "Arman.PersistentDataManagemement"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -10,5 +11,6 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": []
+    "versionDefines": [],
+    "noEngineReferences": false
 }
