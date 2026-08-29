@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "license": "MIT",
   "unity": "2019.1",
-  "description": "Description",
+  "description": "Pub-sub event broadcasting with typed listener registration, copy-on-write propagation, and thread-safe event handling.",
   "author": {
     "name": "Iman Jahandideh",
     "email": "jahandidehk.iman@gmail.com"

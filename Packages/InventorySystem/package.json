@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "license": "MIT",
   "unity": "2019.1",
-  "description": "Description",
+  "description": "Generic item tracking with quantity management, constraint-based validation (min/max), and subscription callbacks for change notifications.",
   "author": {
     "name": "Iman Jahandideh",
     "email": "jahandidehk.iman@gmail.com"

@@ -4,10 +4,9 @@
   "version": "0.1.0-preview",
   "license": "MIT",
   "unity": "2019.1",
-  "description": "Description",
+  "description": "Scene loading wrapper with DeferredProcedureExecutor callbacks, ordered initialization via BaseInitilizer<T> pattern for deterministic startup.",
   "author": {
     "name": "Iman Jahandideh",
     "email": "jahandidehk.iman@gmail.com"
-  },
-  "dependencies": {}
+  }
 }

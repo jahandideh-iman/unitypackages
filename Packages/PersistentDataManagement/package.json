@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "license": "MIT",
   "unity": "2019.1",
-  "description": "Description",
+  "description": "Serializable data persistence layer with JSON wrapper, PlayerPrefs storage, file I/O via custom streams, and per-channel serialization support.",
   "hideInEditor": false,
   "author": {
     "name": "Iman Jahandideh",

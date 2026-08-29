@@ -4,11 +4,10 @@
   "version": "0.1.0-preview",
   "license": "MIT",
   "unity": "2019.1",
-  "description": "Description",
+  "description": "Canvas-based UI framework with MainWindow/Popup Window stack hierarchy, back-button navigation, and focus-aware panel layering.",
   "hideInEditor": false,
   "author": {
     "name": "Iman Jahandideh",
     "email": "jahandidehk.iman@gmail.com"
-  },
-  "dependencies": {}
+  }
 }
