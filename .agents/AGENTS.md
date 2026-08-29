@@ -203,8 +203,6 @@ Never prefix a git command with `cd` (e.g. `cd <dir> && git ...`); use `git -C <
 
 ## C# coding style
 
-Same conventions as PopBalloon:
-
 * **Curly braces:** Allman (brace on its own line).
 * **PascalCase:** classes, interfaces, methods, properties, public/internal fields.
 * **Interfaces are `I`-prefixed.** All 35 were renamed on 2026-08-23 (`Service` → `IService`, `PersistentDataWrapper` → `IPersistentDataWrapper`, …), file names included, via `git mv` so the `.meta` GUIDs survived. Anything without the prefix is a class or struct — don't add an interface that breaks this.
@@ -227,9 +225,7 @@ Same conventions as PopBalloon:
 
 Real, deliberately unfixed. Don't "clean these up" as a side quest — each has a cost, and the asmdef ones break consumer references:
 
-* **`PersistentDataManagement` asmdefs still read `Arman.PersistentDataManagemement`** (misspelled) in three files, including the assembly `name` fields. The *package id* (`com.arman.persistent-data-management`) and `displayName` were corrected; the assembly names were deliberately left, since renaming an assembly is a breaking change for consumers.
 * **`Samples`/`Documentation` gain the `~` suffix at release time, not in the repo.** In the repo the folders are plainly `Samples/`/`Documentation/`. During a package release (before tagging), rename them to `Samples~`/`Documentation~` so UPM keeps that content out of a consumer's import and compilation. Do **not** add `~` to the repo folders themselves — the `~` is a release-time rename only.
-* **`ServiceLocating/Runtime/Scritps/`** — misspelled folder. Renaming churns `.meta` GUIDs.
 * **Ten publishable packages still carry a placeholder `"description": "Description"`:** `Asset Providing`, `EventManagement`, `HttpConnection`, `InventorySystem`, `ObjectPooling`, `PackageBasics`, `PersistentDataManagement`, `Scene Management`, `UI Management`, `UpdateManagement`. (`PackageTemplate` also has it, which is correct for a scaffold.) Two more are technically-real-but-useless one-liners: `DevelopmentConsole` ("Development Console") and `ServiceLocating` ("The base package for services"). **All of these must be written before the package they belong to is published** — the description is what shows on the OpenUPM listing. The four that *were* stock template text (`ComponentSystem`, `InGameMessageLogging`, `ShopManagement`, `UnityUtilities`) were written on 2026-08-23.
 * **All 18 packages now have a README and a CHANGELOG.** The 13 that were missing them (i.e. every package other than the five documented ones plus `PackageTemplate`) were authored on 2026-08-29 from each package's runtime source.
 * `PackageTemplate` mixes `Arman.PackageTemplate` and `Arman.TemplatePackage` in its own asmdef names.
