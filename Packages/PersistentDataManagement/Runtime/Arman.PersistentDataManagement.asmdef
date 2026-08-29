@@ -1,8 +1,8 @@
 {
-    "name": "Arman.PersistentDataManagemement.Samples",
+    "name": "Arman.PersistentDataManagement",
     "rootNamespace": "",
     "references": [
-        "Arman.PersistentDataManagemement"
+        "Arman.PackageBasics"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

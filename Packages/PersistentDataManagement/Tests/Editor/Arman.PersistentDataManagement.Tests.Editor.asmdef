@@ -1,10 +1,10 @@
 {
-    "name": "Arman.PersistentDataManagemement.Tests.Editor",
+    "name": "Arman.PersistentDataManagement.Tests.Editor",
     "rootNamespace": "",
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "Arman.PersistentDataManagemement",
+        "Arman.PersistentDataManagement",
         "Arman.PackageBasics"
     ],
     "includePlatforms": [

@@ -53,9 +53,8 @@ A package folder follows the standard UPM layout. Actual usage across the 18 pac
 | `Runtime/` | 18 / 18 | Runtime code + its asmdef. Every package has one. |
 | `Tests/Editor/` | 9 | EditMode tests, own asmdef. |
 | `Documentation/` | 5 | Long-form docs. |
-| `Samples/` | 4 | Example content. |
+| `Samples/` | 5 | Example content (incl. `DevelopmentConsole`). |
 | `Editor/` | 4 | Editor-only code, own asmdef. |
-| `Example/` | 1 | One-off in `DevelopmentConsole`; prefer `Samples/`. |
 
 Required at the package root: `package.json`, `LICENSE.md`, and a `.meta` file for **every** file and folder.
 
@@ -72,26 +71,24 @@ Assemblies are named `Arman.<PackageName>[.<Layer>]`. Be aware the existing nami
 
 | Folder | Package name | Version | Depends on (`com.arman.` elided) |
 |--|--|--|--|
-| `Asset Providing` | `com.arman.asset-providing` | 0.1.0-preview | service-locating |
+| `Asset Providing` | `com.arman.asset-providing` | 0.1.0-preview | — |
 | `ComponentSystem` | `com.arman.component-system` | 0.1.0 | — |
-| `ConfigurationManagement` | `com.arman.configuration-management` | 1.0.0 | — *(under-declared — see [Known inconsistencies](#known-inconsistencies))* |
+| `ConfigurationManagement` | `com.arman.configuration-management` | 1.0.0 | — |
 | `DevelopmentConsole` | `com.arman.development-console` | 0.1.0 | — |
-| `EventManagement` | `com.arman.event-management` | 0.1.0 | service-locating |
-| `HttpConnection` | `com.arman.http-connection` | 0.1.0-preview | service-locating |
-| `InGameMessageLogging` | `com.arman.in-game-message-logging` | 0.1.0 | service-locating, unity-utilities |
+| `EventManagement` | `com.arman.event-management` | 0.1.0 | — |
+| `HttpConnection` | `com.arman.http-connection` | 0.1.0-preview | — |
+| `InGameMessageLogging` | `com.arman.in-game-message-logging` | 0.1.0 | unity-utilities |
 | `InventorySystem` | `com.arman.inventory-system` | 0.1.0 | — |
 | `ObjectPooling` | `com.arman.object-pooling` | 0.1.0-preview | — |
 | `PackageBasics` | `com.arman.package-basics` | 0.1.0 | — |
 | `PackageTemplate` | `com.arman.package-template` | 0.1.0-preview | — *(private, never published)* |
-| `PersistentDataManagement` | `com.arman.persistent-data-management` | 0.1.0 | package-basics, service-locating |
-| `Scene Management` | `com.arman.scene-management` | 0.1.0-preview | service-locating |
+| `PersistentDataManagement` | `com.arman.persistent-data-management` | 0.1.0 | package-basics |
+| `Scene Management` | `com.arman.scene-management` | 0.1.0-preview | — |
 | `ServiceLocating` | `com.arman.service-locating` | 0.1.0 | — |
-| `ShopManagement` | `com.arman.shop-management` | 0.1.0 | service-locating |
-| `UI Management` | `com.arman.ui-management` | 0.1.0-preview | service-locating |
+| `ShopManagement` | `com.arman.shop-management` | 0.1.0 | — |
+| `UI Management` | `com.arman.ui-management` | 0.1.0-preview | — |
 | `UnityUtilities` | `com.arman.unity-utilities` | 0.1.0 | — |
-| `UpdateManagement` | `com.arman.update-management` | 0.1.0-preview | service-locating, package-basics |
-
-**`com.arman.service-locating` is the hub — nine packages depend on it.** Treat any change to it as breaking until proven otherwise, and bump/release it before its dependents.
+| `UpdateManagement` | `com.arman.update-management` | 0.1.0-preview | package-basics |
 
 ### Naming
 
@@ -231,9 +228,8 @@ Same conventions as PopBalloon:
 Real, deliberately unfixed. Don't "clean these up" as a side quest — each has a cost, and the asmdef ones break consumer references:
 
 * **`PersistentDataManagement` asmdefs still read `Arman.PersistentDataManagemement`** (misspelled) in three files, including the assembly `name` fields. The *package id* (`com.arman.persistent-data-management`) and `displayName` were corrected; the assembly names were deliberately left, since renaming an assembly is a breaking change for consumers.
-* **`Samples/` and `Documentation/` lack the `~` suffix.** UPM convention is `Samples~`/`Documentation~`, which keeps them out of consumers' import and compilation. As-is, sample asmdefs compile in every consuming project.
+* **`Samples`/`Documentation` gain the `~` suffix at release time, not in the repo.** In the repo the folders are plainly `Samples/`/`Documentation/`. During a package release (before tagging), rename them to `Samples~`/`Documentation~` so UPM keeps that content out of a consumer's import and compilation. Do **not** add `~` to the repo folders themselves — the `~` is a release-time rename only.
 * **`ServiceLocating/Runtime/Scritps/`** — misspelled folder. Renaming churns `.meta` GUIDs.
 * **Ten publishable packages still carry a placeholder `"description": "Description"`:** `Asset Providing`, `EventManagement`, `HttpConnection`, `InventorySystem`, `ObjectPooling`, `PackageBasics`, `PersistentDataManagement`, `Scene Management`, `UI Management`, `UpdateManagement`. (`PackageTemplate` also has it, which is correct for a scaffold.) Two more are technically-real-but-useless one-liners: `DevelopmentConsole` ("Development Console") and `ServiceLocating` ("The base package for services"). **All of these must be written before the package they belong to is published** — the description is what shows on the OpenUPM listing. The four that *were* stock template text (`ComponentSystem`, `InGameMessageLogging`, `ShopManagement`, `UnityUtilities`) were written on 2026-08-23.
-* **`ConfigurationManagement` under-declares its dependencies.** `IConfigurationManager : IService` and its Runtime asmdef references `ServiceLocating`'s GUID, but its `package.json` has no `dependencies` block at all. This is a genuine bug, not a deliberate inconsistency — it will fail to resolve for a consumer who installs it standalone. Add `"com.arman.service-locating": "0.1.0"` before publishing it.
-* **Only 6 of 18 packages have a README**, 5 have a CHANGELOG.
+* **All 18 packages now have a README and a CHANGELOG.** The 13 that were missing them (i.e. every package other than the five documented ones plus `PackageTemplate`) were authored on 2026-08-29 from each package's runtime source.
 * `PackageTemplate` mixes `Arman.PackageTemplate` and `Arman.TemplatePackage` in its own asmdef names.
