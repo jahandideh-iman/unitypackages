@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "license": "MIT",
   "unity": "2019.1",
-  "description": "The base package for services",
+  "description": "Static service locator for Unity: register implementations against an interface, resolve them anywhere with Find<T>(), and replace or clear registrations for testing.",
   "hideInEditor": false,
   "author": {
     "name": "Iman Jahandideh",

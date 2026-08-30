@@ -9,4 +9,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### This is the first release of *Service Locating*.
 
-Initial release providing a lightweight service locator for registering and resolving services by type.
+Initial release providing a static service locator with registration, resolution, replacement, and teardown.
