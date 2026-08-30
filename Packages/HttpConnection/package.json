@@ -1,7 +1,7 @@
 {
   "name": "com.arman.http-connection",
   "displayName": "Http Connection",
-  "version": "0.1.0-preview",
+  "version": "0.1.0",
   "license": "MIT",
   "unity": "2019.1",
   "description": "UnityWebRequest wrapper with streaming support, async/await patterns, and progress callbacks for HTTP operations.",

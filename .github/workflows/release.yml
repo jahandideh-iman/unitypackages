@@ -1,0 +1,99 @@
+name: release
+
+# Under the OpenUPM model a git tag <package-name>/<version> IS the release:
+# there is no upload step and no registry secret. OpenUPM's build pipeline
+# watches this repo's tags and builds the versions itself, typically within
+# 15-30 minutes. See docs/specs/2026-08-23-upm-package-registry-github-design.md.
+#
+# ⚠️ The `tag` job is deliberately NOT wired to `push` yet. Rollout step 4 is a
+# single-package smoke test (com.arman.service-locating) that has to settle the
+# Package Manager visibility question in §5 before 17 packages are submitted.
+# Auto-tagging on merge would create all 17 tags on the first push to master and
+# pre-empt that test. Once the smoke test passes, delete the `workflow_dispatch`
+# gate below and restore `if: github.event_name == 'push'`.
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Create AND push tags. This is the publish, and a published name/version is permanent. Leave off for a dry run."
+        type: boolean
+        default: false
+      only:
+        description: "Limit to one package, by id (com.arman.service-locating) or folder name. Empty = every package with an untagged version. Use this for the rollout step 4 smoke test."
+        type: string
+        default: ""
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: node Tools/upm-release.mjs validate
+
+  pack:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: node Tools/upm-release.mjs pack --out PackageExports
+      - uses: actions/upload-artifact@v7
+        with:
+          name: upm-tarballs
+          path: PackageExports/
+          retention-days: 30
+
+  tag:
+    needs: [validate, pack]
+    # Manual only, until the smoke test proves the OpenUPM path end to end.
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      # The only permission needed. No registry secret exists in this pipeline.
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Tags must be visible locally for the script to diff against them.
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      # `git tag -a` needs an identity.
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      # `only` is passed through the environment, never interpolated into the
+      # script body — a ${{ }} expansion there would be a shell-injection seam.
+      - name: Plan tags (dry run)
+        if: ${{ !inputs.publish }}
+        env:
+          ONLY: ${{ inputs.only }}
+        run: |
+          if [ -n "$ONLY" ]; then
+            node Tools/upm-release.mjs tag --dry-run --only "$ONLY"
+          else
+            node Tools/upm-release.mjs tag --dry-run
+          fi
+
+      - name: Create and push tags
+        if: ${{ inputs.publish }}
+        env:
+          ONLY: ${{ inputs.only }}
+        run: |
+          if [ -n "$ONLY" ]; then
+            node Tools/upm-release.mjs tag --push --only "$ONLY"
+          else
+            node Tools/upm-release.mjs tag --push
+          fi
