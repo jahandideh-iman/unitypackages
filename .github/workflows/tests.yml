@@ -174,15 +174,14 @@ jobs:
           # There are no PlayMode test assemblies yet -- all 9 are
           # includePlatforms: ["Editor"]. This step is here so the first
           # PlayMode test written is covered automatically rather than silently
-          # unrun. An empty run that still produced a results file is a pass;
-          # only a run that produced nothing at all is a failure.
+          # unrun. Measured on the first green run: an empty PlayMode suite
+          # exits 0 and writes a well-formed <testsuites tests="0"/>, so it
+          # needs no special case. An earlier draft treated "nonzero but a
+          # results file exists" as an empty suite; that is now known to be
+          # unreachable, and keeping it would let a genuine failure that left a
+          # stale results file report green. Any nonzero exit is a real failure.
           if ($code -ne 0)
           {
-            if (Test-Path TestResults/playmode-results.xml)
-            {
-              Write-Host "::notice::PlayMode exited $code but produced results -- treating as an empty suite. If this repo now has PlayMode tests, investigate."
-              exit 0
-            }
             Write-Host "::error::PlayMode run produced no results (exit $code) -- build or environment failure. Open the editor log artefact."
             exit $code
           }
@@ -195,8 +194,9 @@ jobs:
             TestResults/
             Logs/
           retention-days: 30
-          # An empty PlayMode run may legitimately produce no XML; do not turn
-          # that into a second, confusing warning.
+          # A job that dies before Unity starts produces neither directory, and
+          # that failure is already reported by the step that caused it; a
+          # second warning here would only add noise.
           if-no-files-found: ignore
 
   # Deliberately NOT on the self-hosted runner. This job holds checks: write and
@@ -232,6 +232,8 @@ jobs:
           report_paths: 'artifacts/TestResults/*-junit.xml'
           check_name: 'Unity tests'
           fail_on_failure: true
-          # There are no PlayMode assemblies yet, so one of the two XML files
-          # may report zero tests. true would fail the job for that alone.
+          # There are no PlayMode assemblies yet, so playmode-junit.xml is a
+          # well-formed <testsuites tests="0"/>. true would fail the job for
+          # that alone. Worth revisiting once PlayMode tests exist: this is the
+          # setting that would otherwise catch a suite silently not running.
           require_tests: false

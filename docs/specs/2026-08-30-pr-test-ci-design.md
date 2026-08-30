@@ -163,10 +163,19 @@ All 9 test assemblies currently carry `"includePlatforms": ["Editor"]`, so **the
 tests today**. The step is included anyway so that the first PlayMode test written is covered by CI
 automatically, rather than silently unrun until someone notices.
 
-This has an unresolved edge: it is not yet known whether an empty PlayMode run exits `0` or exits
-`6`. The step therefore treats *ran, produced a results file, zero tests* as a pass, and fails only
-on a genuine `6` with no results file. **This assumption is unverified** and is to be confirmed
-against the first real run (§10), amending the step if it proves wrong.
+This had an unresolved edge: whether an empty PlayMode run exits `0` or `6`. The step was drafted
+defensively, treating *ran, produced a results file, zero tests* as a pass and failing only on a
+genuine `6` with no results file.
+
+**Resolved on the first green run.** An empty PlayMode suite exits `0` and writes a well-formed
+`<testsuites tests="0"/>` to both the NUnit and JUnit paths. The defensive branch was therefore
+unreachable, and has been removed: had a real PlayMode failure ever left a stale results file
+behind, that branch would have reported it green — the precise failure this pipeline exists to
+prevent. Any nonzero exit is now treated as a real failure.
+
+The remaining consequence is that `require_tests` on the report action stays `false`, since one of
+the two XML files legitimately reports zero tests. That is the setting which would otherwise catch
+a suite silently not running, so it is worth flipping to `true` once PlayMode assemblies exist.
 
 ### Exit codes are distinguished, not collapsed
 
