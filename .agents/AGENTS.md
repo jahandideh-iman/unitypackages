@@ -16,7 +16,7 @@ Consumers get these packages from a registry, **not** by copying folders. See [D
 
 Two different version numbers live in this repo and they mean opposite things — don't conflate them:
 
-* **`ProjectSettings/ProjectVersion.txt` = `6000.5.0f1`** — the Editor the sandbox project opens in. Bumped from `2022.3.27f1` on 2026-08-23 to match the only Unity installed on the dev machine. Editing this file only *declares* the intent; the actual upgrade and asset re-import happen the first time the Editor opens the project, and that pass may surface API-deprecation warnings that need fixing.
+* **`ProjectSettings/ProjectVersion.txt` = `6000.5.10f1`** — the Editor the sandbox project opens in, and **the version CI runs**. Bumped from `2022.3.27f1` to `6000.5.0f1` on 2026-08-23, and to `6000.5.10f1` in `b5975d6`. Editing this file only *declares* the intent; the actual upgrade and asset re-import happen the first time the Editor opens the project, and that pass may surface API-deprecation warnings that need fixing. **CI resolves this file and fails if that exact Editor is not installed on the runner** — it never substitutes another, so changing this line changes what CI tests. See [CI](#ci).
 * **`"unity"` in each `Packages/<Dir>/package.json` = `2019.1` or `2019.3`** — the *minimum* Editor a consumer needs. These are intentionally low and must **not** be bumped to track the sandbox's Editor; raising one drops backward compatibility for consumers. Raise it only when a package actually starts using an API that requires it.
 
 ## Repo layout
@@ -110,7 +110,7 @@ Note that **assembly** names were deliberately *not* normalised alongside the id
 
 ## Test Commands
 
-Unity tests run through the official [Unity CLI](https://unity.com/blog/meet-the-unity-cli) (the standalone `unity` binary — `unity doctor` shows install/auth state; not to be confused with `Unity.exe` batchmode, which it wraps). Ensure Unity 6 (`6000.5.0f1`) is installed and registered (`unity editors`). There are two ways to run tests, pick based on whether an interactive Editor is already open on this project:
+Unity tests run through the official [Unity CLI](https://unity.com/blog/meet-the-unity-cli) (the standalone `unity` binary — `unity doctor` shows install/auth state; not to be confused with `Unity.exe` batchmode, which it wraps). Ensure the Editor named in `ProjectSettings/ProjectVersion.txt` (currently `6000.5.10f1`) is installed and registered (`unity editors`). There are two ways to run tests, pick based on whether an interactive Editor is already open on this project:
 
 * **No Editor open (CI, fresh checkout) — spawns its own batch instance:**
   ```powershell
@@ -130,6 +130,33 @@ Unity tests run through the official [Unity CLI](https://unity.com/blog/meet-the
   Returns structured JSON with per-test results inline (`Summary.{Total,Passed,Failed}`, `Results[].{FullName,Status,Duration}`) — no XML file to parse. `--filter`/`--filter_type` narrow to specific tests; see `unity command` (no args) for the full parameter list.
 
 **Fails with "another Unity instance is running with this project open" if you already have the Editor open** — Unity refuses to open the same project twice. Use the next option instead.
+
+## CI
+
+`.github/workflows/tests.yml` runs the test suites on every same-repo pull request and on pushes to `dev` and `master`. `.github/workflows/release.yml` separately runs `validate` and `pack`. Design notes: [`docs/specs/2026-08-30-pr-test-ci-design.md`](../docs/specs/2026-08-30-pr-test-ci-design.md).
+
+| Job | Runner | Notes |
+|--|--|--|
+| `script-tests` | `ubuntu-latest` | Tests the CI helper scripts. Runs on forks too. |
+| `test` | self-hosted Windows | EditMode + PlayMode. **Never runs on fork PRs** — see below. |
+| `report` | `ubuntu-latest` | Turns the JUnit XML into PR annotations. |
+
+Three rules that are load-bearing rather than stylistic:
+
+* **The `test` job must never run on a fork PR.** This repo is public and the runner is a physical machine with a live Unity licence. The job's `if:` condition is the only thing preventing a drive-by PR from executing code there. Never add a `pull_request_target` trigger to this workflow, and never pin a third-party action by tag instead of commit SHA.
+* **CI runs the Editor in `ProjectVersion.txt`, or fails.** No `-e`, no `--allow-install`. `Tools/ci/Resolve-UnityEditor.ps1` enforces this.
+* **Only `Library/` survives between runs.** `TestResults/` and `Logs/` are wiped every job, so everything the pipeline publishes was produced by that run. The `clean_library` input on a manual dispatch forces a cold run, which is how you tell a poisoned cache from broken code.
+
+The helper scripts under `Tools/ci/` have their own tests, which need no Unity and no runner:
+
+```powershell
+powershell -NoProfile -File Tools/ci/Tests/Test-CiScripts.ps1   # locally (Windows PowerShell 5.1)
+pwsh -File Tools/ci/Tests/Test-CiScripts.ps1                    # in CI (PowerShell Core)
+```
+
+Lint the workflows with [`actionlint`](https://github.com/rhysd/actionlint); `.github/actionlint.yaml` declares the self-hosted runner's label so a typo in it is still caught.
+
+⚠️ **The pipeline is currently red on the primary dev machine, and not because of the code.** Windows Smart App Control blocks `6000.5.10f1`'s `Bee.Tools.dll` (`0x800711C7`), which Unity misreports as `Scripts have compiler errors.`. `Tools/ci/Publish-UnityLog.ps1` detects that signature and annotates it as an environment failure so nobody debugs the wrong thing. Section 8 of the design doc lists the three ways out.
 
 ## MCP Tool Usage & Unity CLI
 
