@@ -12,12 +12,6 @@ Each subfolder of `Packages/` is a standalone, publishable UPM package. Unity tr
 
 Consumers get these packages from a registry, **not** by copying folders. See [Distribution and releases](#distribution-and-releases).
 
-### Unity version
-
-Two different version numbers live in this repo and they mean opposite things — don't conflate them:
-
-* **`ProjectSettings/ProjectVersion.txt` = `6000.5.0f1`** — the Editor the sandbox project opens in. Bumped from `2022.3.27f1` on 2026-08-23 to match the only Unity installed on the dev machine. Editing this file only *declares* the intent; the actual upgrade and asset re-import happen the first time the Editor opens the project, and that pass may surface API-deprecation warnings that need fixing.
-* **`"unity"` in each `Packages/<Dir>/package.json` = `2019.1` or `2019.3`** — the *minimum* Editor a consumer needs. These are intentionally low and must **not** be bumped to track the sandbox's Editor; raising one drops backward compatibility for consumers. Raise it only when a package actually starts using an API that requires it.
 
 ## Repo layout
 
