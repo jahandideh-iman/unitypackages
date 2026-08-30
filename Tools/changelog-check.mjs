@@ -1,18 +1,27 @@
 #!/usr/bin/env node
-// Fails a pull request that changes a package's shipped code without recording
-// it under that package's `## [Unreleased]` CHANGELOG heading.
+// Guards each package's CHANGELOG on a pull request, with two rules:
+//
+//   missing-entry    A change to a package's shipped code must be recorded
+//                    under that package's `## [Unreleased]` heading.
+//   frozen-section   A version section whose `<package-name>/<version>` tag
+//                    already exists must not be edited — it is a published
+//                    record of what shipped.
 //
 //     node Tools/changelog-check.mjs --base <ref> --head <ref> [--json]
 //
-// Only shipped code counts: anything under `Runtime/` or `Editor/`, plus the
-// `package.json` itself. Tests, samples, documentation, Markdown, and `.meta`
-// files are exempt — none of them reach a consumer of the published tarball.
+// Shipped code means anything under `Runtime/` or `Editor/`, plus the
+// `package.json`. Tests, samples, documentation, Markdown, and `.meta` files
+// are exempt — none of them reach a consumer of the published tarball. The
+// frozen rule looks at the CHANGELOG regardless, since it is Markdown and so
+// would otherwise never be inspected at all.
 //
-// Escape hatch: a `no-changelog` label on the pull request, passed in as the
-// JSON array `PR_LABELS`, skips the whole check.
+// Escape hatches, passed in as the JSON array `PR_LABELS`: `no-changelog`
+// waives the entry rule, `changelog-rewrite` waives the frozen rule. They are
+// deliberately separate — "this change needs no entry" is not the same claim
+// as "I may rewrite what 0.1.0 says it shipped".
 //
-// Exit 0 = nothing to report, 1 = at least one package is missing an entry,
-// 2 = the check itself could not run.
+// Exit 0 = nothing to report, 1 = at least one rule tripped, 2 = the check
+// itself could not run.
 
 import fs from "node:fs";
 import path from "node:path";
@@ -24,11 +33,12 @@ const PACKAGES_DIR = "Packages";
 const CHANGELOG = "CHANGELOG.md";
 const MANIFEST = "package.json";
 
-const SKIP_LABEL = "no-changelog";
+const WAIVER_LABELS = { "missing-entry": "no-changelog", "frozen-section": "changelog-rewrite" };
 const CODE_DIRS = new Set(["Runtime", "Editor"]);
 
-const UNRELEASED_HEADING = /^##\s+\[unreleased\]/i;
-const ANY_H2 = /^##\s/;
+const H2 = /^##\s/;
+const H2_VERSION = /^##\s+\[([^\]]+)\]/;
+const UNRELEASED = /^unreleased$/i;
 const SUB_HEADING = /^#{3,}\s/;
 
 const DEFAULT_BASE = "dev";
@@ -85,49 +95,34 @@ function isShippedCode(withinPackage) {
     return rest.length > 0 && CODE_DIRS.has(first);
 }
 
-/** Groups the diff by package, keeping only packages whose shipped code moved. */
+/**
+ * Groups the diff by package. A package is in scope if its shipped code moved
+ * (the entry rule) or its CHANGELOG moved (the frozen rule).
+ */
 function packagesTouched(files) {
     const byFolder = new Map();
     for (const file of files) {
         const folder = packageFolderOf(file);
         if (folder === null) continue;
         const withinPackage = file.slice(`${PACKAGES_DIR}/${folder}/`.length);
-        if (!isShippedCode(withinPackage)) continue;
-        if (!byFolder.has(folder)) byFolder.set(folder, []);
-        byFolder.get(folder).push(withinPackage);
+
+        const code = isShippedCode(withinPackage);
+        const changelog = withinPackage === CHANGELOG;
+        if (!code && !changelog) continue;
+
+        if (!byFolder.has(folder)) byFolder.set(folder, { files: [], code: false, changelog: false });
+        const touched = byFolder.get(folder);
+        touched.files.push(withinPackage);
+        touched.code ||= code;
+        touched.changelog ||= changelog;
     }
     return byFolder;
 }
 
-// ------------------------------------------------------------------ changelog
+// ------------------------------------------------------------ changelog parsing
 
-/**
- * The lines under `## [Unreleased]`, up to the next `##`. Returns null when the
- * heading is absent, which is a different failure from an empty section.
- */
-function unreleasedSection(text) {
-    const lines = text.split(/\r?\n/);
-    const start = lines.findIndex((line) => UNRELEASED_HEADING.test(line));
-    if (start === -1) return null;
-    const rest = lines.slice(start + 1);
-    const end = rest.findIndex((line) => ANY_H2.test(line));
-    return end === -1 ? rest : rest.slice(0, end);
-}
-
-/**
- * The entry lines of a section — blank lines and `### Added`-style sub-headings
- * are scaffolding, not a record of a change.
- */
-function entriesOf(lines) {
-    return lines.map((line) => line.trim()).filter((line) => line !== "" && !SUB_HEADING.test(line));
-}
-
-function unreleasedEntriesAt(ref, folder) {
-    const text = gitOrNull("show", `${ref}:${PACKAGES_DIR}/${folder}/${CHANGELOG}`);
-    if (text === null) return { present: false, entries: [] };
-    const section = unreleasedSection(text);
-    if (section === null) return { present: true, section: false, entries: [] };
-    return { present: true, section: true, entries: entriesOf(section) };
+function changelogAt(ref, folder) {
+    return gitOrNull("show", `${ref}:${PACKAGES_DIR}/${folder}/${CHANGELOG}`);
 }
 
 function manifestAt(ref, folder) {
@@ -141,76 +136,182 @@ function manifestAt(ref, folder) {
     }
 }
 
-// --------------------------------------------------------------------- verdict
-
-const REASONS = {
-    "missing-changelog": (folder) => `has no ${CHANGELOG}. Add one and record the change under \`## [Unreleased]\`.`,
-    "missing-section": () => `has no \`## [Unreleased]\` heading. Add one above the newest version and record the change under it.`,
-    "missing-entry": () => `changed, but nothing was added under \`## [Unreleased]\`. Describe the change there.`,
-};
-
-function inspect(folder, files, base, head) {
-    const result = { folder, files: files.sort() };
-
-    const headManifest = manifestAt(head, folder);
-    if (headManifest === null) return null; // Not a package — a stray Packages/ path.
-    result.name = headManifest.name ?? null;
-
-    if (headManifest.private === true) return { ...result, status: "skipped-private" };
-    if (manifestAt(base, folder) === null) return { ...result, status: "skipped-new" };
-
-    const at = unreleasedEntriesAt(head, folder);
-    if (!at.present) return { ...result, status: "missing-changelog" };
-    if (!at.section) return { ...result, status: "missing-section" };
-
-    const before = new Set(unreleasedEntriesAt(base, folder).entries);
-    const added = at.entries.filter((entry) => !before.has(entry));
-    return { ...result, status: added.length > 0 ? "ok" : "missing-entry", added };
+/**
+ * The lines under `## [Unreleased]`, up to the next `##`. Returns null when the
+ * heading is absent, which is a different failure from an empty section.
+ */
+function unreleasedSection(text) {
+    const lines = text.split(/\r?\n/);
+    const start = lines.findIndex((line) => H2_VERSION.test(line) && UNRELEASED.test(line.match(H2_VERSION)[1]));
+    if (start === -1) return null;
+    const rest = lines.slice(start + 1);
+    const end = rest.findIndex((line) => H2.test(line));
+    return end === -1 ? rest : rest.slice(0, end);
 }
 
-function labelSkip() {
+/**
+ * The entry lines of a section — blank lines and `### Added`-style sub-headings
+ * are scaffolding, not a record of a change.
+ */
+function entriesOf(lines) {
+    return lines.map((line) => line.trim()).filter((line) => line !== "" && !SUB_HEADING.test(line));
+}
+
+/** Every `## [x.y.z]` section, keyed by version, each including its heading. */
+function versionSections(text) {
+    const sections = new Map();
+    let current = null;
+    for (const line of text.split(/\r?\n/)) {
+        if (H2.test(line)) {
+            const heading = line.match(H2_VERSION);
+            const version = heading?.[1];
+            if (version === undefined || UNRELEASED.test(version)) {
+                current = null;
+            } else {
+                current = [line];
+                sections.set(version, current);
+            }
+            continue;
+        }
+        current?.push(line);
+    }
+    return sections;
+}
+
+/** Compares sections ignoring trailing whitespace, which no reader can see. */
+function normalize(lines) {
+    const trimmed = lines.map((line) => line.trimEnd());
+    while (trimmed.length > 0 && trimmed[trimmed.length - 1] === "") trimmed.pop();
+    return trimmed.join("\n");
+}
+
+// ---------------------------------------------------------------------- rules
+
+/**
+ * Rule 1. A shipped-code change has to show up under `## [Unreleased]`.
+ *
+ * Opening a new version section counts too: that is the release pull request,
+ * which moves the accumulated entries out of `[Unreleased]` under a version
+ * heading and bumps `package.json` in the same breath.
+ */
+function entryProblem(folder, base, head) {
+    const headText = changelogAt(head, folder);
+    if (headText === null) return { rule: "missing-changelog" };
+
+    const section = unreleasedSection(headText);
+    if (section === null) return { rule: "missing-section" };
+
+    const baseText = changelogAt(base, folder);
+    const baseSection = baseText === null ? null : unreleasedSection(baseText);
+    const before = new Set(baseSection === null ? [] : entriesOf(baseSection));
+    if (entriesOf(section).some((entry) => !before.has(entry))) return null;
+
+    const knownVersions = new Set(baseText === null ? [] : versionSections(baseText).keys());
+    const released = [...versionSections(headText).keys()].filter((v) => !knownVersions.has(v));
+    if (released.length > 0) return null;
+
+    return { rule: "missing-entry" };
+}
+
+/**
+ * Rule 2. A version section whose tag already exists is a published record.
+ * Editing or deleting it makes the repo disagree with what OpenUPM built.
+ */
+function frozenProblem(folder, name, base, head, tags) {
+    if (name === null) return null;
+    const prefix = `${name}/`;
+    const tagged = new Set(tags.filter((tag) => tag.startsWith(prefix)).map((tag) => tag.slice(prefix.length)));
+    if (tagged.size === 0) return null;
+
+    const baseText = changelogAt(base, folder);
+    if (baseText === null) return null;
+    const headText = changelogAt(head, folder);
+    const after = headText === null ? new Map() : versionSections(headText);
+
+    const versions = [];
+    for (const [version, lines] of versionSections(baseText)) {
+        if (!tagged.has(version)) continue;
+        const now = after.get(version);
+        if (now === undefined || normalize(now) !== normalize(lines)) versions.push(version);
+    }
+    return versions.length > 0 ? { rule: "frozen-section", versions } : null;
+}
+
+function inspect(folder, touched, base, head, tags, waived) {
+    const headManifest = manifestAt(head, folder);
+    if (headManifest === null) return null; // Not a package — a stray Packages/ path.
+
+    const result = { folder, name: headManifest.name ?? null, files: touched.files.sort(), problems: [] };
+
+    if (headManifest.private === true) return { ...result, skipped: "private" };
+    if (manifestAt(base, folder) === null) return { ...result, skipped: "new" };
+
+    const candidates = [
+        touched.code ? entryProblem(folder, base, head) : null,
+        touched.changelog ? frozenProblem(folder, result.name, base, head, tags) : null,
+    ];
+    result.problems = candidates.filter(
+        (problem) => problem !== null && !waived.includes(WAIVER_LABELS[problem.rule]),
+    );
+    return result;
+}
+
+/** Which waiver labels this pull request actually carries. */
+function waivedLabels() {
+    const known = Object.values(WAIVER_LABELS);
     const raw = process.env.PR_LABELS;
-    if (!raw) return false;
+    if (!raw) return [];
     let labels;
     try {
         labels = JSON.parse(raw);
     } catch {
         // A malformed label list must not become an accidental bypass.
-        return false;
+        return [];
     }
-    return Array.isArray(labels) && labels.includes(SKIP_LABEL) ? `${SKIP_LABEL} label` : false;
+    if (!Array.isArray(labels)) return [];
+    return known.filter((label) => labels.includes(label));
 }
 
 // -------------------------------------------------------------------- reporting
 
+const EXPLANATIONS = {
+    "missing-changelog": () => `has no ${CHANGELOG}. Add one and record the change under \`## [Unreleased]\`.`,
+    "missing-section": () => "has no `## [Unreleased]` heading. Add one above the newest version and record the change under it.",
+    "missing-entry": () => "changed, but nothing was added under `## [Unreleased]`. Describe the change there.",
+    "frozen-section": (problem) =>
+        `edits ${problem.versions.map((v) => `\`${v}\``).join(", ")}, which ${problem.versions.length > 1 ? "have" : "has"} already been tagged and published. Released history must not change — put the note under \`## [Unreleased]\` instead.`,
+};
+
 function render(report) {
     const lines = [];
-    if (report.skipped) {
-        lines.push(`Skipped: the \`${SKIP_LABEL}\` label is set on this pull request.`);
-        return lines;
+    if (report.waived.length > 0) {
+        lines.push(`Waived by label: ${report.waived.join(", ")}.`);
     }
-    const failures = report.packages.filter((p) => REASONS[p.status]);
     if (report.packages.length === 0) {
-        lines.push("No package shipped code changed. Nothing to check.");
+        lines.push("No package shipped code or changelog changed. Nothing to check.");
     }
     for (const pkg of report.packages) {
         const label = pkg.name ? `${pkg.folder} (${pkg.name})` : pkg.folder;
-        if (pkg.status === "ok") {
-            lines.push(`ok       ${label}`);
-        } else if (pkg.status === "skipped-private") {
+        if (pkg.skipped === "private") {
             lines.push(`skipped  ${label} — private, never published`);
-        } else if (pkg.status === "skipped-new") {
+        } else if (pkg.skipped === "new") {
             lines.push(`skipped  ${label} — new in this pull request`);
+        } else if (pkg.problems.length === 0) {
+            lines.push(`ok       ${label}`);
         } else {
-            lines.push(`FAIL     ${label} — ${REASONS[pkg.status](pkg.folder)}`);
+            for (const problem of pkg.problems) {
+                lines.push(`FAIL     ${label} — ${EXPLANATIONS[problem.rule](problem)}`);
+            }
             for (const file of pkg.files) lines.push(`           ${file}`);
         }
     }
-    if (failures.length > 0) {
+
+    const failing = report.packages.filter((pkg) => pkg.problems.length > 0);
+    if (failing.length > 0) {
+        const rules = new Set(failing.flatMap((pkg) => pkg.problems.map((p) => p.rule)));
         lines.push("");
-        lines.push(
-            `${failures.length} package(s) need a CHANGELOG entry. Add the \`${SKIP_LABEL}\` label if this change is genuinely invisible to users.`,
-        );
+        lines.push(`${failing.length} package(s) need attention. Waiver labels for these rules:`);
+        for (const rule of rules) lines.push(`  ${rule} → ${WAIVER_LABELS[rule]}`);
     }
     return lines;
 }
@@ -218,8 +319,7 @@ function render(report) {
 function writeStepSummary(report) {
     const target = process.env.GITHUB_STEP_SUMMARY;
     if (!target) return;
-    const body = ["## Changelog check", "", "```", ...render(report), "```", ""].join("\n");
-    fs.appendFileSync(target, body);
+    fs.appendFileSync(target, ["## Changelog check", "", "```", ...render(report), "```", ""].join("\n"));
 }
 
 // ------------------------------------------------------------------------ main
@@ -249,7 +349,8 @@ function usage() {
             `  --head   Branch or commit the pull request proposes (default: ${DEFAULT_HEAD}).`,
             "  --json   Emit the report as JSON instead of text.",
             "",
-            `Set PR_LABELS to a JSON array to honour the \`${SKIP_LABEL}\` escape hatch.`,
+            "Set PR_LABELS to a JSON array to honour the waiver labels:",
+            ...Object.entries(WAIVER_LABELS).map(([rule, label]) => `  ${rule} → ${label}`),
         ].join("\n"),
     );
 }
@@ -260,31 +361,30 @@ if (flags.help) {
     process.exit(0);
 }
 
-const skipped = labelSkip();
-const report = { ok: true, skipped, base: flags.base, head: flags.head, packages: [] };
+const report = { ok: true, base: flags.base, head: flags.head, waived: waivedLabels(), packages: [] };
 
-if (!skipped) {
-    let from;
-    try {
-        from = mergeBase(flags.base, flags.head);
-        report.mergeBase = from;
-    } catch (error) {
-        fail(error.message);
-    }
-
-    let files;
-    try {
-        files = changedFiles(from, flags.head);
-    } catch (error) {
-        fail(error.message);
-    }
-
-    for (const [folder, touched] of [...packagesTouched(files)].sort((a, b) => a[0].localeCompare(b[0]))) {
-        const result = inspect(folder, touched, from, flags.head);
-        if (result !== null) report.packages.push(result);
-    }
-    report.ok = !report.packages.some((pkg) => REASONS[pkg.status]);
+let from;
+try {
+    from = mergeBase(flags.base, flags.head);
+    report.mergeBase = from;
+} catch (error) {
+    fail(error.message);
 }
+
+let files;
+let tags;
+try {
+    files = changedFiles(from, flags.head);
+    tags = git("tag", "--list").split(/\r?\n/).filter(Boolean);
+} catch (error) {
+    fail(error.message);
+}
+
+for (const [folder, touched] of [...packagesTouched(files)].sort((a, b) => a[0].localeCompare(b[0]))) {
+    const result = inspect(folder, touched, from, flags.head, tags, report.waived);
+    if (result !== null) report.packages.push(result);
+}
+report.ok = !report.packages.some((pkg) => pkg.problems.length > 0);
 
 writeStepSummary(report);
 console.log(flags.json ? JSON.stringify(report, null, 2) : render(report).join("\n"));

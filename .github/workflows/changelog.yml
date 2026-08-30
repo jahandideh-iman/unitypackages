@@ -1,12 +1,14 @@
 name: changelog
 
-# A pull request that changes a package's shipped code must record the change
-# under that package's `## [Unreleased]` CHANGELOG heading. See
-# Tools/changelog-check.mjs for what counts as shipped code, and
-# .agents/AGENTS.md for the convention.
+# Two rules, both in Tools/changelog-check.mjs — see .agents/AGENTS.md:
 #
-# `labeled`/`unlabeled` are in the trigger list so that adding the
-# `no-changelog` escape-hatch label re-runs the check and turns it green
+#   missing-entry    A change to a package's shipped code must be recorded
+#                    under that package's `## [Unreleased]` heading.
+#   frozen-section   A version section whose `<package-name>/<version>` tag
+#                    already exists must not be edited.
+#
+# `labeled`/`unlabeled` are in the trigger list so that adding a waiver label
+# (`no-changelog`, `changelog-rewrite`) re-runs the check and turns it green
 # without an empty push.
 
 on:
@@ -21,7 +23,8 @@ jobs:
       - uses: actions/checkout@v7
         with:
           # The check diffs the merge base against the head, so both sides of
-          # the pull request have to be present locally.
+          # the pull request have to be present locally — and the frozen-section
+          # rule reads `git tag`, which a shallow fetch would leave empty.
           fetch-depth: 0
       - uses: actions/setup-node@v7
         with:

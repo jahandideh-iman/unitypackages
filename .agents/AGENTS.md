@@ -263,23 +263,34 @@ Under the current direction: releasing is **creating a git tag**, not uploading.
 
 **A published package name and version are permanent.** Verify both before a first publish.
 
-### Changelogs — the `[Unreleased]` rule, enforced in CI
+### Changelogs — two rules, enforced in CI
 
-Every package CHANGELOG carries an empty `## [Unreleased]` heading above its newest version, seeded across all 18 on 2026-08-30. **A pull request that changes a package's shipped code must add an entry under that heading**, so that bumping `version` at release time is a matter of renaming `[Unreleased]` rather than reconstructing history from the log.
-
-`.github/workflows/changelog.yml` enforces this on every PR into `dev` or `master` by running `Tools/changelog-check.mjs` — dependency-free Node, same as the release tooling, and runnable locally:
+Every package CHANGELOG carries an empty `## [Unreleased]` heading above its newest version, seeded across all 18 on 2026-08-30. `.github/workflows/changelog.yml` runs `Tools/changelog-check.mjs` on every PR into `dev` or `master` — dependency-free Node, same as the release tooling, and runnable locally:
 
 ```powershell
 node Tools/changelog-check.mjs --base dev --head HEAD
 node Tools/changelog-check.mjs --base dev --head HEAD --json
-node --test Tools/changelog-check.test.mjs    # the check's own tests
+node --test Tools/changelog-check.test.mjs    # the check's own tests, 31 of them
 ```
 
-**Shipped code** is the trigger, and only that: anything under `Runtime/` or `Editor/`, plus `package.json`. `Tests/`, `Samples/`, `Documentation/`, every `*.md`, and every `*.meta` are exempt — none of them reach a consumer of the published tarball, so a doc fix or a GUID churn never demands an entry.
+| Rule | What it enforces | Waiver label |
+|--|--|--|
+| `missing-entry` | A change to a package's **shipped code** must be recorded under that package's `## [Unreleased]` heading. | `no-changelog` |
+| `frozen-section` | A version section whose `<package-name>/<version>` tag **already exists** must not be edited or deleted. | `changelog-rewrite` |
 
-Three things are skipped outright: a package with `"private": true` (i.e. `PackageTemplate`), a package that is **new** in the pull request (its CHANGELOG documents an initial release, not an unreleased delta), and — the escape hatch — the entire check when the PR carries the **`no-changelog`** label. The label is read inside the script rather than gating the job with `if:`, so the check always reports a real success instead of `skipped`; that matters if it is ever made a required check, because a skipped required check blocks the merge.
+The two waivers are deliberately separate — "this change needs no entry" is not the same claim as "I may rewrite what `0.1.0` says it shipped". Labels are read *inside* the script rather than gating the job with `if:`, so the check always reports a real success instead of `skipped`; that matters if it is ever made a required check, because a skipped required check blocks the merge.
 
-Two details worth not re-deriving: the diff is taken against the **merge base**, so commits landing on `dev` after you branched are never blamed on your PR; and a bare `### Added` with no bullet under it does not count as an entry.
+**Shipped code** triggers `missing-entry`, and only that: anything under `Runtime/` or `Editor/`, plus `package.json`. `Tests/`, `Samples/`, `Documentation/`, every `*.md`, and every `*.meta` are exempt — none of them reach a consumer of the published tarball, so a doc fix or a GUID churn never demands an entry. `frozen-section` looks at the CHANGELOG regardless, precisely because Markdown is otherwise exempt and released history could be rewritten unseen.
+
+Two packages are skipped by both rules: one with `"private": true` (i.e. `PackageTemplate`), and one that is **new** in the pull request — its CHANGELOG documents an initial release, not an unreleased delta.
+
+Details worth not re-deriving:
+
+* The diff is taken against the **merge base**, so commits landing on `dev` after you branched are never blamed on your PR.
+* A bare `### Added` with no bullet under it does not count as an entry.
+* Trailing whitespace inside a frozen section is ignored — no reader can see it.
+* **The release PR is not a false positive.** Renaming `## [Unreleased]` to `## [0.2.0]` satisfies `missing-entry` on its own, because opening a version section that did not exist at the base is exactly what a release does. That version has no tag yet, so `frozen-section` does not fire on it either; the tag comes after the merge.
+* `frozen-section` reads `git tag`, so CI checks out with `fetch-depth: 0`. A shallow fetch would leave the tag list empty and silently disable the rule.
 
 ## Git and hosting
 
@@ -316,7 +327,7 @@ Never prefix a git command with `cd` (e.g. `cd <dir> && git ...`); use `git -C <
 3. Add `"license": "MIT"` plus a `LICENSE.md` and its `.meta`.
 4. Rename the asmdefs to `Arman.<NewName>.Runtime` etc. and update their `name` fields.
 5. Declare any `com.arman.*` dependencies with exact versions.
-6. Write a `README.md` and a `CHANGELOG.md` that keeps the template's `## [Unreleased]` heading — see [the `[Unreleased]` rule](#changelogs--the-unreleased-rule-enforced-in-ci).
+6. Write a `README.md` and a `CHANGELOG.md` that keeps the template's `## [Unreleased]` heading — see [the changelog rules](#changelogs--two-rules-enforced-in-ci).
 7. Verify with `npm pack --dry-run` from the package folder.
 
 ## Known inconsistencies
