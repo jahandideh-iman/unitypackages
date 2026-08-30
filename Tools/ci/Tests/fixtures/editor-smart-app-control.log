@@ -1,0 +1,6 @@
+Initialize engine version: 6000.5.10f1 (3bd4f66ad299)
+[Error] Unable to load the unmanaged library 'C:\Program Files\Unity\Hub\Editor\6000.5.10f1\Editor\Data\Tools\BuildPipeline\Bee.Tools.dll'
+System error 0x800711C7: An Application Control policy has blocked this file
+BuildProgram exited with code 1
+Aborting batchmode due to failure:
+Scripts have compiler errors.

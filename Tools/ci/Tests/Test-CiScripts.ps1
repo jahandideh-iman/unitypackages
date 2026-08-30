@@ -90,6 +90,47 @@ $result = Invoke-Script $resolve @{
 Assert-Equal 1 $result.ExitCode 'fails when ProjectVersion.txt is absent'
 
 Write-Host ''
+Write-Host 'Publish-UnityLog.ps1'
+$publish = Join-Path $script:Root 'ci/Publish-UnityLog.ps1'
+
+$result = Invoke-Script $publish @{
+    LogPath  = Join-Path $script:Fixtures 'editor-clean.log'
+    Label    = 'EditMode'
+    ExitCode = 0
+}
+Assert-Equal 0 $result.ExitCode 'never fails the job, even on a clean log'
+Assert-Match '0 error/warning line' $result.Output 'reports a clean log as having no hits'
+
+$result = Invoke-Script $publish @{
+    LogPath  = Join-Path $script:Fixtures 'editor-compile-error.log'
+    Label    = 'EditMode'
+    ExitCode = 6
+}
+Assert-Equal 0 $result.ExitCode 'never fails the job, even on a broken log'
+Assert-Match 'CS0103' $result.Output 'surfaces the compiler error code'
+Assert-Match 'last \d+ lines' $result.Output 'dumps the tail when the step failed'
+
+# The environment diagnostic must not fire on an ordinary compile error, or it
+# becomes noise that gets ignored on the one run where it matters.
+Assert-Equal $false ($result.Output -match 'Smart App Control') 'does not cry wolf on a real compile error'
+
+$result = Invoke-Script $publish @{
+    LogPath  = Join-Path $script:Fixtures 'editor-smart-app-control.log'
+    Label    = 'EditMode'
+    ExitCode = 6
+}
+Assert-Match '::error::' $result.Output 'annotates the Smart App Control block'
+Assert-Match 'not a compile error' $result.Output 'contradicts Unity''s misleading message'
+
+$result = Invoke-Script $publish @{
+    LogPath  = Join-Path $script:Fixtures 'does-not-exist.log'
+    Label    = 'PlayMode'
+    ExitCode = 0
+}
+Assert-Equal 0 $result.ExitCode 'tolerates a missing log'
+Assert-Match 'no .*log' $result.Output 'says the log was missing'
+
+Write-Host ''
 if ($script:Failures -gt 0)
 {
     Write-Host "$($script:Failures) assertion(s) failed."
