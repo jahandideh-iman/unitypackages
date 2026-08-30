@@ -12,12 +12,6 @@ Each subfolder of `Packages/` is a standalone, publishable UPM package. Unity tr
 
 Consumers get these packages from a registry, **not** by copying folders. See [Distribution and releases](#distribution-and-releases).
 
-### Unity version
-
-Two different version numbers live in this repo and they mean opposite things — don't conflate them:
-
-* **`ProjectSettings/ProjectVersion.txt` = `6000.5.10f1`** — the Editor the sandbox project opens in, and **the version CI runs**. Bumped from `2022.3.27f1` to `6000.5.0f1` on 2026-08-23, and to `6000.5.10f1` in `b5975d6`. Editing this file only *declares* the intent; the actual upgrade and asset re-import happen the first time the Editor opens the project, and that pass may surface API-deprecation warnings that need fixing. **CI resolves this file and fails if that exact Editor is not installed on the runner** — it never substitutes another, so changing this line changes what CI tests. See [CI](#ci).
-* **`"unity"` in each `Packages/<Dir>/package.json` = `2019.1` or `2019.3`** — the *minimum* Editor a consumer needs. These are intentionally low and must **not** be bumped to track the sandbox's Editor; raising one drops backward compatibility for consumers. Raise it only when a package actually starts using an API that requires it.
 
 ## Repo layout
 
@@ -110,7 +104,7 @@ Note that **assembly** names were deliberately *not* normalised alongside the id
 
 ## Test Commands
 
-Unity tests run through the official [Unity CLI](https://unity.com/blog/meet-the-unity-cli) (the standalone `unity` binary — `unity doctor` shows install/auth state; not to be confused with `Unity.exe` batchmode, which it wraps). Ensure the Editor named in `ProjectSettings/ProjectVersion.txt` (currently `6000.5.10f1`) is installed and registered (`unity editors`). There are two ways to run tests, pick based on whether an interactive Editor is already open on this project:
+Unity tests run through the official [Unity CLI](https://unity.com/blog/meet-the-unity-cli) (the standalone `unity` binary — `unity doctor` shows install/auth state; not to be confused with `Unity.exe` batchmode, which it wraps). Ensure the Editor named in `ProjectSettings/ProjectVersion.txt` is installed and registered (`unity editors`). There are two ways to run tests, pick based on whether an interactive Editor is already open on this project:
 
 * **No Editor open (CI, fresh checkout) — spawns its own batch instance:**
   ```powershell
@@ -156,7 +150,7 @@ pwsh -File Tools/ci/Tests/Test-CiScripts.ps1                    # in CI (PowerSh
 
 Lint the workflows with [`actionlint`](https://github.com/rhysd/actionlint); `.github/actionlint.yaml` declares the self-hosted runner's label so a typo in it is still caught.
 
-⚠️ **The pipeline is currently red on the primary dev machine, and not because of the code.** Windows Smart App Control blocks `6000.5.10f1`'s `Bee.Tools.dll` (`0x800711C7`), which Unity misreports as `Scripts have compiler errors.`. `Tools/ci/Publish-UnityLog.ps1` detects that signature and annotates it as an environment failure so nobody debugs the wrong thing. Section 8 of the design doc lists the three ways out.
+`Tools/ci/Publish-UnityLog.ps1` recognises one environment failure by signature: Windows Smart App Control blocking the Editor's `Bee.Tools.dll` (`0x800711C7`), which Unity misreports as `Scripts have compiler errors.`. Smart App Control was turned off on the runner on 2026-08-30, so this should not recur — the detector stays because that misreported message costs an afternoon to diagnose from cold. Section 8 of the design doc has the background.
 
 ## MCP Tool Usage & Unity CLI
 
