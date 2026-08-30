@@ -59,6 +59,14 @@ jobs:
       # the CLI, so it cannot be silently dropped by a command-line change.
       UNITY_BURST_DISABLE_COMPILATION: "1"
       UNITY_NON_INTERACTIVE: "1"
+    # Windows PowerShell 5.1, not pwsh: PowerShell Core is not installed on
+    # this runner, and `shell: pwsh` fails with 'pwsh: command not found'
+    # before a single step does any work. The helper scripts declare
+    # `#Requires -Version 5.1` and are tested under both. Set at job level so
+    # a step added later inherits it rather than reintroducing the bug.
+    defaults:
+      run:
+        shell: powershell
     steps:
       # clean: false, then an explicit selective clean. actions/checkout's
       # default clean is `git clean -ffdx`, which deletes the 2.3 GB Library/
@@ -68,7 +76,6 @@ jobs:
           clean: false
 
       - name: Clean, preserving the asset import cache
-        shell: pwsh
         run: |
           # Only Library/. TestResults/ and Logs/ are job OUTPUTS, not caches:
           # preserving them would let a job that dies before writing results
@@ -86,7 +93,6 @@ jobs:
 
       - name: Resolve the Unity editor
         id: editor
-        shell: pwsh
         run: |
           $json = unity editors --json | Out-String
           ./Tools/ci/Resolve-UnityEditor.ps1 `
@@ -95,7 +101,6 @@ jobs:
 
       - name: EditMode tests
         id: editmode
-        shell: pwsh
         run: |
           # No -e and no --allow-install, deliberately: `unity test` already
           # defaults to the version in ProjectVersion.txt, and --allow-install
@@ -134,7 +139,6 @@ jobs:
         # always() so a red EditMode suite still reports PlayMode rather than
         # hiding a second, independent failure behind the first.
         if: always() && steps.editmode.conclusion != 'skipped'
-        shell: pwsh
         run: |
           unity test --mode PlayMode `
             --output TestResults/playmode-results.xml `

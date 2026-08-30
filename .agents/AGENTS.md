@@ -148,6 +148,8 @@ powershell -NoProfile -File Tools/ci/Tests/Test-CiScripts.ps1   # locally (Windo
 pwsh -File Tools/ci/Tests/Test-CiScripts.ps1                    # in CI (PowerShell Core)
 ```
 
+The `script-tests` job runs `pwsh`, because it is on `ubuntu-latest`. The self-hosted `test` job runs **Windows PowerShell 5.1** (`shell: powershell`, set as a job default) — PowerShell Core is not installed on the runner, and `shell: pwsh` there fails with `pwsh: command not found` before any step does work.
+
 Lint the workflows with [`actionlint`](https://github.com/rhysd/actionlint); `.github/actionlint.yaml` declares the self-hosted runner's label so a typo in it is still caught.
 
 `Tools/ci/Publish-UnityLog.ps1` recognises one environment failure by signature: Windows Smart App Control blocking the Editor's `Bee.Tools.dll` (`0x800711C7`), which Unity misreports as `Scripts have compiler errors.`. Smart App Control was turned off on the runner on 2026-08-30, so this should not recur — the detector stays because that misreported message costs an afternoon to diagnose from cold. Section 8 of the design doc has the background.
