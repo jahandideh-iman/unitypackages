@@ -1,0 +1,52 @@
+name: changelog
+
+# Two rules, both in Tools/changelog-check.mjs — see .agents/AGENTS.md:
+#
+#   missing-entry    A change to a package's shipped code must be recorded
+#                    under that package's `## [Unreleased]` heading.
+#   frozen-section   A version section whose `<package-name>/<version>` tag
+#                    already exists must not be edited.
+#
+# `labeled`/`unlabeled` are in the trigger list so that adding a waiver label
+# (`no-changelog`, `changelog-rewrite`) re-runs the check and turns it green
+# without an empty push.
+
+on:
+  pull_request:
+    branches: [dev, master]
+    types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # The check diffs the merge base against the head, so both sides of
+          # the pull request have to be present locally — and the frozen-section
+          # rule reads `git tag`, which a shallow fetch would leave empty.
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      # Every value below comes from the pull request and is passed through the
+      # environment, never interpolated into the shell body — a ${{ }} expansion
+      # there would be a shell-injection seam.
+      - name: Check package changelogs
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+        run: node Tools/changelog-check.mjs --base "$BASE_SHA" --head "$HEAD_SHA"
+
+  # The check's own tests. They build throwaway git repos and run the real
+  # script inside them, so a change to the matching rules cannot land silently.
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: node --test Tools/changelog-check.test.mjs
