@@ -58,14 +58,16 @@ A package folder follows the standard UPM layout. Actual usage across the 18 pac
 |--|--|--|
 | `Runtime/` | 18 / 18 | Runtime code + its asmdef. Every package has one. |
 | `Tests/Editor/` | 9 | EditMode tests, own asmdef. |
-| `Samples/` | 5 | Example content (incl. `DevelopmentConsole`). |
-| `Editor/` | 4 | Editor-only code, own asmdef. |
+| `Samples~/` | 3 | Importable example content — see below. |
+| `Editor/` | 3 | Editor-only code, own asmdef. |
 
 No package has a `Documentation/` folder. Five did, but all five held Unity's unedited "Package Starter Kit" template rather than any real content, and were deleted on 2026-08-30 in favour of the per-package `README.md`. Add one back only when a package genuinely outgrows its README.
 
+Sample folders carry the `~` suffix in the repo: `Samples~/<SampleName>/`. UPM hides a `~` folder from Unity, so the content ships with the package but never enters a consumer's asset database or compilation until they choose to import it. That import is only offered if the sample is declared in the `samples` array of `package.json` (`displayName`, `description`, `path` — the path is repo-relative, e.g. `Samples~/Example`); an undeclared `Samples~` folder is dead weight. Keep the inner `.meta` files so an imported sample gets stable GUIDs, but a `Samples~.meta` at the package root is orphaned and should not exist. Three packages have samples: `DevelopmentConsole`, `InGameMessageLogging` and `PersistentDataManagement`. `ComponentSystem` and `ShopManagement` had "Package Starter Kit" placeholders instead — one non-compiling stub, one empty folder — and both were deleted on 2026-08-30.
+
 Required at the package root: `package.json`, `LICENSE.md`, and a `.meta` file for **every** file and folder.
 
-`Third Party Notices.md` belongs only to the two packages that actually vendor third-party code — `PackageBasics` (NiceJson, MIT) and `DevelopmentConsole` (Unity Logs Viewer, **license unresolved**). Five other packages carried `[provide component name]` placeholder notices for code they do not bundle; those were deleted on 2026-08-30.
+`Third Party Notices.md` belongs only to `PackageBasics`, the one package that vendors third-party code (NiceJson, MIT). Five other packages carried `[provide component name]` placeholder notices for code they do not bundle; those were deleted on 2026-08-30. `DevelopmentConsole` also had one, for a vendored Unity Asset Store log viewer that was deleted on 2026-08-30 — see the note in *Known inconsistencies*.
 
 ### Assembly definitions
 
@@ -82,7 +84,7 @@ Assemblies are named `Arman.<PackageName>[.<Layer>]`. Be aware the existing nami
 |--|--|--|--|
 | `Asset Providing` | `com.arman.asset-providing` | 0.1.0 | — |
 | `ComponentSystem` | `com.arman.component-system` | 0.1.0 | — |
-| `ConfigurationManagement` | `com.arman.configuration-management` | 1.0.0 | — |
+| `ConfigurationManagement` | `com.arman.configuration-management` | 0.1.0 | — |
 | `DevelopmentConsole` | `com.arman.development-console` | 0.1.0 | — |
 | `EventManagement` | `com.arman.event-management` | 0.1.0 | — |
 | `HttpConnection` | `com.arman.http-connection` | 0.1.0 | — |
@@ -307,9 +309,7 @@ Never prefix a git command with `cd` (e.g. `cd <dir> && git ...`); use `git -C <
 
 Real, deliberately unfixed. Don't "clean these up" as a side quest — each has a cost, and the asmdef ones break consumer references:
 
-* **`Samples`/`Documentation` gain the `~` suffix at release time, not in the repo.** In the repo the folders are plainly `Samples/`/`Documentation/`. During a package release (before tagging), rename them to `Samples~`/`Documentation~` so UPM keeps that content out of a consumer's import and compilation. Do **not** add `~` to the repo folders themselves — the `~` is a release-time rename only.
 * **All packages now have real descriptions.** Ten previously carried `"description": "Description"` placeholders; their functional summaries were authored 2026-08-29: Asset Providing (async/sync provider service), Event Management (pub-sub with copy-on-write propagation), HttpConnection (UnityWebRequest wrapper), InventorySystem (generic quantity tracking), ObjectPooling (reuse pattern abstractions), PackageBasics (C# utility container types), PersistentDataManagement (serialization layer), Scene Management (DeferredProcedureExecutor wrapper), UI Management (Canvas stack framework), UpdateManagement (async app updates).
 * **All 18 packages now have a README and a CHANGELOG.** The 13 that were missing them (i.e. every package other than the five documented ones plus `PackageTemplate`) were authored on 2026-08-29 from each package's runtime source.
 * `PackageTemplate` mixes `Arman.PackageTemplate` and `Arman.TemplatePackage` in its own asmdef names.
-* **`DevelopmentConsole` must not be published yet.** It vendors the "Unity Logs Viewer" (`Reporter`) under `Runtime/ThirdParties/` and `Editor/Scripts/ThirdParties/` with no copyright header, no license file and no attribution anywhere in the sources, while `Reporter.cs.meta` records `licenseType: Store` — i.e. the files came from the Unity Asset Store. Publishing that inside an MIT package is a licensing risk. Either identify the component's real license and write it into `Third Party Notices.md`, or delete the two `ThirdParties` folders; no code outside them references the `Reporter` types, so removal does not break the console. Every other package is unaffected.
-* **`ConfigurationManagement` is at `1.0.0` while the other 16 publishable packages are at `0.1.0`.** This is recorded, not accidental, but it means that package's first tag claims a stable API. Confirm that is intended before the first release wave — a published version is permanent.
+* **`DevelopmentConsole`'s vendored log viewer was deleted, not relicensed.** It used to bundle the "Unity Logs Viewer" (`Reporter`) under `Runtime/ThirdParties/` and `Editor/Scripts/ThirdParties/` with no copyright header, no license file and no attribution, while `Reporter.cs.meta` recorded `licenseType: Store` — i.e. the files came from the Unity Asset Store, which cannot be redistributed inside an MIT package. On 2026-08-30 both `ThirdParties` trees were removed, along with the `Reporter` and `ToggleLogButton` objects in `Runtime/Prefabs/DevelopmentConsole.prefab` and the package's now-empty `Editor/` assembly. Do not restore it. The panel's `onErrorDetected` `UnityEvent` survives but now ships with no listener attached.

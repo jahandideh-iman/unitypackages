@@ -5,9 +5,19 @@
   "license": "MIT",
   "unity": "2019.3",
   "description": "Displays log messages inside a running game as a capped, self-expiring on-screen list, so issues can be diagnosed on device without attaching an editor or an external debugger.",
-  "author": {"name": "Iman Jahandideh", "email": "jahandidehk.iman@gmail.com"},
+  "author": {
+    "name": "Iman Jahandideh",
+    "email": "jahandidehk.iman@gmail.com"
+  },
   "type": "library",
   "dependencies": {
     "com.arman.unity-utilities": "0.1.0"
-  }
+  },
+  "samples": [
+    {
+      "displayName": "In Game Message Logging Example",
+      "description": "A scene wiring an InputField to UnityInGameMessageLogger, so typed text appears as an on-screen log message that expires on its own.",
+      "path": "Samples~/Example"
+    }
+  ]
 }

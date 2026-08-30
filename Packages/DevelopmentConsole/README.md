@@ -22,9 +22,6 @@ Everything lives in the `Arman.Development.DevelopmentConsole.Base` namespace.
 | `ReflectionUtilities` | Assembly-wide type lookup helpers. |
 | `FPSProfiler`, `ButtonDragabler` | An on-screen frame-rate readout, and a draggable button. |
 
-A third-party on-screen log viewer is bundled under `Runtime/ThirdParties/` — see
-`Third Party Notices.md`.
-
 ## Usage
 
 Declare options by subclassing `DevelopmentOptionsDefinition`. The methods must be `static`:
@@ -53,10 +50,12 @@ for `DevelopmentOptionsDefinition` subclasses and builds one group per `group` s
 per command. Nothing else registers anything.
 
 The panel also exposes `onErrorDetected`, `onToolsPanelOpened` and `onToolsPanelClosed` as
-`UnityEvent`s — `onErrorDetected` fires whenever Unity logs an error or an exception, which is a cheap
-way to flash the dev button red when something has gone wrong off-screen.
+`UnityEvent`s. `onErrorDetected` fires whenever Unity logs an error or an exception. It ships with no
+listener attached, so wire it to whatever you want — flashing the dev button red is a cheap way to
+notice that something has gone wrong off-screen.
 
-Two worked definitions are in `Samples/`.
+Two worked definitions ship as the *Development Console Example* sample — import it from the
+package's Samples tab in the Package Manager.
 
 ## Things to know
 

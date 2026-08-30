@@ -64,7 +64,8 @@ logger.Log("Level loaded");
 4. Assign the prefab and a container to `UnityInGameMessageLogger`, and set `capacity` and
    `logLifeTime`.
 
-A worked example is in `Samples/Example`, which wires an `InputField` to the logger.
+A worked example ships as the *In Game Message Logging Example* sample, which wires an `InputField`
+to the logger — import it from the package's Samples tab in the Package Manager.
 
 ## Things to know
 

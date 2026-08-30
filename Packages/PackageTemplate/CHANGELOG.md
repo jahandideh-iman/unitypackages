@@ -13,4 +13,4 @@ This package is marked `private` and is never published; it exists only as a sta
 
 ### Added
 
-- The UPM package scaffold — `package.json`, `Runtime/`, `Editor/`, `Tests/` and `Samples/` with their assembly definitions.
+- The UPM package scaffold — `package.json`, `Runtime/`, `Editor/` and `Tests/` with their assembly definitions.

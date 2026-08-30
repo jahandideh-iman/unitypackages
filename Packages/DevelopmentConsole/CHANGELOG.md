@@ -15,4 +15,4 @@ First release of *Development Console*.
 - `DevelopmentGroup` and `DevelopmentCommand` — the group and command views instantiated from prefabs.
 - `DevOptionAttribute(group, commandName)` for marking a method as a console command, and `ShortCutAttribute(params KeyCode[])` for binding it to a key combination.
 - `CommandInfo` and `CommandInputPrompt`, which invoke a command with or without typed arguments.
-- `FPSProfiler` and `ButtonDragabler` Unity helpers, plus the bundled Unity Logs Viewer (`Reporter`).
+- `FPSProfiler` and `ButtonDragabler` Unity helpers.
