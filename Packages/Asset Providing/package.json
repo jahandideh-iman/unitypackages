@@ -1,7 +1,7 @@
 {
   "name": "com.arman.asset-providing",
   "displayName": "Asset Providing",
-  "version": "0.1.0-preview",
+  "version": "0.1.0",
   "license": "MIT",
   "unity": "2019.1",
   "description": "Async/Sync asset loading provider service with config-based initialization, chainable multi-provider support, and context-aware resource management.",
