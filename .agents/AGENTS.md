@@ -132,12 +132,14 @@ Unity tests run through the official [Unity CLI](https://unity.com/blog/meet-the
 | Job | Runner | Notes |
 |--|--|--|
 | `script-tests` | `ubuntu-latest` | Tests the CI helper scripts. Runs on forks too. |
-| `test` | self-hosted Windows | EditMode + PlayMode. **Never runs on fork PRs** — see below. |
+| `unity-tests` | self-hosted Windows | EditMode + PlayMode. **Never runs on fork PRs** — see below. |
 | `report` | `ubuntu-latest` | Turns the JUnit XML into PR annotations. |
+
+Named `unity-tests`, not `test`, because `changelog.yml` already has a job called `test` and two identically named entries in a PR's check list cannot be told apart — which matters the moment either becomes a required check. For the same reason the report step runs with `annotate_only: true`: creating a check run gives GitHub no way to say which check suite it belongs to, and it filed the result under the *changelog* workflow, so a red Unity suite pointed the reader at the wrong place.
 
 Three rules that are load-bearing rather than stylistic:
 
-* **The `test` job must never run on a fork PR.** This repo is public and the runner is a physical machine with a live Unity licence. The job's `if:` condition is the only thing preventing a drive-by PR from executing code there. Never add a `pull_request_target` trigger to this workflow, and never pin a third-party action by tag instead of commit SHA.
+* **The `unity-tests` job must never run on a fork PR.** This repo is public and the runner is a physical machine with a live Unity licence. The job's `if:` condition is the only thing preventing a drive-by PR from executing code there. Never add a `pull_request_target` trigger to this workflow, and never pin a third-party action by tag instead of commit SHA.
 * **CI runs the Editor in `ProjectVersion.txt`, or fails.** No `-e`, no `--allow-install`. `Tools/ci/Resolve-UnityEditor.ps1` enforces this.
 * **Only `Library/` survives between runs.** `TestResults/` and `Logs/` are wiped every job, so everything the pipeline publishes was produced by that run. The `clean_library` input on a manual dispatch forces a cold run, which is how you tell a poisoned cache from broken code.
 
@@ -148,7 +150,7 @@ powershell -NoProfile -File Tools/ci/Tests/Test-CiScripts.ps1   # locally (Windo
 pwsh -File Tools/ci/Tests/Test-CiScripts.ps1                    # in CI (PowerShell Core)
 ```
 
-The `script-tests` job runs `pwsh`, because it is on `ubuntu-latest`. The self-hosted `test` job runs **Windows PowerShell 5.1**, via an explicit shell string set as a job default — PowerShell Core is not installed on the runner, so `shell: pwsh` there fails with `pwsh: command not found` before any step does work.
+The `script-tests` job runs `pwsh`, because it is on `ubuntu-latest`. The self-hosted `unity-tests` job runs **Windows PowerShell 5.1**, via an explicit shell string set as a job default — PowerShell Core is not installed on the runner, so `shell: pwsh` there fails with `pwsh: command not found` before any step does work.
 
 That shell string spells out three things the built-in `shell: powershell` would not give it: `-NoProfile`, an execution-policy override (the runner account's policy is Restricted and otherwise refuses the `.ps1` GitHub generates per `run:` block), and a trailing `exit $LASTEXITCODE`. The last is load-bearing — GitHub appends that epilogue to its *built-in* shells only, and without it a step whose final act is a failing script reports success. Both were found the hard way, on the first two live runs.
 

@@ -37,7 +37,10 @@ jobs:
         shell: pwsh
         run: ./Tools/ci/Tests/Test-CiScripts.ps1
 
-  test:
+  # Not `test`: changelog.yml already has a job by that name, and two identical
+  # entries in a PR's check list cannot be told apart -- which one is required
+  # by branch protection becomes a coin flip.
+  unity-tests:
     needs: script-tests
     # THE SECURITY BOUNDARY. This repo is public and this runner is a physical
     # machine with a real Unity licence and a real filesystem. A pull_request
@@ -203,10 +206,11 @@ jobs:
   # runs a third-party action; keeping it on a hosted runner means that action
   # never executes on the physical machine. Costs about twenty seconds.
   report:
-    needs: test
+    needs: unity-tests
     # always(), so a red suite still reports. Without this the annotations
     # vanish precisely when they are the thing you wanted.
-    if: always() && needs.test.result != 'skipped'
+    # Bracket syntax because a hyphen in a property path parses as subtraction.
+    if: always() && needs['unity-tests'].result != 'skipped'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -230,7 +234,15 @@ jobs:
         if: always()
         with:
           report_paths: 'artifacts/TestResults/*-junit.xml'
-          check_name: 'Unity tests'
+          # No separate check run. The Checks API has no way to say which check
+          # suite a created run belongs to, so GitHub files it under an
+          # arbitrary one of this commit's github-actions suites -- in practice
+          # changelog's, which meant a red Unity suite surfaced under the
+          # changelog workflow and sent the reader to the wrong place.
+          # Annotations still land on the changed lines, job_summary still
+          # publishes the results table, and fail_on_failure still fails this
+          # job, so nothing is lost but the misfiled check.
+          annotate_only: true
           fail_on_failure: true
           # There are no PlayMode assemblies yet, so playmode-junit.xml is a
           # well-formed <testsuites tests="0"/>. true would fail the job for
