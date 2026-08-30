@@ -144,7 +144,9 @@ editor can be installed and still be unable to compile, and this check will not 
 
 ## 6. Test execution
 
-Two steps in one job, EditMode then PlayMode, fail-fast between them.
+Two steps in one job, EditMode then PlayMode. **Both run even if the first fails.** A red EditMode
+suite should not hide an independent PlayMode failure — surfacing one failure per push, when two
+exist, costs an extra round trip for no saving worth having.
 
 ```powershell
 unity test --mode EditMode `
