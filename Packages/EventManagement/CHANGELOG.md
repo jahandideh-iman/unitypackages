@@ -2,11 +2,15 @@
 
 All notable changes to this package will be documented in this file.
 
-The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
-and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.0] - 2026-08-29
+## [0.1.0] - 2026-08-30
 
-### Initial release of Event Management
+First release of *Event Management*.
 
-*Implemented pub-sub event management system with listener registration, event propagation, and clear functionality.*
+### Added
+
+- `IGameEvent`, `IEventListener` and `IEventManager` — the pub-sub contracts.
+- `BasicEventManager`, with `Register`, `UnRegister`, `Has` and `Clear`.
+- `Propagate(evt, sender)`, which dispatches over a snapshot of the listener list so handlers may register or unregister during dispatch.

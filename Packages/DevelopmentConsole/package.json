@@ -4,9 +4,16 @@
   "version": "0.1.0",
   "license": "MIT",
   "unity": "2019.1",
-  "description": "Development Console",
+  "description": "An in-game development console. Methods marked with [DevOption] are discovered by reflection and surfaced as grouped, clickable commands with optional key-combination shortcuts and typed argument prompts. Includes an on-screen FPS profiler.",
   "author": {
     "name": "Iman Jahandideh",
     "email": "jahandidehk.iman@gmail.com"
-  }
+  },
+  "samples": [
+    {
+      "displayName": "Development Console Example",
+      "description": "A scene with the console prefab and two DevelopmentOptionsDefinition classes, showing grouped commands, key-combination shortcuts and typed argument prompts.",
+      "path": "Samples~/Example"
+    }
+  ]
 }

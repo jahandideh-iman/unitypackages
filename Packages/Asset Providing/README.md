@@ -1,23 +1,78 @@
 # Asset Providing
 
-A small abstraction for loading Unity assets (prefabs, audio, etc.) through pluggable *asset providers*. Concrete providers wrap `Resources` or a table of `AssetData` (a `ScriptableObject`), and sync/async/chained variants let you route a request past the first provider that can fulfil it.
+An abstraction for loading Unity assets (prefabs, audio clips, sprites, …) through pluggable *asset
+providers*. A provider resolves an asset either **by id** or **by type**, synchronously or
+asynchronously. Providers can be chained, so a lookup falls through to the next provider until one
+returns a result.
 
 ## What it provides
 
-- `ISyncUnityAssetProvider` / `IAsyncUnityAssetProvider` — the provider contracts.
-- `IAssetProviderService` — an ordered chain of providers with a lookup table.
-- `ResourcesAssetProvider` and `TableBasedAssetProvider` — the two concrete providers.
-- `ChainedSyncUnityAssetProvider` / `ChainedAsyncUnityAssetProvider` — try providers in order.
-- `ChainedAssetProviderService` — the concrete service.
+Namespace `Arman.AssetProviding.Foundation`:
+
+| Type | Purpose |
+|---|---|
+| `ISyncUnityAssetProvider` | `LoadAssetById<T>(id)` and `LoadAssetByType<T>()`. |
+| `IAsyncUnityAssetProvider` | `LoadAssetByIdAsync<T>(id)` and `LoadAssetByTypeAsync<T>()`, both returning `Task<T>`. |
+| `ResourcesAssetProvider` | Resolves through `Resources`, under a constructor-supplied path prefix. |
+| `TableBasedAssetProvider` | Resolves from an `id → Object` dictionary. |
+| `ChainedSyncUnityAssetProvider` / `ChainedAsyncUnityAssetProvider` | Try each added provider in order, return the first hit. |
+| `IAssetProviderService` / `ChainedAssetProviderService` | Holds one chained sync provider and one chained async provider. |
+| `AssetProviderExtensions` | `InstantiateById<T>`, `InstantiateByType<T>` and their async variants. |
+
+Namespace `Arman.AssetProviding.Data` — `ScriptableObject` configuration assets so providers can be
+authored in the Editor: `AssetProviderConfig` (abstract, with `CreateSyncProvider()` /
+`CreateAsyncProvider()`), `ResourcesAssetProviderConfig`, `TableBasedAssetProviderConfig`, and
+`BasicAssetProviderServiceConfig` (`CreateAssetProviderService()`).
+
+Namespace `Arman.AssetProviding.Utility` — `ChainedContainer<T>`, `UnityAssetUtilities`, `TaskUtilities`.
 
 ## Usage
 
+Build a service by hand and load through the chain:
+
 ```csharp
-using Arman.AssetProviding;
+using Arman.AssetProviding.Foundation;
+using UnityEngine;
 
-IAssetProviderService service = new ChainedAssetProviderService();
-service.AddAssetProvider("Default", new ResourcesAssetProvider());
+var service = new ChainedAssetProviderService();
+service.AddSyncProvider(new ResourcesAssetProvider("Prefabs/"));
+service.AddAsyncProvider(new ResourcesAssetProvider("Prefabs/"));
 
-IAsyncUnityAssetProvider provider = service.GetAsyncProvider("Default");
-provider.LoadAsset("Prefabs/MyPrefab", prefab => Debug.Log("Loaded " + prefab));
+// By id — resolves "Prefabs/Enemy" through the Resources provider.
+GameObject enemy = service.ISyncUnityAssetProvider.LoadAssetById<GameObject>("Enemy");
+
+// By type — the first asset of that type the chain can supply.
+var config = await service.IAsyncUnityAssetProvider.LoadAssetByTypeAsync<GameSettings>();
 ```
+
+Adding a second provider makes the first one a fast path and the second a fallback:
+
+```csharp
+service.AddSyncProvider(new TableBasedAssetProvider(overrides)); // consulted first
+service.AddSyncProvider(new ResourcesAssetProvider("Prefabs/")); // fallback
+```
+
+Instantiating in one step, via the extension methods:
+
+```csharp
+Enemy spawned = service.ISyncUnityAssetProvider.InstantiateById<Enemy>("Enemy", parentTransform);
+```
+
+Or drive it from Editor-authored configuration:
+
+```csharp
+using Arman.AssetProviding.Data;
+
+// basicServiceConfig is a BasicAssetProviderServiceConfig asset.
+ChainedAssetProviderService service = basicServiceConfig.CreateAssetProviderService();
+```
+
+## Things to know
+
+- **`ResourcesAssetProvider` prefixes every id.** `new ResourcesAssetProvider("Prefabs/")` turns
+  `LoadAssetById<T>("Enemy")` into a `Resources.Load` of `Prefabs/Enemy`.
+- **A chained provider returns the first non-null result**, in the order providers were added.
+- **`IAssetProviderService` exposes providers, it does not proxy them.** Go through
+  `service.ISyncUnityAssetProvider` / `service.IAsyncUnityAssetProvider` to load.
+- **`TableBasedAssetProvider` takes its table at construction**; the `TableBasedAssetProviderConfig`
+  asset builds that dictionary from a serialized id/asset list.

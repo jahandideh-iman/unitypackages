@@ -1,9 +1,7 @@
 {
     "name": "Arman.HttpConnection",
     "rootNamespace": "",
-    "references": [
-        "Arman.PackageBasics"
-    ],
+    "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
