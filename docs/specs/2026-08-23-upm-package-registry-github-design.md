@@ -301,6 +301,13 @@ the operational saving is permanent.
   bulk submission should happen before it does.
 - **Migration is one-way in practice.** Once OpenUPM points at a GitHub `repoUrl` and users install
   from it, moving back to GitLab means abandoning the listing. Keep the GitLab archive.
+- **`Samples`/`Documentation` ship as imported assets** — ten folders across eight packages lack the
+  `~` suffix, so consumers import the docs images and sample scenes unconditionally, and no package
+  declares a `samples` array. Deliberately deferred, not forgotten: tracked in
+  [issue #8](https://github.com/jahandideh-iman/unitypackages/issues/8), which records the two fixes
+  (`.npmignore` exclusion vs. `trackingMode: githubRelease`) and why the repo keeps the folders
+  tilde-free. Does not block step 4 — `com.arman.service-locating` has neither folder — but should be
+  settled before the bulk submission in step 5.
 - **Two thin packages.** `ServiceLocating` and `Scene Management` have two C# files each. All 17
   publishable packages contain real code, so OpenUPM's "functional and useful" bar should be met,
   but the smallest ones are the most likely to draw reviewer questions.
