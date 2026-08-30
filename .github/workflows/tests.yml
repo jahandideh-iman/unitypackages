@@ -1,0 +1,183 @@
+name: tests
+
+# Runs the repo's 9 test assemblies on a self-hosted Windows runner.
+# See docs/specs/2026-08-30-pr-test-ci-design.md.
+#
+# Separate from release.yml on purpose: different runner, different trigger
+# surface, and a red test should not muddy the release workflow's status.
+
+on:
+  pull_request:
+  push:
+    branches: [dev, master]
+  workflow_dispatch:
+    inputs:
+      clean_library:
+        description: "Discard the preserved Library/ and re-import from cold. Use this to tell a poisoned cache from broken code."
+        type: boolean
+        default: false
+
+# A second push to the same PR cancels the first: Unity jobs are long and the
+# runner is concurrency 1, so queued stale runs block the useful one.
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # Runs everywhere, including on forks: it needs no Unity and no self-hosted
+  # runner, so the logic gating CI is itself tested on every PR.
+  script-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Test the CI helper scripts
+        shell: pwsh
+        run: ./Tools/ci/Tests/Test-CiScripts.ps1
+
+  test:
+    needs: script-tests
+    # THE SECURITY BOUNDARY. This repo is public and this runner is a physical
+    # machine with a real Unity licence and a real filesystem. A pull_request
+    # event from a fork checks out the contributor's code; running that here
+    # would hand arbitrary write access to anyone who opens a PR.
+    # Fork PRs get the ubuntu-hosted validate/pack in release.yml and nothing
+    # else. Do not relax this condition, and never add a pull_request_target
+    # trigger to this workflow.
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, windows, unitypackages-windows]
+    timeout-minutes: 60
+    env:
+      # Burst's async JIT can raise errors that land inside a PlayMode test's
+      # SetUp window, which makes identical commits pass and fail at random.
+      # This repo builds packages, not players, so nothing here needs Burst AOT.
+      # Read by BurstCompilerOptions' static ctor from the environment, not from
+      # the CLI, so it cannot be silently dropped by a command-line change.
+      UNITY_BURST_DISABLE_COMPILATION: "1"
+      UNITY_NON_INTERACTIVE: "1"
+    steps:
+      # clean: false, then an explicit selective clean. actions/checkout's
+      # default clean is `git clean -ffdx`, which deletes the 2.3 GB Library/
+      # and buys a ~20 minute cold asset import on every single run.
+      - uses: actions/checkout@v7
+        with:
+          clean: false
+
+      - name: Clean, preserving the asset import cache
+        shell: pwsh
+        run: |
+          # Only Library/. TestResults/ and Logs/ are job OUTPUTS, not caches:
+          # preserving them would let a job that dies before writing results
+          # upload the previous run's XML as this run's, reporting a stale pass.
+          if ("${{ inputs.clean_library }}" -eq "true")
+          {
+            Write-Host "clean_library requested -- discarding Library/ for a cold run."
+            git clean -ffdx
+          }
+          else
+          {
+            git clean -ffdx -e Library/
+          }
+          git reset --hard
+
+      - name: Resolve the Unity editor
+        id: editor
+        shell: pwsh
+        run: |
+          $json = unity editors --json | Out-String
+          ./Tools/ci/Resolve-UnityEditor.ps1 `
+            -ProjectVersionPath ProjectSettings/ProjectVersion.txt `
+            -EditorsJson $json
+
+      - name: EditMode tests
+        id: editmode
+        shell: pwsh
+        run: |
+          # No -e and no --allow-install, deliberately: `unity test` already
+          # defaults to the version in ProjectVersion.txt, and --allow-install
+          # would turn a missing editor into a silent multi-GB download.
+          unity test --mode EditMode `
+            --output TestResults/editmode-results.xml `
+            --report-format nunit,junit `
+            --junit-output TestResults/editmode-junit.xml `
+            --timeout 1800
+          $code = $LASTEXITCODE
+
+          # Copied aside immediately: the PlayMode editor overwrites
+          # Logs/Editor.log, so capturing once at the end loses this one.
+          if (Test-Path Logs/Editor.log)
+          {
+            Copy-Item Logs/Editor.log Logs/editmode-editor.log -Force
+          }
+          ./Tools/ci/Publish-UnityLog.ps1 -LogPath Logs/editmode-editor.log -Label EditMode -ExitCode $code
+
+          # 8 = tests ran and failed. 6 = the run never produced results.
+          # Collapsing them into "nonzero" is what sends someone debugging a
+          # test that never ran.
+          if ($code -eq 8)
+          {
+            Write-Host "::error::EditMode suite is red. Open the test report."
+            exit 8
+          }
+          if ($code -ne 0)
+          {
+            Write-Host "::error::EditMode run produced no results (exit $code) -- build or environment failure. Open the editor log artefact."
+            exit $code
+          }
+
+      - name: PlayMode tests
+        id: playmode
+        # always() so a red EditMode suite still reports PlayMode rather than
+        # hiding a second, independent failure behind the first.
+        if: always() && steps.editmode.conclusion != 'skipped'
+        shell: pwsh
+        run: |
+          unity test --mode PlayMode `
+            --output TestResults/playmode-results.xml `
+            --report-format nunit,junit `
+            --junit-output TestResults/playmode-junit.xml `
+            --timeout 1800
+          $code = $LASTEXITCODE
+
+          if (Test-Path Logs/Editor.log)
+          {
+            Copy-Item Logs/Editor.log Logs/playmode-editor.log -Force
+          }
+          ./Tools/ci/Publish-UnityLog.ps1 -LogPath Logs/playmode-editor.log -Label PlayMode -ExitCode $code
+
+          if ($code -eq 8)
+          {
+            Write-Host "::error::PlayMode suite is red. Open the test report."
+            exit 8
+          }
+          # There are no PlayMode test assemblies yet -- all 9 are
+          # includePlatforms: ["Editor"]. This step is here so the first
+          # PlayMode test written is covered automatically rather than silently
+          # unrun. An empty run that still produced a results file is a pass;
+          # only a run that produced nothing at all is a failure.
+          if ($code -ne 0)
+          {
+            if (Test-Path TestResults/playmode-results.xml)
+            {
+              Write-Host "::notice::PlayMode exited $code but produced results -- treating as an empty suite. If this repo now has PlayMode tests, investigate."
+              exit 0
+            }
+            Write-Host "::error::PlayMode run produced no results (exit $code) -- build or environment failure. Open the editor log artefact."
+            exit $code
+          }
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: test-results
+          path: |
+            TestResults/
+            Logs/
+          retention-days: 30
+          # An empty PlayMode run may legitimately produce no XML; do not turn
+          # that into a second, confusing warning.
+          if-no-files-found: ignore
