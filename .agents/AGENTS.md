@@ -263,6 +263,24 @@ Under the current direction: releasing is **creating a git tag**, not uploading.
 
 **A published package name and version are permanent.** Verify both before a first publish.
 
+### Changelogs — the `[Unreleased]` rule, enforced in CI
+
+Every package CHANGELOG carries an empty `## [Unreleased]` heading above its newest version, seeded across all 18 on 2026-08-30. **A pull request that changes a package's shipped code must add an entry under that heading**, so that bumping `version` at release time is a matter of renaming `[Unreleased]` rather than reconstructing history from the log.
+
+`.github/workflows/changelog.yml` enforces this on every PR into `dev` or `master` by running `Tools/changelog-check.mjs` — dependency-free Node, same as the release tooling, and runnable locally:
+
+```powershell
+node Tools/changelog-check.mjs --base dev --head HEAD
+node Tools/changelog-check.mjs --base dev --head HEAD --json
+node --test Tools/changelog-check.test.mjs    # the check's own tests
+```
+
+**Shipped code** is the trigger, and only that: anything under `Runtime/` or `Editor/`, plus `package.json`. `Tests/`, `Samples/`, `Documentation/`, every `*.md`, and every `*.meta` are exempt — none of them reach a consumer of the published tarball, so a doc fix or a GUID churn never demands an entry.
+
+Three things are skipped outright: a package with `"private": true` (i.e. `PackageTemplate`), a package that is **new** in the pull request (its CHANGELOG documents an initial release, not an unreleased delta), and — the escape hatch — the entire check when the PR carries the **`no-changelog`** label. The label is read inside the script rather than gating the job with `if:`, so the check always reports a real success instead of `skipped`; that matters if it is ever made a required check, because a skipped required check blocks the merge.
+
+Two details worth not re-deriving: the diff is taken against the **merge base**, so commits landing on `dev` after you branched are never blamed on your PR; and a bare `### Added` with no bullet under it does not count as an entry.
+
 ## Git and hosting
 
 **This repo lives on GitHub** (`github.com/jahandideh-iman/unitypackages`, public) — it was migrated from GitLab on 2026-08-23 because OpenUPM only accepts GitHub-hosted packages. Use `gh` for PRs and releases.
@@ -298,7 +316,8 @@ Never prefix a git command with `cd` (e.g. `cd <dir> && git ...`); use `git -C <
 3. Add `"license": "MIT"` plus a `LICENSE.md` and its `.meta`.
 4. Rename the asmdefs to `Arman.<NewName>.Runtime` etc. and update their `name` fields.
 5. Declare any `com.arman.*` dependencies with exact versions.
-6. Verify with `npm pack --dry-run` from the package folder.
+6. Write a `README.md` and a `CHANGELOG.md` that keeps the template's `## [Unreleased]` heading — see [the `[Unreleased]` rule](#changelogs--the-unreleased-rule-enforced-in-ci).
+7. Verify with `npm pack --dry-run` from the package folder.
 
 ## Known inconsistencies
 
