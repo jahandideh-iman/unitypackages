@@ -1,9 +1,27 @@
 ---
 name: lifeblood-mcp
-description: "Use when an agent should work with Lifeblood's MCP semantic-code tools: analyzing C# or Unity workspaces, querying symbols/dependencies/blast radius/file impact/test impact, checking architectural invariants, validating edits with compile_check/diagnose, or choosing the right Lifeblood tool instead of grep-style guessing."
+description: "Use for the Unity-aware and whole-project-impact questions SharpLens cannot answer: Unity asmdef checks across this repo's 34 asmdefs, multi-define-profile (#if UNITY_EDITOR vs player) analysis, Unity-reflection-aware dead code, and blast-radius/file-impact/test-impact analysis. For ordinary C# navigation, inspection, and refactoring use the sharplens-mcp skill instead."
 ---
 
 # Lifeblood MCP
+
+> **UnityPackages scoping note (local modification, not upstream).** `sharplens` is this
+> repo's default for ordinary C# navigation, inspection, and refactoring — see
+> [`sharplens-mcp`](../sharplens-mcp/SKILL.md) and [`AGENTS.md`](../../AGENTS.md).
+> Reach for `lifeblood` when the question is **Unity-aware** (`asmdef_check`,
+> `defineProfiles`, `dead_code` over MonoBehaviour/UnityEvent entry points) or about
+> **project-wide impact** (`blast_radius`, `file_impact`, `test_impact`). The
+> "prefer Lifeblood over text search" posture below is upstream prose and still holds
+> *against grep* — it is not a claim of precedence over `sharplens`.
+>
+> `asmdef_check` earns its keep here: this repo is 18 embedded packages over 34 asmdefs,
+> and an asmdef whose `references` don't match the real cross-package edges is a broken
+> published package. It has no `sharplens` equivalent.
+>
+> Two upstream capabilities **do not apply to this repo**: `invariant_check` has no
+> `docs/invariants/*.md` to read (`docs/` holds registry-hosting and release-flow specs
+> only), and `evidence_drift` has no generated evidence baseline. Package-boundary rules
+> are enforced by `Tools/upm-release.mjs validate` instead.
 
 ## Core Posture
 
