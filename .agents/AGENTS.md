@@ -148,7 +148,9 @@ powershell -NoProfile -File Tools/ci/Tests/Test-CiScripts.ps1   # locally (Windo
 pwsh -File Tools/ci/Tests/Test-CiScripts.ps1                    # in CI (PowerShell Core)
 ```
 
-The `script-tests` job runs `pwsh`, because it is on `ubuntu-latest`. The self-hosted `test` job runs **Windows PowerShell 5.1** (`shell: powershell`, set as a job default) — PowerShell Core is not installed on the runner, and `shell: pwsh` there fails with `pwsh: command not found` before any step does work.
+The `script-tests` job runs `pwsh`, because it is on `ubuntu-latest`. The self-hosted `test` job runs **Windows PowerShell 5.1**, via an explicit shell string set as a job default — PowerShell Core is not installed on the runner, so `shell: pwsh` there fails with `pwsh: command not found` before any step does work.
+
+That shell string spells out three things the built-in `shell: powershell` would not give it: `-NoProfile`, an execution-policy override (the runner account's policy is Restricted and otherwise refuses the `.ps1` GitHub generates per `run:` block), and a trailing `exit $LASTEXITCODE`. The last is load-bearing — GitHub appends that epilogue to its *built-in* shells only, and without it a step whose final act is a failing script reports success. Both were found the hard way, on the first two live runs.
 
 Lint the workflows with [`actionlint`](https://github.com/rhysd/actionlint); `.github/actionlint.yaml` declares the self-hosted runner's label so a typo in it is still caught.
 

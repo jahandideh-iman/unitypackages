@@ -64,9 +64,22 @@ jobs:
     # before a single step does any work. The helper scripts declare
     # `#Requires -Version 5.1` and are tested under both. Set at job level so
     # a step added later inherits it rather than reintroducing the bug.
+    #
+    # Spelled out rather than the built-in `shell: powershell`, for two reasons:
+    #
+    #   * The runner account's execution policy is Restricted, which refuses to
+    #     load the .ps1 GitHub generates for every `run:` block. Overriding it
+    #     for this process keeps the prerequisite in the repo rather than in
+    #     undocumented machine state the next runner would not have. It widens
+    #     nothing: the script being loaded is the workflow's own step body.
+    #   * `exit $LASTEXITCODE`. A custom shell string does not receive the
+    #     epilogue GitHub appends to its built-in shells, and without it a step
+    #     whose last act is a failing script -- Resolve-UnityEditor.ps1 exiting
+    #     1, say -- reports success. Restoring it is what keeps a failed editor
+    #     resolve, or a red suite's `exit 8`, from passing silently.
     defaults:
       run:
-        shell: powershell
+        shell: powershell -NoProfile -ExecutionPolicy Bypass -Command "& '{0}'; exit $LASTEXITCODE"
     steps:
       # clean: false, then an explicit selective clean. actions/checkout's
       # default clean is `git clean -ffdx`, which deletes the 2.3 GB Library/
