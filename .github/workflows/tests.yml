@@ -181,3 +181,40 @@ jobs:
           # An empty PlayMode run may legitimately produce no XML; do not turn
           # that into a second, confusing warning.
           if-no-files-found: ignore
+
+  # Deliberately NOT on the self-hosted runner. This job holds checks: write and
+  # runs a third-party action; keeping it on a hosted runner means that action
+  # never executes on the physical machine. Costs about twenty seconds.
+  report:
+    needs: test
+    # always(), so a red suite still reports. Without this the annotations
+    # vanish precisely when they are the thing you wanted.
+    if: always() && needs.test.result != 'skipped'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          name: test-results
+          path: artifacts
+        # The test job may have died before producing an artefact; the report
+        # step below still runs and says so, rather than this job erroring out
+        # with a download failure that hides the real cause.
+        continue-on-error: true
+
+      # Pinned by SHA, not tag: this is a third-party action with checks: write
+      # in a public repo, and a tag can be moved by its owner. This SHA is
+      # v6.5.0.
+      - name: Publish test report
+        uses: mikepenz/action-junit-report@a9170d5795813c01ab4901ffb045b52bab4ab09d
+        if: always()
+        with:
+          report_paths: 'artifacts/TestResults/*-junit.xml'
+          check_name: 'Unity tests'
+          fail_on_failure: true
+          # There are no PlayMode assemblies yet, so one of the two XML files
+          # may report zero tests. true would fail the job for that alone.
+          require_tests: false
