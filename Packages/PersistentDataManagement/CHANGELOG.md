@@ -2,11 +2,17 @@
 
 All notable changes to this package will be documented in this file.
 
-The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
-and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.0] - 2026-08-29
+## [0.1.0] - 2026-08-30
 
-### This is the first release of *Persistence Data Management*.
+First release of *Persistent Data Management*.
 
-Initial release providing a channel-based abstraction for storing and retrieving persistent data, with a built-in `PlayerPrefs` provider.
+### Added
+
+- `IPersistentDataManager` and `BasicPersistentDataManager`, which register `IPersistentDataSerializer`s against an `IChannel` and drive `SaveAll` / `Save(channel)` and `LoadAll` / `Load(channel)`, with a settable save version.
+- `IPersistentDataWrapper`, split into `IReadablePersistentDataWrapper` and `IWritablePersistentDataWrapper`, covering `int`, `float`, `string` and `bool` plus nested read/write blocks.
+- Wrapper implementations: `JSONPersistentDataWrapper`, `PlayerPrefsPersistentDataWrapper` and `EmptyPersistentDataWrapper`.
+- `IPersistentDataIOStreamFactory` with file-based, memory-based and empty implementations.
+- `PersistentDataChannelNotFoundException` and `PersistentDataSerializerAlreadyRegisterException`.

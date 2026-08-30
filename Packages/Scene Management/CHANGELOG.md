@@ -2,11 +2,14 @@
 
 All notable changes to this package will be documented in this file.
 
-The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
-and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.0] - 2026-08-29
+## [0.1.0] - 2026-08-30
 
-### This is the first release of *Scene Management*.
+First release of *Scene Management*.
 
-Initial release providing scene initialization and loading helpers.
+### Added
+
+- `SceneManager`, wrapping `UnityEngine.SceneManagement.SceneManager.LoadScene` behind `Open(sceneName)`.
+- `SceneInitilizer`, an abstract `MonoBehaviour` at `[DefaultExecutionOrder(-100)]` that calls an `Init()` override from `Awake`, so a scene can bootstrap itself before other components run.

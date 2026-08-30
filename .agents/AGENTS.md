@@ -58,11 +58,14 @@ A package folder follows the standard UPM layout. Actual usage across the 18 pac
 |--|--|--|
 | `Runtime/` | 18 / 18 | Runtime code + its asmdef. Every package has one. |
 | `Tests/Editor/` | 9 | EditMode tests, own asmdef. |
-| `Documentation/` | 5 | Long-form docs. |
 | `Samples/` | 5 | Example content (incl. `DevelopmentConsole`). |
 | `Editor/` | 4 | Editor-only code, own asmdef. |
 
+No package has a `Documentation/` folder. Five did, but all five held Unity's unedited "Package Starter Kit" template rather than any real content, and were deleted on 2026-08-30 in favour of the per-package `README.md`. Add one back only when a package genuinely outgrows its README.
+
 Required at the package root: `package.json`, `LICENSE.md`, and a `.meta` file for **every** file and folder.
+
+`Third Party Notices.md` belongs only to the two packages that actually vendor third-party code — `PackageBasics` (NiceJson, MIT) and `DevelopmentConsole` (Unity Logs Viewer, **license unresolved**). Five other packages carried `[provide component name]` placeholder notices for code they do not bundle; those were deleted on 2026-08-30.
 
 ### Assembly definitions
 
@@ -308,3 +311,5 @@ Real, deliberately unfixed. Don't "clean these up" as a side quest — each has 
 * **All packages now have real descriptions.** Ten previously carried `"description": "Description"` placeholders; their functional summaries were authored 2026-08-29: Asset Providing (async/sync provider service), Event Management (pub-sub with copy-on-write propagation), HttpConnection (UnityWebRequest wrapper), InventorySystem (generic quantity tracking), ObjectPooling (reuse pattern abstractions), PackageBasics (C# utility container types), PersistentDataManagement (serialization layer), Scene Management (DeferredProcedureExecutor wrapper), UI Management (Canvas stack framework), UpdateManagement (async app updates).
 * **All 18 packages now have a README and a CHANGELOG.** The 13 that were missing them (i.e. every package other than the five documented ones plus `PackageTemplate`) were authored on 2026-08-29 from each package's runtime source.
 * `PackageTemplate` mixes `Arman.PackageTemplate` and `Arman.TemplatePackage` in its own asmdef names.
+* **`DevelopmentConsole` must not be published yet.** It vendors the "Unity Logs Viewer" (`Reporter`) under `Runtime/ThirdParties/` and `Editor/Scripts/ThirdParties/` with no copyright header, no license file and no attribution anywhere in the sources, while `Reporter.cs.meta` records `licenseType: Store` — i.e. the files came from the Unity Asset Store. Publishing that inside an MIT package is a licensing risk. Either identify the component's real license and write it into `Third Party Notices.md`, or delete the two `ThirdParties` folders; no code outside them references the `Reporter` types, so removal does not break the console. Every other package is unaffected.
+* **`ConfigurationManagement` is at `1.0.0` while the other 16 publishable packages are at `0.1.0`.** This is recorded, not accidental, but it means that package's first tag claims a stable API. Confirm that is intended before the first release wave — a published version is permanent.

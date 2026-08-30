@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "license": "MIT",
   "unity": "2019.1",
-  "description": "Scene loading wrapper with DeferredProcedureExecutor callbacks, ordered initialization via BaseInitilizer<T> pattern for deterministic startup.",
+  "description": "A scene loading helper plus SceneInitilizer, an abstract MonoBehaviour that runs a per-scene Init() from Awake at an early execution order, giving each scene a deterministic bootstrap point.",
   "author": {
     "name": "Iman Jahandideh",
     "email": "jahandidehk.iman@gmail.com"

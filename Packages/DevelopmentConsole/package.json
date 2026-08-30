@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "license": "MIT",
   "unity": "2019.1",
-  "description": "Development Console",
+  "description": "An in-game development console. Methods marked with [DevOption] are discovered by reflection and surfaced as grouped, clickable commands with optional key-combination shortcuts and typed argument prompts. Includes an FPS profiler and a bundled on-screen log viewer.",
   "author": {
     "name": "Iman Jahandideh",
     "email": "jahandidehk.iman@gmail.com"

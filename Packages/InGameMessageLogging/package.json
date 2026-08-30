@@ -4,9 +4,9 @@
   "version": "0.1.0",
   "license": "MIT",
   "unity": "2019.3",
-  "description": "Displays log messages inside a running game via an on-screen console, so issues can be diagnosed on device without attaching an editor or external debugger. Registers as a locatable service.",
+  "description": "Displays log messages inside a running game as a capped, self-expiring on-screen list, so issues can be diagnosed on device without attaching an editor or an external debugger.",
   "author": {"name": "Iman Jahandideh", "email": "jahandidehk.iman@gmail.com"},
-  "type": "tool",
+  "type": "library",
   "dependencies": {
     "com.arman.unity-utilities": "0.1.0"
   }
