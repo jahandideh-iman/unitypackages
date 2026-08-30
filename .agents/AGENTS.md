@@ -104,7 +104,7 @@ Note that **assembly** names were deliberately *not* normalised alongside the id
 
 ## Test Commands
 
-Unity tests run through the official [Unity CLI](https://unity.com/blog/meet-the-unity-cli) (the standalone `unity` binary — `unity doctor` shows install/auth state; not to be confused with `Unity.exe` batchmode, which it wraps). Ensure Unity 6 (`6000.5.0f1`) is installed and registered (`unity editors`). There are two ways to run tests, pick based on whether an interactive Editor is already open on this project:
+Unity tests run through the official [Unity CLI](https://unity.com/blog/meet-the-unity-cli) (the standalone `unity` binary — `unity doctor` shows install/auth state; not to be confused with `Unity.exe` batchmode, which it wraps). Ensure the Editor named in `ProjectSettings/ProjectVersion.txt` is installed and registered (`unity editors`). There are two ways to run tests, pick based on whether an interactive Editor is already open on this project:
 
 * **No Editor open (CI, fresh checkout) — spawns its own batch instance:**
   ```powershell
@@ -124,6 +124,39 @@ Unity tests run through the official [Unity CLI](https://unity.com/blog/meet-the
   Returns structured JSON with per-test results inline (`Summary.{Total,Passed,Failed}`, `Results[].{FullName,Status,Duration}`) — no XML file to parse. `--filter`/`--filter_type` narrow to specific tests; see `unity command` (no args) for the full parameter list.
 
 **Fails with "another Unity instance is running with this project open" if you already have the Editor open** — Unity refuses to open the same project twice. Use the next option instead.
+
+## CI
+
+`.github/workflows/tests.yml` runs the test suites on every same-repo pull request and on pushes to `dev` and `master`. `.github/workflows/release.yml` separately runs `validate` and `pack`, and `.github/workflows/changelog.yml` enforces [the changelog rules](#changelogs--two-rules-enforced-in-ci). Design notes: [`docs/specs/2026-08-30-pr-test-ci-design.md`](../docs/specs/2026-08-30-pr-test-ci-design.md).
+
+| Job | Runner | Notes |
+|--|--|--|
+| `script-tests` | `ubuntu-latest` | Tests the CI helper scripts. Runs on forks too. |
+| `unity-tests` | self-hosted Windows | EditMode + PlayMode. **Never runs on fork PRs** — see below. |
+| `report` | `ubuntu-latest` | Turns the JUnit XML into PR annotations. |
+
+Named `unity-tests`, not `test`, because `changelog.yml` already has a job called `test` and two identically named entries in a PR's check list cannot be told apart — which matters the moment either becomes a required check. For the same reason the report step runs with `annotate_only: true`: creating a check run gives GitHub no way to say which check suite it belongs to, and it filed the result under the *changelog* workflow, so a red Unity suite pointed the reader at the wrong place.
+
+Three rules that are load-bearing rather than stylistic:
+
+* **The `unity-tests` job must never run on a fork PR.** This repo is public and the runner is a physical machine with a live Unity licence. The job's `if:` condition is the only thing preventing a drive-by PR from executing code there. Never add a `pull_request_target` trigger to this workflow, and never pin a third-party action by tag instead of commit SHA.
+* **CI runs the Editor in `ProjectVersion.txt`, or fails.** No `-e`, no `--allow-install`. `Tools/ci/Resolve-UnityEditor.ps1` enforces this.
+* **Only `Library/` survives between runs.** `TestResults/` and `Logs/` are wiped every job, so everything the pipeline publishes was produced by that run. The `clean_library` input on a manual dispatch forces a cold run, which is how you tell a poisoned cache from broken code.
+
+The helper scripts under `Tools/ci/` have their own tests, which need no Unity and no runner:
+
+```powershell
+powershell -NoProfile -File Tools/ci/Tests/Test-CiScripts.ps1   # locally (Windows PowerShell 5.1)
+pwsh -File Tools/ci/Tests/Test-CiScripts.ps1                    # in CI (PowerShell Core)
+```
+
+The `script-tests` job runs `pwsh`, because it is on `ubuntu-latest`. The self-hosted `unity-tests` job runs **Windows PowerShell 5.1**, via an explicit shell string set as a job default — PowerShell Core is not installed on the runner, so `shell: pwsh` there fails with `pwsh: command not found` before any step does work.
+
+That shell string spells out three things the built-in `shell: powershell` would not give it: `-NoProfile`, an execution-policy override (the runner account's policy is Restricted and otherwise refuses the `.ps1` GitHub generates per `run:` block), and a trailing `exit $LASTEXITCODE`. The last is load-bearing — GitHub appends that epilogue to its *built-in* shells only, and without it a step whose final act is a failing script reports success. Both were found the hard way, on the first two live runs.
+
+Lint the workflows with [`actionlint`](https://github.com/rhysd/actionlint); `.github/actionlint.yaml` declares the self-hosted runner's label so a typo in it is still caught.
+
+`Tools/ci/Publish-UnityLog.ps1` recognises one environment failure by signature: Windows Smart App Control blocking the Editor's `Bee.Tools.dll` (`0x800711C7`), which Unity misreports as `Scripts have compiler errors.`. Smart App Control was turned off on the runner on 2026-08-30, so this should not recur — the detector stays because that misreported message costs an afternoon to diagnose from cold. Section 8 of the design doc has the background.
 
 ## MCP Tool Usage & Unity CLI
 

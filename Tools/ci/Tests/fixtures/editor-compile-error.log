@@ -1,0 +1,6 @@
+Initialize engine version: 6000.5.10f1 (3bd4f66ad299)
+Packages/ObjectPooling/Runtime/Pool.cs(42,17): error CS0103: The name 'itemm' does not exist in the current context
+Packages/ObjectPooling/Runtime/Pool.cs(51,9): error CS1002: ; expected
+Compilation failed: 2 error(s), 0 warnings
+Aborting batchmode due to failure:
+Scripts have compiler errors.
