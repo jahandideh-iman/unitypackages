@@ -246,9 +246,9 @@ node Tools/upm-release.mjs tag --push --only com.arman.service-locating   # one 
 
 ⚠️ **`--push` publishes.** OpenUPM picks the tag up within 15–30 minutes and the resulting name/version is permanent. Without `--push` the tags stay local and are removable with `git tag -d`.
 
-`.github/workflows/release.yml` runs `validate` + `pack` on every PR and every push to `master`. The `tag` job's only permission is `contents: write`; there is no registry secret anywhere in the pipeline.
+`.github/workflows/release.yml` runs `validate` + `pack` on every PR and on every push to `dev` or `master` — so a change is checked when it merges to `dev` and again when it is promoted. The `tag` job runs only from `master` (see [Branching](#branching)); its only permission is `contents: write`, and there is no registry secret anywhere in the pipeline.
 
-⚠️ **Tagging is manual for now.** The `tag` job is gated to `workflow_dispatch` and defaults to a dry run — you must tick the `publish` input to actually create and push tags. A second input, `only`, maps to the script's `--only` so the smoke test can tag one package from CI; it is passed through the environment rather than interpolated into the shell. This is deliberate: the spec's rollout step 4 is a single-package smoke test that has to settle the Package Manager visibility question *before* 17 packages are submitted, and auto-tagging on merge would create all 17 tags on the first push to `master` and pre-empt it. **Once the smoke test passes, drop the gate** — delete the `workflow_dispatch` block and set the job back to `if: github.event_name == 'push'`, at which point "bump `version`, open a PR, merge" becomes the whole release flow as designed.
+⚠️ **Tagging is manual for now.** The `tag` job is gated to `workflow_dispatch` and defaults to a dry run — you must tick the `publish` input to actually create and push tags. A second input, `only`, maps to the script's `--only` so the smoke test can tag one package from CI; it is passed through the environment rather than interpolated into the shell. This is deliberate: the spec's rollout step 4 is a single-package smoke test that has to settle the Package Manager visibility question *before* 17 packages are submitted, and auto-tagging on merge would create all 17 tags on the first release push to `master` and pre-empt it. **Once the smoke test passes, drop the gate** — delete the `workflow_dispatch` block and set the job back to `if: github.event_name == 'push'`, at which point merging the release PR into `master` becomes the whole release flow as designed. Keep the `github.ref == 'refs/heads/master'` condition when you do: without it, the same edit would make every push to `dev` publish.
 
 The registry-hosting design and the CI release flow are specced in [`docs/specs/`](../docs/specs/). Both documents were drafted elsewhere and moved here on 2026-08-30 — they describe *this* repo, so this is their home, and the copies here are canonical.
 
@@ -259,7 +259,7 @@ The registry-hosting design and the CI release flow are specced in [`docs/specs/
 
 Both specs were written before the 2026-08-23 package-id normalisation and were amended on 2026-08-30 to use the real flat kebab-case ids — see [Naming](#naming). The GitHub spec's §3 now carries the full submission table (all 17 ids, `gitTagPrefix` bases, versions); this catalogue stays the source of truth if the two ever disagree.
 
-Under the current direction: releasing is **creating a git tag**, not uploading. OpenUPM's build pipeline watches tags and builds versions itself, so a per-package tag `<package-name>/<version>` (matched by OpenUPM's `gitTagPrefix`) is the entire publish step. Bump `version`, open a PR, merge.
+Under the current direction: releasing is **creating a git tag**, not uploading. OpenUPM's build pipeline watches tags and builds versions itself, so a per-package tag `<package-name>/<version>` (matched by OpenUPM's `gitTagPrefix`) is the entire publish step. Bump `version` on `dev`, promote it with a release PR `dev` → `master`, then tag from `master` — see [Branching](#branching).
 
 **A published package name and version are permanent.** Verify both before a first publish.
 
@@ -270,6 +270,21 @@ Under the current direction: releasing is **creating a git tag**, not uploading.
 The old GitLab remote is retained as a read-only archive under the remote name `gitlab`; `origin` is GitHub. Use `gh` here, not `glab`.
 
 Never prefix a git command with `cd` (e.g. `cd <dir> && git ...`); use `git -C <path> ...` instead.
+
+### Branching
+
+Two long-lived branches, split by purpose:
+
+| Branch | Role |
+|--|--|
+| `dev` | **Development.** The repo default on GitHub. Every feature, fix, and docs branch cuts from here and PRs back into here. |
+| `master` | **Release only.** Moves solely via a release PR from `dev`. Every release tag is cut from this branch. |
+
+So the day-to-day loop is: branch from `dev` → PR into `dev` → merge. `gh pr create` targets `dev` by default; you only pass `--base master` for a release PR.
+
+Releasing is a promotion, not a separate build. Bump the `version` fields on `dev` and merge them normally, then open one release PR `dev` → `master`. Once it merges, tag from `master` — see [Distribution and releases](#distribution-and-releases). Nothing is cherry-picked and `master` is never committed to directly, so `master` is always a commit that also exists on `dev`.
+
+This split is enforced in two places, and both are deliberate belt-and-braces: `Tools/upm-release.mjs` refuses to tag off `master` (`RELEASE_BRANCH`, overridable with `--allow-branch`), and the `tag` job in `release.yml` is conditioned on `github.ref == 'refs/heads/master'`. The workflow condition is the one that matters long-term — when the `workflow_dispatch` gate is eventually dropped in favour of `if: github.event_name == 'push'`, it is the only thing stopping a routine push to `dev` from publishing 17 packages. Keep it.
 
 ## Unity `.meta` files
 

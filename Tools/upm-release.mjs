@@ -21,7 +21,9 @@ import { fileURLToPath } from "node:url";
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const PACKAGES_DIR = path.join(ROOT, "Packages");
 
-// The branch a release may be tagged from. This repo uses `master`, not `main`.
+// The branch a release may be tagged from. `master` is release-only: development
+// lands on `dev`, and `master` moves solely via a release PR from it. (It is
+// `master` here, not `main`.)
 const RELEASE_BRANCH = "master";
 
 const NPM = process.platform === "win32" ? "npm.cmd" : "npm";
