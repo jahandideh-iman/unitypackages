@@ -1,0 +1,8 @@
+{
+  "success": true,
+  "command": "editors",
+  "data": [
+    { "version": "6000.0.82f1", "alias": "6.0.82f1", "architecture": "x86_64", "default": false },
+    { "version": "6000.5.10f1", "alias": "6.5.10f1", "architecture": "x86_64", "location": "C:\\Program Files\\Unity\\Hub\\Editor\\6000.5.10f1\\Editor\\Unity.exe", "default": false }
+  ]
+}
