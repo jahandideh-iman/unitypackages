@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "license": "MIT",
   "unity": "2019.1",
-  "description": "Application update orchestrator with IUpdatable interface, async/await patterns via UnityAsyncOperation support, and save-state management.",
+  "description": "Channel-based update loop management. Register IUpdatable objects against named channels, nest channels inside one another, then pause, resume or time-scale a channel and everything below it. A MonoBehaviour adapter drives the whole thing from Unity’s update loop.",
   "author": {
     "name": "Iman Jahandideh",
     "email": "jahandidehk.iman@gmail.com"

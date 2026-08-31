@@ -8,4 +8,5 @@ A minimal Unity UPM package **scaffold**. It carries **no runtime code** and ser
 - `Runtime/` — runtime C# code and its `.asmdef`.
 - `Editor/` — editor-only code and its `.asmdef` (references the runtime definition).
 - `Tests/` — editor/runtime test assemblies.
-- `Samples/` — example content (scenes, scripts, prefabs).
+- `Samples~/<Name>/` — example content (scenes, scripts, prefabs), declared in the `samples`
+  array of `package.json`. The `~` keeps it out of a consumer's compilation until they import it.

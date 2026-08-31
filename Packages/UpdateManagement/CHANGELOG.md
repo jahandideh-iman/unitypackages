@@ -2,13 +2,18 @@
 
 All notable changes to this package will be documented in this file.
 
-The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
-and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-## [0.1.0] - 2026-08-29
+## [0.1.0] - 2026-08-30
 
-### This is the first release of *Update Management*.
+First release of *Update Management*.
 
-Initial release providing update-manager abstractions for driving updatable objects, with delayed updates and a Unity update manager.
+### Added
+
+- `IUpdatable`, with a single `UpdateTime(float dt)` callback.
+- `IUpdateManager` and `BasicUpdateManager` — register updatables against an `IChannel`, nest channels with `RegisterChannelToParent`, and pause, resume or time-scale a channel and everything below it.
+- `AdvanceTime(float)`, which ticks every registered updatable using its channel’s effective time scale, and the `ChannelStateChangedEvent` raised on pause and resume.
+- `UnityUpdateManager`, a `MonoBehaviour` that drives a `BasicUpdateManager` from Unity’s `Update` loop using `Time.deltaTime`.

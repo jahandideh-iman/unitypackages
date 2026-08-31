@@ -2,13 +2,17 @@
 
 All notable changes to this package will be documented in this file.
 
-The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
-and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-## [0.1.0] - 2026-08-29
+## [0.1.0] - 2026-08-30
 
-### This is the first release of *UI Management*.
+First release of *UI Management*.
 
-Initial release providing window and popup abstractions for managing UI elements.
+### Added
+
+- `UIElement`, the base UI component with an `InternalOnDestroy` hook.
+- `Window` and its `MainWindow`, `PopupWindow` and `Panel` variants, including sorting order and layer control and `OnBackButtonPressed`.
+- `UIManager`, a `Canvas`-level `MonoBehaviour` providing `Init`, `SetMainWindow`, `MainWindow`, `OpenPopUp<T>`, `Close`, `SetMainCamera` and `BackgroundPanel`, and closing the focused window on the back/Escape key.

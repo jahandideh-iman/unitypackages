@@ -2,13 +2,18 @@
 
 All notable changes to this package will be documented in this file.
 
-The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
-and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-## [0.1.0] - 2026-08-29
+## [0.1.0] - 2026-08-30
 
-### This is the first release of *Inventory System*.
+First release of *Inventory System*.
 
-Initial release providing an inventory abstraction with min/max item-count constraints.
+### Added
+
+- `IInventoryItem`, `IInventory<T>` and `IInventoryItemConstraint` — the core contracts.
+- `BasicInventory<T>`, with `SetNumberOf`, `Increase`, `Decrease`, `NumberOf`, `Has`, `Items` and `SetConstraint`.
+- `MinMaxInventoryItemConstraint`, which clamps an item count between a minimum and a maximum.
+- `OnItemNumberChanged<T>` change callbacks, registrable globally or per item.
