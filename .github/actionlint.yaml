@@ -1,0 +1,8 @@
+# actionlint cannot know the labels of a self-hosted runner, so it flags any it
+# has not been told about. Declaring the label here keeps `actionlint` clean
+# without suppressing the runner-label check wholesale -- a typo in the label
+# would still be caught, which is the point: a mistyped label makes the job
+# queue forever against a runner that does not exist.
+self-hosted-runner:
+  labels:
+    - unitypackages-windows

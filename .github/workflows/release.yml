@@ -5,17 +5,24 @@ name: release
 # watches this repo's tags and builds the versions itself, typically within
 # 15-30 minutes. See docs/specs/2026-08-23-upm-package-registry-github-design.md.
 #
+# Branch roles: `dev` is where development lands, `master` is release-only and
+# moves solely via a release PR from `dev`. `validate` + `pack` run on both, so a
+# change is checked when it merges to `dev` and again when it is promoted; `tag`
+# runs only from `master`.
+#
 # ⚠️ The `tag` job is deliberately NOT wired to `push` yet. Rollout step 4 is a
 # single-package smoke test (com.arman.service-locating) that has to settle the
 # Package Manager visibility question in §5 before 17 packages are submitted.
-# Auto-tagging on merge would create all 17 tags on the first push to master and
-# pre-empt that test. Once the smoke test passes, delete the `workflow_dispatch`
-# gate below and restore `if: github.event_name == 'push'`.
+# Auto-tagging on merge would create all 17 tags on the first release push to
+# master and pre-empt that test. Once the smoke test passes, delete the
+# `workflow_dispatch` gate below and restore `if: github.event_name == 'push'` —
+# keep the `refs/heads/master` condition, which is what stops a push to `dev`
+# from publishing.
 
 on:
   pull_request:
   push:
-    branches: [master]
+    branches: [master, dev]
   workflow_dispatch:
     inputs:
       publish:
@@ -55,7 +62,10 @@ jobs:
   tag:
     needs: [validate, pack]
     # Manual only, until the smoke test proves the OpenUPM path end to end.
-    if: github.event_name == 'workflow_dispatch'
+    # The ref condition is separate from that gate and outlives it: `master` is
+    # the release branch, so a tag can never be cut from `dev`. Dispatching from
+    # `dev` skips this job (`Tools/upm-release.mjs tag` refuses off `master` too).
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     permissions:
       # The only permission needed. No registry secret exists in this pipeline.

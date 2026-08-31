@@ -12,12 +12,6 @@ Each subfolder of `Packages/` is a standalone, publishable UPM package. Unity tr
 
 Consumers get these packages from a registry, **not** by copying folders. See [Distribution and releases](#distribution-and-releases).
 
-### Unity version
-
-Two different version numbers live in this repo and they mean opposite things — don't conflate them:
-
-* **`ProjectSettings/ProjectVersion.txt` = `6000.5.0f1`** — the Editor the sandbox project opens in. Bumped from `2022.3.27f1` on 2026-08-23 to match the only Unity installed on the dev machine. Editing this file only *declares* the intent; the actual upgrade and asset re-import happen the first time the Editor opens the project, and that pass may surface API-deprecation warnings that need fixing.
-* **`"unity"` in each `Packages/<Dir>/package.json` = `2019.1` or `2019.3`** — the *minimum* Editor a consumer needs. These are intentionally low and must **not** be bumped to track the sandbox's Editor; raising one drops backward compatibility for consumers. Raise it only when a package actually starts using an API that requires it.
 
 ## Repo layout
 
@@ -115,7 +109,7 @@ Note that **assembly** names were deliberately *not* normalised alongside the id
 
 ## Test Commands
 
-Unity tests run through the official [Unity CLI](https://unity.com/blog/meet-the-unity-cli) (the standalone `unity` binary — `unity doctor` shows install/auth state; not to be confused with `Unity.exe` batchmode, which it wraps). Ensure Unity 6 (`6000.5.0f1`) is installed and registered (`unity editors`). There are two ways to run tests, pick based on whether an interactive Editor is already open on this project:
+Unity tests run through the official [Unity CLI](https://unity.com/blog/meet-the-unity-cli) (the standalone `unity` binary — `unity doctor` shows install/auth state; not to be confused with `Unity.exe` batchmode, which it wraps). Ensure the Editor named in `ProjectSettings/ProjectVersion.txt` is installed and registered (`unity editors`). There are two ways to run tests, pick based on whether an interactive Editor is already open on this project:
 
 * **No Editor open (CI, fresh checkout) — spawns its own batch instance:**
   ```powershell
@@ -135,6 +129,39 @@ Unity tests run through the official [Unity CLI](https://unity.com/blog/meet-the
   Returns structured JSON with per-test results inline (`Summary.{Total,Passed,Failed}`, `Results[].{FullName,Status,Duration}`) — no XML file to parse. `--filter`/`--filter_type` narrow to specific tests; see `unity command` (no args) for the full parameter list.
 
 **Fails with "another Unity instance is running with this project open" if you already have the Editor open** — Unity refuses to open the same project twice. Use the next option instead.
+
+## CI
+
+`.github/workflows/tests.yml` runs the test suites on every same-repo pull request and on pushes to `dev` and `master`. `.github/workflows/release.yml` separately runs `validate` and `pack`, and `.github/workflows/changelog.yml` enforces [the changelog rules](#changelogs--two-rules-enforced-in-ci). Design notes: [`docs/specs/2026-08-30-pr-test-ci-design.md`](../docs/specs/2026-08-30-pr-test-ci-design.md).
+
+| Job | Runner | Notes |
+|--|--|--|
+| `script-tests` | `ubuntu-latest` | Tests the CI helper scripts. Runs on forks too. |
+| `unity-tests` | self-hosted Windows | EditMode + PlayMode. **Never runs on fork PRs** — see below. |
+| `report` | `ubuntu-latest` | Turns the JUnit XML into PR annotations. |
+
+Named `unity-tests`, not `test`, because `changelog.yml` already has a job called `test` and two identically named entries in a PR's check list cannot be told apart — which matters the moment either becomes a required check. For the same reason the report step runs with `annotate_only: true`: creating a check run gives GitHub no way to say which check suite it belongs to, and it filed the result under the *changelog* workflow, so a red Unity suite pointed the reader at the wrong place.
+
+Three rules that are load-bearing rather than stylistic:
+
+* **The `unity-tests` job must never run on a fork PR.** This repo is public and the runner is a physical machine with a live Unity licence. The job's `if:` condition is the only thing preventing a drive-by PR from executing code there. Never add a `pull_request_target` trigger to this workflow, and never pin a third-party action by tag instead of commit SHA.
+* **CI runs the Editor in `ProjectVersion.txt`, or fails.** No `-e`, no `--allow-install`. `Tools/ci/Resolve-UnityEditor.ps1` enforces this.
+* **Only `Library/` survives between runs.** `TestResults/` and `Logs/` are wiped every job, so everything the pipeline publishes was produced by that run. The `clean_library` input on a manual dispatch forces a cold run, which is how you tell a poisoned cache from broken code.
+
+The helper scripts under `Tools/ci/` have their own tests, which need no Unity and no runner:
+
+```powershell
+powershell -NoProfile -File Tools/ci/Tests/Test-CiScripts.ps1   # locally (Windows PowerShell 5.1)
+pwsh -File Tools/ci/Tests/Test-CiScripts.ps1                    # in CI (PowerShell Core)
+```
+
+The `script-tests` job runs `pwsh`, because it is on `ubuntu-latest`. The self-hosted `unity-tests` job runs **Windows PowerShell 5.1**, via an explicit shell string set as a job default — PowerShell Core is not installed on the runner, so `shell: pwsh` there fails with `pwsh: command not found` before any step does work.
+
+That shell string spells out three things the built-in `shell: powershell` would not give it: `-NoProfile`, an execution-policy override (the runner account's policy is Restricted and otherwise refuses the `.ps1` GitHub generates per `run:` block), and a trailing `exit $LASTEXITCODE`. The last is load-bearing — GitHub appends that epilogue to its *built-in* shells only, and without it a step whose final act is a failing script reports success. Both were found the hard way, on the first two live runs.
+
+Lint the workflows with [`actionlint`](https://github.com/rhysd/actionlint); `.github/actionlint.yaml` declares the self-hosted runner's label so a typo in it is still caught.
+
+`Tools/ci/Publish-UnityLog.ps1` recognises one environment failure by signature: Windows Smart App Control blocking the Editor's `Bee.Tools.dll` (`0x800711C7`), which Unity misreports as `Scripts have compiler errors.`. Smart App Control was turned off on the runner on 2026-08-30, so this should not recur — the detector stays because that misreported message costs an afternoon to diagnose from cold. Section 8 of the design doc has the background.
 
 ## MCP Tool Usage & Unity CLI
 
@@ -251,9 +278,9 @@ node Tools/upm-release.mjs tag --push --only com.arman.service-locating   # one 
 
 ⚠️ **`--push` publishes.** OpenUPM picks the tag up within 15–30 minutes and the resulting name/version is permanent. Without `--push` the tags stay local and are removable with `git tag -d`.
 
-`.github/workflows/release.yml` runs `validate` + `pack` on every PR and every push to `master`. The `tag` job's only permission is `contents: write`; there is no registry secret anywhere in the pipeline.
+`.github/workflows/release.yml` runs `validate` + `pack` on every PR and on every push to `dev` or `master` — so a change is checked when it merges to `dev` and again when it is promoted. The `tag` job runs only from `master` (see [Branching](#branching)); its only permission is `contents: write`, and there is no registry secret anywhere in the pipeline.
 
-⚠️ **Tagging is manual for now.** The `tag` job is gated to `workflow_dispatch` and defaults to a dry run — you must tick the `publish` input to actually create and push tags. A second input, `only`, maps to the script's `--only` so the smoke test can tag one package from CI; it is passed through the environment rather than interpolated into the shell. This is deliberate: the spec's rollout step 4 is a single-package smoke test that has to settle the Package Manager visibility question *before* 17 packages are submitted, and auto-tagging on merge would create all 17 tags on the first push to `master` and pre-empt it. **Once the smoke test passes, drop the gate** — delete the `workflow_dispatch` block and set the job back to `if: github.event_name == 'push'`, at which point "bump `version`, open a PR, merge" becomes the whole release flow as designed.
+⚠️ **Tagging is manual for now.** The `tag` job is gated to `workflow_dispatch` and defaults to a dry run — you must tick the `publish` input to actually create and push tags. A second input, `only`, maps to the script's `--only` so the smoke test can tag one package from CI; it is passed through the environment rather than interpolated into the shell. This is deliberate: the spec's rollout step 4 is a single-package smoke test that has to settle the Package Manager visibility question *before* 17 packages are submitted, and auto-tagging on merge would create all 17 tags on the first release push to `master` and pre-empt it. **Once the smoke test passes, drop the gate** — delete the `workflow_dispatch` block and set the job back to `if: github.event_name == 'push'`, at which point merging the release PR into `master` becomes the whole release flow as designed. Keep the `github.ref == 'refs/heads/master'` condition when you do: without it, the same edit would make every push to `dev` publish.
 
 The registry-hosting design and the CI release flow are specced in [`docs/specs/`](../docs/specs/). Both documents were drafted elsewhere and moved here on 2026-08-30 — they describe *this* repo, so this is their home, and the copies here are canonical.
 
@@ -264,9 +291,38 @@ The registry-hosting design and the CI release flow are specced in [`docs/specs/
 
 Both specs were written before the 2026-08-23 package-id normalisation and were amended on 2026-08-30 to use the real flat kebab-case ids — see [Naming](#naming). The GitHub spec's §3 now carries the full submission table (all 17 ids, `gitTagPrefix` bases, versions); this catalogue stays the source of truth if the two ever disagree.
 
-Under the current direction: releasing is **creating a git tag**, not uploading. OpenUPM's build pipeline watches tags and builds versions itself, so a per-package tag `<package-name>/<version>` (matched by OpenUPM's `gitTagPrefix`) is the entire publish step. Bump `version`, open a PR, merge.
+Under the current direction: releasing is **creating a git tag**, not uploading. OpenUPM's build pipeline watches tags and builds versions itself, so a per-package tag `<package-name>/<version>` (matched by OpenUPM's `gitTagPrefix`) is the entire publish step. Bump `version` on `dev`, promote it with a release PR `dev` → `master`, then tag from `master` — see [Branching](#branching).
 
 **A published package name and version are permanent.** Verify both before a first publish.
+
+### Changelogs — two rules, enforced in CI
+
+Every package CHANGELOG carries an empty `## [Unreleased]` heading above its newest version, seeded across all 18 on 2026-08-30. `.github/workflows/changelog.yml` runs `Tools/changelog-check.mjs` on every PR into `dev` or `master` — dependency-free Node, same as the release tooling, and runnable locally:
+
+```powershell
+node Tools/changelog-check.mjs --base dev --head HEAD
+node Tools/changelog-check.mjs --base dev --head HEAD --json
+node --test Tools/changelog-check.test.mjs    # the check's own tests, 31 of them
+```
+
+| Rule | What it enforces | Waiver label |
+|--|--|--|
+| `missing-entry` | A change to a package's **shipped code** must be recorded under that package's `## [Unreleased]` heading. | `no-changelog` |
+| `frozen-section` | A version section whose `<package-name>/<version>` tag **already exists** must not be edited or deleted. | `changelog-rewrite` |
+
+The two waivers are deliberately separate — "this change needs no entry" is not the same claim as "I may rewrite what `0.1.0` says it shipped". Labels are read *inside* the script rather than gating the job with `if:`, so the check always reports a real success instead of `skipped`; that matters if it is ever made a required check, because a skipped required check blocks the merge.
+
+**Shipped code** triggers `missing-entry`, and only that: anything under `Runtime/` or `Editor/`, plus `package.json`. `Tests/`, `Samples/`, `Documentation/`, every `*.md`, and every `*.meta` are exempt — none of them reach a consumer of the published tarball, so a doc fix or a GUID churn never demands an entry. `frozen-section` looks at the CHANGELOG regardless, precisely because Markdown is otherwise exempt and released history could be rewritten unseen.
+
+Two packages are skipped by both rules: one with `"private": true` (i.e. `PackageTemplate`), and one that is **new** in the pull request — its CHANGELOG documents an initial release, not an unreleased delta.
+
+Details worth not re-deriving:
+
+* The diff is taken against the **merge base**, so commits landing on `dev` after you branched are never blamed on your PR.
+* A bare `### Added` with no bullet under it does not count as an entry.
+* Trailing whitespace inside a frozen section is ignored — no reader can see it.
+* **The release PR is not a false positive.** Renaming `## [Unreleased]` to `## [0.2.0]` satisfies `missing-entry` on its own, because opening a version section that did not exist at the base is exactly what a release does. That version has no tag yet, so `frozen-section` does not fire on it either; the tag comes after the merge.
+* `frozen-section` reads `git tag`, so CI checks out with `fetch-depth: 0`. A shallow fetch would leave the tag list empty and silently disable the rule.
 
 ## Git and hosting
 
@@ -275,6 +331,21 @@ Under the current direction: releasing is **creating a git tag**, not uploading.
 The old GitLab remote is retained as a read-only archive under the remote name `gitlab`; `origin` is GitHub. Use `gh` here, not `glab`.
 
 Never prefix a git command with `cd` (e.g. `cd <dir> && git ...`); use `git -C <path> ...` instead.
+
+### Branching
+
+Two long-lived branches, split by purpose:
+
+| Branch | Role |
+|--|--|
+| `dev` | **Development.** The repo default on GitHub. Every feature, fix, and docs branch cuts from here and PRs back into here. |
+| `master` | **Release only.** Moves solely via a release PR from `dev`. Every release tag is cut from this branch. |
+
+So the day-to-day loop is: branch from `dev` → PR into `dev` → merge. `gh pr create` targets `dev` by default; you only pass `--base master` for a release PR.
+
+Releasing is a promotion, not a separate build. Bump the `version` fields on `dev` and merge them normally, then open one release PR `dev` → `master`. Once it merges, tag from `master` — see [Distribution and releases](#distribution-and-releases). Nothing is cherry-picked and `master` is never committed to directly, so `master` is always a commit that also exists on `dev`.
+
+This split is enforced in two places, and both are deliberate belt-and-braces: `Tools/upm-release.mjs` refuses to tag off `master` (`RELEASE_BRANCH`, overridable with `--allow-branch`), and the `tag` job in `release.yml` is conditioned on `github.ref == 'refs/heads/master'`. The workflow condition is the one that matters long-term — when the `workflow_dispatch` gate is eventually dropped in favour of `if: github.event_name == 'push'`, it is the only thing stopping a routine push to `dev` from publishing 17 packages. Keep it.
 
 ## Unity `.meta` files
 
@@ -303,7 +374,8 @@ Never prefix a git command with `cd` (e.g. `cd <dir> && git ...`); use `git -C <
 3. Add `"license": "MIT"` plus a `LICENSE.md` and its `.meta`.
 4. Rename the asmdefs to `Arman.<NewName>.Runtime` etc. and update their `name` fields.
 5. Declare any `com.arman.*` dependencies with exact versions.
-6. Verify with `npm pack --dry-run` from the package folder.
+6. Write a `README.md` and a `CHANGELOG.md` that keeps the template's `## [Unreleased]` heading — see [the changelog rules](#changelogs--two-rules-enforced-in-ci).
+7. Verify with `npm pack --dry-run` from the package folder.
 
 ## Known inconsistencies
 
