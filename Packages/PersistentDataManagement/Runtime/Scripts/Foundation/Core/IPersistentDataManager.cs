@@ -18,6 +18,7 @@ namespace Arman.Foundation.Core.PersistentDataManagement
 
         void LoadAll();
         void Load(IChannel channel);
+        void Delete(IChannel channel);
     }
 
 }

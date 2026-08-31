@@ -19,5 +19,9 @@ namespace Arman.Foundation.Core.PersistentDataManagement
         {
             return true;
         }
+
+        public void Delete(IChannel channel)
+        {
+        }
     }
 }

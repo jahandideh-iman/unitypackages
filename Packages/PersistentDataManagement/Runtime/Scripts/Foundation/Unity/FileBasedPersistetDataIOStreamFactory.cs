@@ -32,6 +32,13 @@ namespace Arman.Foundation.Unity.PersistentDataManagement
             return new StreamWriter(fs);
         }
 
+        public void Delete(IChannel channel)
+        {
+            var filePath = FilePathFor(channel);
+            if (File.Exists(filePath))
+                File.Delete(filePath);
+        }
+
         private string FilePathFor(IChannel channel)
         {
             return Path.Combine(path, channel.ToString());
