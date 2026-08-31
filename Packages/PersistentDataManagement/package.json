@@ -12,5 +12,12 @@
   },
   "dependencies": {
     "com.arman.package-basics": "0.1.0"
-  }
+  },
+  "samples": [
+    {
+      "displayName": "Persistent Data Management Example",
+      "description": "A scene that saves and loads an int, a float and a string through a custom IPersistentDataSerializer, backed by JSON on disk.",
+      "path": "Samples~/Example"
+    }
+  ]
 }

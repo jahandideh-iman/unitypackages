@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "license": "MIT",
   "unity": "2019.1",
-  "description": "UnityWebRequest wrapper with streaming support, async/await patterns, and progress callbacks for HTTP operations.",
+  "description": "A UnityWebRequest wrapper. Build a request with a fluent builder (method, URL, headers, query parameters, body, timeout) and send it through a service that reports the result via success and failure callbacks.",
   "author": {
     "name": "Iman Jahandideh",
     "email": "jahandidehk.iman@gmail.com"

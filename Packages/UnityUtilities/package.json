@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "license": "MIT",
   "unity": "2019.3",
-  "description": "Assorted Unity helpers used across the Arman packages: coroutine-based delay handling, animation and animator event plumbing, serializable UnityEvent variants for common primitive types, and asset, reflection and task utilities.",
+  "description": "Assorted Unity helpers used across the Arman packages: a coroutine-based delay timer, legacy Animation playback and animator event plumbing, a UnityEvent delegator, and serializable UnityEvent variants for bool, int, float and string.",
   "author": {"name": "Iman Jahandideh", "email": "jahandidehk.iman@gmail.com"},
   "type": "library"
 }
