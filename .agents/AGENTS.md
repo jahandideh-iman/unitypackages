@@ -270,7 +270,7 @@ node Tools/upm-release.mjs tag --push          # create + push tags — THIS IS 
 node Tools/upm-release.mjs tag --push --only com.arman.service-locating   # one package
 ```
 
-`--only` takes a package id or a folder name (`--only "UI Management"` works), is repeatable, and errors if it matches nothing. It exists because rollout step 4 is a deliberate single-package smoke test. Under `--only`, `validate` still resolves dependencies against *every* package, not just the selected ones.
+`--only` takes a package id or a folder name (`--only "UI Management"` works), is repeatable, and errors if it matches nothing. It was written for rollout step 4's single-package smoke test; that test is done, but it remains the way to release one package by hand without touching the others. Under `--only`, `validate` still resolves dependencies against *every* package, not just the selected ones.
 
 `validate` checks, per package: parseable JSON; `name` matches `com.arman.<kebab-case-name>`; valid semver; `displayName`; a `description` that is not stock placeholder text; a `unity` minimum version; `license: "MIT"` plus a `LICENSE.md`; **a `.meta` file for every file and folder**; every `com.arman.*` dependency resolving to a non-private package in this repo at a version that is either current or already tagged; and `npm pack --dry-run` succeeding. Exit 0 = all valid, 1 = at least one failure.
 
@@ -280,7 +280,9 @@ node Tools/upm-release.mjs tag --push --only com.arman.service-locating   # one 
 
 `.github/workflows/release.yml` runs `validate` + `pack` on every PR and on every push to `dev` or `master` — so a change is checked when it merges to `dev` and again when it is promoted. The `tag` job runs only from `master` (see [Branching](#branching)); its only permission is `contents: write`, and there is no registry secret anywhere in the pipeline.
 
-⚠️ **Tagging is manual for now.** The `tag` job is gated to `workflow_dispatch` and defaults to a dry run — you must tick the `publish` input to actually create and push tags. A second input, `only`, maps to the script's `--only` so the smoke test can tag one package from CI; it is passed through the environment rather than interpolated into the shell. This is deliberate: the spec's rollout step 4 is a single-package smoke test that has to settle the Package Manager visibility question *before* 17 packages are submitted, and auto-tagging on merge would create all 17 tags on the first release push to `master` and pre-empt it. **Once the smoke test passes, drop the gate** — delete the `workflow_dispatch` block and set the job back to `if: github.event_name == 'push'`, at which point merging the release PR into `master` becomes the whole release flow as designed. Keep the `github.ref == 'refs/heads/master'` condition when you do: without it, the same edit would make every push to `dev` publish.
+⚠️ **Merging a release PR into `master` publishes.** The `tag` job runs on that push — `if: github.event_name == 'push' && github.ref == 'refs/heads/master'` — and creates and pushes a tag for every package whose current version is not tagged yet. It is idempotent, so a push to `master` that changes no version tags nothing, but there is no confirmation step and no dry run in front of it. Bump versions on `dev` and leave them there until you actually mean to release.
+
+The job used to be gated to `workflow_dispatch` with a `publish` input, so that the spec's rollout step 4 — a single-package smoke test — could settle the Package Manager visibility question before 17 packages were submitted. That test passed and all 17 published on 2026-08-31, so the gate was dropped per rollout step 5. **Keep the `github.ref == 'refs/heads/master'` condition:** it is now the only thing stopping a routine push to `dev` from publishing.
 
 The registry-hosting design and the CI release flow are specced in [`docs/specs/`](../docs/specs/). Both documents were drafted elsewhere and moved here on 2026-08-30 — they describe *this* repo, so this is their home, and the copies here are canonical.
 
@@ -345,7 +347,7 @@ So the day-to-day loop is: branch from `dev` → PR into `dev` → merge. `gh pr
 
 Releasing is a promotion, not a separate build. Bump the `version` fields on `dev` and merge them normally, then open one release PR `dev` → `master`. Once it merges, tag from `master` — see [Distribution and releases](#distribution-and-releases). Nothing is cherry-picked and `master` is never committed to directly, so `master` is always a commit that also exists on `dev`.
 
-This split is enforced in two places, and both are deliberate belt-and-braces: `Tools/upm-release.mjs` refuses to tag off `master` (`RELEASE_BRANCH`, overridable with `--allow-branch`), and the `tag` job in `release.yml` is conditioned on `github.ref == 'refs/heads/master'`. The workflow condition is the one that matters long-term — when the `workflow_dispatch` gate is eventually dropped in favour of `if: github.event_name == 'push'`, it is the only thing stopping a routine push to `dev` from publishing 17 packages. Keep it.
+This split is enforced in two places, and both are deliberate belt-and-braces: `Tools/upm-release.mjs` refuses to tag off `master` (`RELEASE_BRANCH`, overridable with `--allow-branch`), and the `tag` job in `release.yml` is conditioned on `github.ref == 'refs/heads/master'`. The workflow condition is the one that matters, now that the job runs on `push`: it is the only thing stopping a routine push to `dev` from publishing every package. Keep it.
 
 ## Unity `.meta` files
 
