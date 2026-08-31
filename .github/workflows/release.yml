@@ -10,29 +10,22 @@ name: release
 # change is checked when it merges to `dev` and again when it is promoted; `tag`
 # runs only from `master`.
 #
-# ⚠️ The `tag` job is deliberately NOT wired to `push` yet. Rollout step 4 is a
-# single-package smoke test (com.arman.service-locating) that has to settle the
-# Package Manager visibility question in §5 before 17 packages are submitted.
-# Auto-tagging on merge would create all 17 tags on the first release push to
-# master and pre-empt that test. Once the smoke test passes, delete the
-# `workflow_dispatch` gate below and restore `if: github.event_name == 'push'` —
-# keep the `refs/heads/master` condition, which is what stops a push to `dev`
-# from publishing.
+# ⚠️ Merging a release PR into `master` PUBLISHES. The `tag` job runs on that
+# push and tags every package whose version is not tagged yet; OpenUPM picks the
+# tags up and the resulting name/version is permanent. Bump versions on `dev`
+# and let them sit there until you mean to release.
+#
+# The `workflow_dispatch` gate this job used to carry was rollout step 4's
+# safeguard — a single-package smoke test (com.arman.service-locating) had to
+# settle the Package Manager visibility question in §5 before the rest were
+# submitted. That test passed and all 17 packages went out on 2026-08-31, so the
+# gate was dropped per rollout step 5 and merging the release PR is now the whole
+# release flow, as designed.
 
 on:
   pull_request:
   push:
     branches: [master, dev]
-  workflow_dispatch:
-    inputs:
-      publish:
-        description: "Create AND push tags. This is the publish, and a published name/version is permanent. Leave off for a dry run."
-        type: boolean
-        default: false
-      only:
-        description: "Limit to one package, by id (com.arman.service-locating) or folder name. Empty = every package with an untagged version. Use this for the rollout step 4 smoke test."
-        type: string
-        default: ""
 
 jobs:
   validate:
@@ -61,11 +54,11 @@ jobs:
 
   tag:
     needs: [validate, pack]
-    # Manual only, until the smoke test proves the OpenUPM path end to end.
-    # The ref condition is separate from that gate and outlives it: `master` is
-    # the release branch, so a tag can never be cut from `dev`. Dispatching from
-    # `dev` skips this job (`Tools/upm-release.mjs tag` refuses off `master` too).
-    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master'
+    # The ref condition is the one thing standing between a routine push to
+    # `dev` and publishing 17 packages — `master` is the release branch, so a tag
+    # can never be cut from `dev`. Keep it. (`Tools/upm-release.mjs tag` refuses
+    # to run off `master` too, deliberately belt and braces.)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     permissions:
       # The only permission needed. No registry secret exists in this pipeline.
@@ -84,26 +77,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      # `only` is passed through the environment, never interpolated into the
-      # script body — a ${{ }} expansion there would be a shell-injection seam.
-      - name: Plan tags (dry run)
-        if: ${{ !inputs.publish }}
-        env:
-          ONLY: ${{ inputs.only }}
-        run: |
-          if [ -n "$ONLY" ]; then
-            node Tools/upm-release.mjs tag --dry-run --only "$ONLY"
-          else
-            node Tools/upm-release.mjs tag --dry-run
-          fi
-
+      # Idempotent: a package whose <name>/<version> tag already exists is
+      # skipped, so a push to `master` that changes no version tags nothing.
       - name: Create and push tags
-        if: ${{ inputs.publish }}
-        env:
-          ONLY: ${{ inputs.only }}
-        run: |
-          if [ -n "$ONLY" ]; then
-            node Tools/upm-release.mjs tag --push --only "$ONLY"
-          else
-            node Tools/upm-release.mjs tag --push
-          fi
+        run: node Tools/upm-release.mjs tag --push
