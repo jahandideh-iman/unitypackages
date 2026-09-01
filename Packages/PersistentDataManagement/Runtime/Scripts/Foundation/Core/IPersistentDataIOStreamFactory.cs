@@ -9,5 +9,6 @@ namespace Arman.Foundation.Core.PersistentDataManagement
 
         StreamWriter CreateWriteStreamFor(IChannel channel);
         StreamReader CreateReadStreamFor(IChannel channel);
+        void Delete(IChannel channel);
     }
 }

@@ -149,6 +149,11 @@ namespace Arman.Foundation.Core.PersistentDataManagement
             }
         }
 
+        public void Delete(IChannel channel)
+        {
+            persistentDataIOStreamFactory.Delete(channel);
+        }
+
         private void TryDeserialize(IPersistentDataSerializer serializer, IReadablePersistentDataWrapper persistentDataWrapper)
         {
             if (persistentDataWrapper.HasKey(serializer.Key()))
