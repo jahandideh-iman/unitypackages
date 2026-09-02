@@ -104,12 +104,14 @@ function applyAndCommit(repo, changes, message) {
     git(repo, "commit", "-m", message);
 }
 
-function check(repo, { base = "main", head = "feature", env = {} } = {}) {
-    const result = spawnSync(
-        process.execPath,
-        ["Tools/changelog-check.mjs", "--base", base, "--head", head, "--json"],
-        { cwd: repo, encoding: "utf8", env: { ...process.env, ...env } },
-    );
+function check(repo, { base = "main", head = "feature", baseBranch = null, env = {} } = {}) {
+    const args = ["Tools/changelog-check.mjs", "--base", base, "--head", head, "--json"];
+    if (baseBranch !== null) args.push("--base-branch", baseBranch);
+    const result = spawnSync(process.execPath, args, {
+        cwd: repo,
+        encoding: "utf8",
+        env: { ...process.env, ...env },
+    });
     let report;
     try {
         report = JSON.parse(result.stdout);
@@ -713,4 +715,124 @@ test("empty-unreleased: a package new in the pull request is not reported", (t) 
     assert.equal(status, 0);
     assert.equal(skipOf(report, "Beta"), "new");
     assert.deepEqual(problemsFor(report, "Beta"), []);
+});
+
+// ------------------------------------------------------ unpromoted-unreleased
+
+// The release gate. On a pull request into `master` every [Unreleased] section
+// should already have been turned into a version heading by `upm-release.mjs
+// prepare`; one that survives means the promotion step was skipped, and the
+// work would land on the release branch still labelled unreleased. The rule is
+// inert on every other base branch, where a populated [Unreleased] is the
+// healthy state that `missing-entry` insists on.
+
+test("unpromoted-unreleased: a populated heading fails a pull request into master", (t) => {
+    const repo = makeRepo(t, alphaBase(), {
+        "Packages/Alpha/README.md": "# Alpha\n\nA doc fix.\n",
+    });
+    const { status, report } = check(repo, { baseBranch: "master" });
+    assert.equal(status, 1);
+    assert.equal(report.ok, false);
+    assert.deepEqual(problemsFor(report, "Alpha"), ["unpromoted-unreleased"]);
+});
+
+test("unpromoted-unreleased: an untouched package is reported too", (t) => {
+    const repo = makeRepo(
+        t,
+        {
+            ...alphaBase({ "Packages/Alpha/CHANGELOG.md": changelogWithoutUnreleased() }),
+            "Packages/Beta/package.json": JSON.stringify({ name: "com.arman.beta", version: "0.1.0" }, null, 2),
+            "Packages/Beta/CHANGELOG.md": changelog("### Added\n\n- A thing.\n\n"),
+        },
+        { "Packages/Alpha/README.md": "# Alpha\n\nA doc fix.\n" },
+    );
+    const { status, report } = check(repo, { baseBranch: "master" });
+    assert.equal(status, 1);
+    assert.deepEqual(problemsFor(report, "Beta"), ["unpromoted-unreleased"]);
+});
+
+test("unpromoted-unreleased: no heading at all is what a release pull request looks like", (t) => {
+    const repo = makeRepo(t, alphaBase({ "Packages/Alpha/CHANGELOG.md": changelogWithoutUnreleased() }), {
+        "Packages/Alpha/README.md": "# Alpha\n\nA doc fix.\n",
+    });
+    const { status, report } = check(repo, { baseBranch: "master" });
+    assert.equal(status, 0);
+    assert.equal(report.ok, true);
+    assert.deepEqual(problemsFor(report, "Alpha"), []);
+});
+
+// An empty heading is unpromoted too, and reporting both rules against it would
+// give the reader two diagnostics with one remedy between them.
+test("unpromoted-unreleased: an empty heading reports this rule alone, not empty-unreleased", (t) => {
+    const repo = makeRepo(t, alphaBase({ "Packages/Alpha/CHANGELOG.md": changelog() }), {
+        "Packages/Alpha/README.md": "# Alpha\n\nA doc fix.\n",
+    });
+    const { status, report } = check(repo, { baseBranch: "master" });
+    assert.equal(status, 1);
+    assert.deepEqual(problemsFor(report, "Alpha"), ["unpromoted-unreleased"]);
+});
+
+test("unpromoted-unreleased: inert on a pull request into dev", (t) => {
+    const repo = makeRepo(t, alphaBase(), {
+        "Packages/Alpha/README.md": "# Alpha\n\nA doc fix.\n",
+    });
+    const { status, report } = check(repo, { baseBranch: "dev" });
+    assert.equal(status, 0);
+    assert.deepEqual(problemsFor(report, "Alpha"), []);
+});
+
+test("unpromoted-unreleased: inert when no base branch is supplied", (t) => {
+    const repo = makeRepo(t, alphaBase(), {
+        "Packages/Alpha/README.md": "# Alpha\n\nA doc fix.\n",
+    });
+    const { status, report } = check(repo);
+    assert.equal(status, 0);
+    assert.deepEqual(problemsFor(report, "Alpha"), []);
+});
+
+test("unpromoted-unreleased: a private package is exempt", (t) => {
+    const repo = makeRepo(
+        t,
+        {
+            ...alphaBase({ "Packages/Alpha/CHANGELOG.md": changelogWithoutUnreleased() }),
+            "Packages/Template/package.json": JSON.stringify(
+                { name: "com.arman.template", version: "0.1.0", private: true },
+                null,
+                2,
+            ),
+            "Packages/Template/CHANGELOG.md": changelog("### Added\n\n- A thing.\n\n"),
+        },
+        { "Packages/Alpha/README.md": "# Alpha\n\nA doc fix.\n" },
+    );
+    const { status, report } = check(repo, { baseBranch: "master" });
+    assert.equal(status, 0);
+    assert.deepEqual(problemsFor(report, "Template"), []);
+});
+
+// Unlike empty-unreleased, a package new in the pull request gets no exemption
+// here. `empty-unreleased` spares it because a brand-new package legitimately
+// carries the empty scaffold heading while it is being written; a release pull
+// request is the opposite situation — a package crossing into `master` for the
+// first time still has to name the version it is publishing as.
+test("unpromoted-unreleased: a package new in the pull request is not exempt", (t) => {
+    const repo = makeRepo(t, alphaBase({ "Packages/Alpha/CHANGELOG.md": changelogWithoutUnreleased() }), {
+        "Packages/Beta/package.json": JSON.stringify({ name: "com.arman.beta", version: "0.1.0" }, null, 2),
+        "Packages/Beta/CHANGELOG.md": changelog("### Added\n\n- A thing.\n\n"),
+        "Packages/Beta/README.md": "# Beta\n",
+    });
+    const { status, report } = check(repo, { baseBranch: "master" });
+    assert.equal(status, 1);
+    assert.deepEqual(problemsFor(report, "Beta"), ["unpromoted-unreleased"]);
+});
+
+test("unpromoted-unreleased: has no waiver label", (t) => {
+    const repo = makeRepo(t, alphaBase(), {
+        "Packages/Alpha/README.md": "# Alpha\n\nA doc fix.\n",
+    });
+    const { status, report } = check(repo, {
+        baseBranch: "master",
+        env: { PR_LABELS: JSON.stringify(["no-changelog", "changelog-rewrite"]) },
+    });
+    assert.equal(status, 1);
+    assert.deepEqual(problemsFor(report, "Alpha"), ["unpromoted-unreleased"]);
 });

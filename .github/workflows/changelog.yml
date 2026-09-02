@@ -1,19 +1,29 @@
 name: changelog
 
-# Three rules, all in Tools/changelog-check.mjs — see .agents/AGENTS.md:
+# Four rules, all in Tools/changelog-check.mjs — see .agents/AGENTS.md:
 #
-#   missing-entry      A change to a package's shipped code must be recorded
-#                      under that package's `## [Unreleased]` heading.
-#   frozen-section     A version section whose `<package-name>/<version>` tag
-#                      already exists must not be edited.
-#   empty-unreleased   An `## [Unreleased]` heading with no entries under it
-#                      must not be committed. No waiver label applies — the
-#                      fix is always to add an entry or remove the heading.
+#   missing-entry          A change to a package's shipped code must be
+#                          recorded under that package's `## [Unreleased]`
+#                          heading.
+#   frozen-section         A version section whose `<package-name>/<version>`
+#                          tag already exists must not be edited.
+#   empty-unreleased       An `## [Unreleased]` heading with no entries under
+#                          it must not be committed. No waiver label applies —
+#                          the fix is always to add an entry or remove the
+#                          heading.
+#   unpromoted-unreleased  On a pull request into `master`, no `## [Unreleased]`
+#                          heading may survive at all: the release PR is
+#                          assembled by `upm-release.mjs prepare`, which turns
+#                          each one into a version heading. Also no waiver.
+#
+# The last rule needs the base *branch name*, which BASE_SHA cannot supply —
+# hence BASE_REF below. It is inert on a pull request into `dev`, where a
+# populated `## [Unreleased]` is exactly what missing-entry demands.
 #
 # `labeled`/`unlabeled` are in the trigger list so that adding a waiver label
 # (`no-changelog`, `changelog-rewrite`) re-runs the check and turns it green
 # without an empty push. Those two labels only waive missing-entry and
-# frozen-section respectively; empty-unreleased has no waiver.
+# frozen-section respectively; the other two rules have no waiver.
 
 on:
   pull_request:
@@ -41,8 +51,9 @@ jobs:
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
           PR_LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
-        run: node Tools/changelog-check.mjs --base "$BASE_SHA" --head "$HEAD_SHA"
+        run: node Tools/changelog-check.mjs --base "$BASE_SHA" --head "$HEAD_SHA" --base-branch "$BASE_REF"
 
   # The check's own tests. They build throwaway git repos and run the real
   # script inside them, so a change to the matching rules cannot land silently.
