@@ -272,7 +272,21 @@ node Tools/upm-release.mjs prepare --dry-run    # what would each [Unreleased] s
 node Tools/upm-release.mjs prepare              # rename the headings, bump the versions
 ```
 
-`Tools/release.bat` is a one-line wrapper over the same script — `Tools\release.bat prepare --dry-run`, `Tools\release.bat tag --push`. It forwards every argument verbatim and adds no behaviour of its own, so anything written here about a command applies to both spellings.
+### The whole flow in one go — `Tools/release.bat`
+
+`Tools/release.bat` (a two-line wrapper over `Tools/release-flow.mjs`) runs an entire release and **takes no arguments**:
+
+```powershell
+Tools/release.bat            # or: node Tools/release-flow.mjs
+```
+
+Six steps, stopping at the first failure: preflight (`git` and `gh` present and authenticated, on `dev`, clean tree, not behind `origin/dev`) → `validate` → `prepare` → commit the bumps → push `dev` → `gh pr create --base master --head dev`. It prints the pull request URL and stops.
+
+**It stops there deliberately.** Merging that pull request is the publish, and an OpenUPM tag is permanent, so the irreversible step stays a human click on a green PR. If no package has a populated `## [Unreleased]` section it says so and exits 0, having changed nothing. Re-running while a release PR is already open updates that PR rather than failing.
+
+Passing it any argument is an error (exit 2) that points back at `upm-release.mjs` — that script is where single steps, `--dry-run`, `--only` and `--bump` live. There is no longer a wrapper that forwards sub-commands; spell those `node Tools/upm-release.mjs <command>`. The flow's own tests are `Tools/release-flow.test.mjs`, run by `release-script-tests` in `release.yml`.
+
+> `release.bat` has twice been committed with the backslashes eaten out of its `Tools\release.bat` usage comments — once harmlessly, once into bare `release.bat` command lines, which cmd executes and which recurse forever when the working directory is `Tools/`. The file now contains **no backslash at all**, and three tests pin that. Keep it that way.
 
 `--only` takes a package id or a folder name (`--only "UI Management"` works), is repeatable, and errors if it matches nothing. It was written for rollout step 4's single-package smoke test; that test is done, but it remains the way to release one package by hand without touching the others. Under `--only`, `validate` still resolves dependencies against *every* package, not just the selected ones.
 

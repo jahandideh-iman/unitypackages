@@ -1,9 +1,8 @@
 @echo off
-rem Thin wrapper so the release tool is one word to run from a Windows shell:
+rem Runs the whole release flow in one go: validate, prepare, commit, push, and
+rem open the release pull request. Takes no arguments. Merging the pull request
+rem it opens is what publishes -- this script stops short of that, on purpose.
 rem
-rem   Toolselease.bat validate
-rem   Toolselease.bat prepare --dry-run
-rem   Toolselease.bat tag --push
-rem
-rem Every argument is forwarded verbatim; the script itself is the documentation.
-node "%~dp0upm-release.mjs" %*
+rem For a single step, or for --dry-run / --only / --bump:
+rem   node Tools/upm-release.mjs <validate^|pack^|tag^|prepare> [options]
+node "%~dp0release-flow.mjs" %*

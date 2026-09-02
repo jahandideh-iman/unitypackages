@@ -8,8 +8,11 @@
 //   node Tools/upm-release.mjs tag [--push] [--dry-run] [--only <package>]
 //   node Tools/upm-release.mjs prepare [--dry-run] [--bump <pkg>=<part>]
 //
-// Tools/release.bat is a one-line wrapper over the same commands, for a
-// Windows shell where `node Tools/...` is more to type than it is worth.
+// These are the individual steps. Tools/release.bat (and the
+// Tools/release-flow.mjs behind it) runs the whole release in one go and takes
+// no arguments; it calls `validate` and `prepare` here, then commits, pushes,
+// and opens the release pull request. Reach for this script directly when you
+// want one step, or --dry-run / --only / --bump.
 //
 // Under the OpenUPM model a git tag <package-name>/<version> IS the release —
 // there is no upload step and no registry secret. See
@@ -866,7 +869,8 @@ options:
   --bump <pkg>=<part> prepare: force major|minor|patch for one package; repeatable
   --date <YYYY-MM-DD> prepare: the date written into the version heading
 
-On Windows, \`Tools\\release.bat <command> [options]\` forwards to this script.`);
+To run the whole release flow instead of one step: Tools/release.bat, or
+node Tools/release-flow.mjs. It takes no arguments.`);
     return 2;
 }
 
