@@ -132,7 +132,7 @@ Unity tests run through the official [Unity CLI](https://unity.com/blog/meet-the
 
 ## CI
 
-`.github/workflows/tests.yml` runs the test suites on every same-repo pull request and on pushes to `dev` and `master`. `.github/workflows/release.yml` separately runs `validate` and `pack`, and `.github/workflows/changelog.yml` enforces [the changelog rules](#changelogs--two-rules-enforced-in-ci). Design notes: [`docs/specs/2026-08-30-pr-test-ci-design.md`](../docs/specs/2026-08-30-pr-test-ci-design.md).
+`.github/workflows/tests.yml` runs the test suites on every same-repo pull request and on pushes to `dev` and `master`. `.github/workflows/release.yml` separately runs `validate` and `pack`, and `.github/workflows/changelog.yml` enforces [the changelog rules](#changelogs--three-rules-enforced-in-ci). Design notes: [`docs/specs/2026-08-30-pr-test-ci-design.md`](../docs/specs/2026-08-30-pr-test-ci-design.md).
 
 | Job | Runner | Notes |
 |--|--|--|
@@ -389,7 +389,7 @@ The *source* of a release PR is enforced separately, by `promotion-guard` in `re
 3. Add `"license": "MIT"` plus a `LICENSE.md` and its `.meta`.
 4. Rename the asmdefs to `Arman.<NewName>.Runtime` etc. and update their `name` fields.
 5. Declare any `com.arman.*` dependencies with exact versions.
-6. Write a `README.md` and a `CHANGELOG.md` with **no `## [Unreleased]` heading** — add one when you have an entry to put under it. See [the changelog rules](#changelogs--two-rules-enforced-in-ci).
+6. Write a `README.md` and a `CHANGELOG.md` with **no `## [Unreleased]` heading** — add one when you have an entry to put under it. See [the changelog rules](#changelogs--three-rules-enforced-in-ci).
 7. Verify with `npm pack --dry-run` from the package folder.
 
 ## Known inconsistencies
