@@ -7,6 +7,10 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- A `csc.rsp` response file carrying `-nullable:enable` next to every assembly definition, so nullable reference type annotations are enforced when the package is compiled.
+
 ### Changed
 
 - Simplified the public namespace: every runtime type moved to `Arman.SceneManagement`. The former `Arman.SceneMangement` namespace (note the "Mangement" typo) is removed — update `using` directives to match.

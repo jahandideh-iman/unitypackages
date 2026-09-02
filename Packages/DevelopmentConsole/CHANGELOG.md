@@ -7,6 +7,10 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- A `csc.rsp` response file carrying `-nullable:enable` next to every assembly definition, so nullable reference type annotations are enforced when the package is compiled.
+
 ### Changed
 
 - Flattened the runtime source tree: all `.cs` files now live directly under `Runtime/Scripts` (the `Development/Base/DevelopmentConsole` and `Development/Unity` subfolders are gone), and `Arman.DevelopmentConsole.asmdef` moved to the `Runtime/` root.

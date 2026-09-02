@@ -10,6 +10,8 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `Delete(IChannel channel)` on `IPersistentDataManager` and `IPersistentDataIOStreamFactory`, implemented in `BasicPersistentDataManager`, the memory-based and file-based stream factories, to remove a channel's saved data. Deleting an unregistered channel does not throw.
+- `PersistentDataManagerFactory.Create()`, building a `BasicPersistentDataManager` wired to JSON files under `Application.persistentDataPath`.
+- A `csc.rsp` response file carrying `-nullable:enable` next to every assembly definition, so nullable reference type annotations are enforced when the package is compiled.
 
 ### Changed
 
