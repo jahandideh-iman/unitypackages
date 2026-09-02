@@ -245,6 +245,126 @@ function cmdValidate(packages, flags) {
     return failed === 0 ? 0 : 1;
 }
 
+// ---------------------------------------------------------------- prepare
+
+const CHANGELOG = "CHANGELOG.md";
+const H2 = /^##\s/;
+const H2_VERSION = /^##\s+\[([^\]]+)\]/;
+const UNRELEASED = /^unreleased$/i;
+const SUB_HEADING = /^#{3,}\s+(.+?)\s*$/;
+const PLAIN_SEMVER = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
+
+// Keep a Changelog's six sections, mapped to what each implies about the API.
+// `Removed` is the only breaking one; while major is 0 it lands on the minor
+// all the same, which is the whole point of the 0.x rule below.
+const SECTION_LEVELS = {
+    added: "feature",
+    changed: "feature",
+    deprecated: "feature",
+    removed: "breaking",
+    fixed: "fix",
+    security: "fix",
+};
+const LEVEL_RANK = { fix: 1, feature: 2, breaking: 3 };
+
+/** The `## [Unreleased]` heading's line index and the index past its body. */
+export function unreleasedRange(lines) {
+    const start = lines.findIndex((line) => H2_VERSION.test(line) && UNRELEASED.test(line.match(H2_VERSION)[1]));
+    if (start === -1) return null;
+    const rest = lines.slice(start + 1);
+    const offset = rest.findIndex((line) => H2.test(line));
+    return { start, end: offset === -1 ? lines.length : start + 1 + offset };
+}
+
+/**
+ * The body's entry lines. Identical to `entriesOf` in changelog-check.mjs —
+ * "does this section have entries" must mean one thing in both scripts, or a
+ * pull request can pass the check and then be skipped by the release.
+ */
+export function unreleasedEntries(lines) {
+    return lines.map((line) => line.trim()).filter((line) => line !== "" && !SUB_HEADING.test(line));
+}
+
+/** The `###` sub-headings with at least one line under them, in file order. */
+export function populatedSubsections(lines) {
+    const found = [];
+    let current = null;
+    for (const line of lines) {
+        const heading = line.match(SUB_HEADING);
+        if (heading) {
+            current = { name: heading[1], entries: 0 };
+            found.push(current);
+            continue;
+        }
+        if (current !== null && line.trim() !== "") current.entries += 1;
+    }
+    return found.filter((section) => section.entries > 0).map((section) => section.name);
+}
+
+/** The highest level the sub-headings imply, or null if none is recognised. */
+export function bumpLevel(names) {
+    let best = null;
+    for (const name of names) {
+        const level = SECTION_LEVELS[name.trim().toLowerCase()];
+        if (level === undefined) continue;
+        if (best === null || LEVEL_RANK[level] > LEVEL_RANK[best]) best = level;
+    }
+    return best;
+}
+
+function parts(version) {
+    const match = PLAIN_SEMVER.exec(version);
+    if (match === null) throw new Error(`version \`${version}\` is not plain X.Y.Z semver`);
+    return match.slice(1, 4).map(Number);
+}
+
+/**
+ * 0.x-aware. Below 1.0.0 the major is reserved, so a breaking change bumps the
+ * minor exactly as a feature does — the two are indistinguishable to a consumer
+ * pinning `0.1.0`, which is precisely what 0.x means.
+ */
+export function nextVersion(version, level) {
+    const [major, minor, patch] = parts(version);
+    if (major === 0) return level === "fix" ? `0.${minor}.${patch + 1}` : `0.${minor + 1}.0`;
+    if (level === "breaking") return `${major + 1}.0.0`;
+    if (level === "feature") return `${major}.${minor + 1}.0`;
+    return `${major}.${minor}.${patch + 1}`;
+}
+
+/** `--bump pkg=minor` asked for a part, so no 0.x remapping is applied. */
+export function explicitBump(version, part) {
+    const [major, minor, patch] = parts(version);
+    if (part === "major") return `${major + 1}.0.0`;
+    if (part === "minor") return `${major}.${minor + 1}.0`;
+    if (part === "patch") return `${major}.${minor}.${patch + 1}`;
+    throw new Error(`unknown bump part \`${part}\`, expected major, minor, or patch`);
+}
+
+/** Renames `## [Unreleased]` to `## [X.Y.Z] - DATE`, leaving nothing behind. */
+export function releaseChangelog(text, version, date) {
+    const eol = text.includes("\r\n") ? "\r\n" : "\n";
+    const lines = text.split(/\r?\n/);
+    const range = unreleasedRange(lines);
+    if (range === null) throw new Error("no `## [Unreleased]` heading");
+    lines[range.start] = `## [${version}] - ${date}`;
+    return lines.join(eol);
+}
+
+/**
+ * A targeted single-line replacement, not parse-and-reserialise: key order,
+ * indentation, and the trailing newline all survive, so the diff is one line.
+ * More than one `"version"` key means the file is not shaped as expected —
+ * refuse rather than rewrite the wrong one.
+ */
+export function replaceManifestVersion(text, version) {
+    const pattern = /^([ \t]*"version"[ \t]*:[ \t]*)"[^"]*"/gm;
+    const matches = text.match(pattern) ?? [];
+    if (matches.length !== 1) {
+        throw new Error(`package.json must contain exactly one \`"version"\` line, found ${matches.length}`);
+    }
+    return text.replace(pattern, `$1"${version}"`);
+}
+
 // ---------------------------------------------------------------- pack
 
 function cmdPack(packages, flags) {
@@ -373,18 +493,27 @@ function parseArgs(argv) {
     return { command: positional[0], flags };
 }
 
-const { command, flags } = parseArgs(process.argv.slice(2));
-if (!command) process.exit(usage());
+// Importable for tests: the dispatch runs only when this file is the entry
+// point, not when Tools/upm-release.test.mjs imports the helpers above.
+const invokedDirectly = process.argv[1] !== undefined
+    && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 
-const packages = discoverPackages();
-switch (command) {
-    case "validate":
-        process.exit(cmdValidate(packages, flags));
-    case "pack":
-        process.exit(cmdPack(packages, flags));
-    case "tag":
-        process.exit(cmdTag(packages, flags));
-    default:
-        console.error(`error: unknown command \`${command}\``);
-        process.exit(usage());
+if (invokedDirectly) main();
+
+function main() {
+    const { command, flags } = parseArgs(process.argv.slice(2));
+    if (!command) process.exit(usage());
+
+    const packages = discoverPackages();
+    switch (command) {
+        case "validate":
+            process.exit(cmdValidate(packages, flags));
+        case "pack":
+            process.exit(cmdPack(packages, flags));
+        case "tag":
+            process.exit(cmdTag(packages, flags));
+        default:
+            console.error(`error: unknown command \`${command}\``);
+            process.exit(usage());
+    }
 }

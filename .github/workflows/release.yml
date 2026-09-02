@@ -102,3 +102,15 @@ jobs:
       # skipped, so a push to `master` that changes no version tags nothing.
       - name: Create and push tags
         run: node Tools/upm-release.mjs tag --push
+
+  # The release tooling's own tests. `prepare` rewrites CHANGELOGs and version
+  # fields, and a release is permanent, so its arithmetic is not something to
+  # find out about afterwards. Named for uniqueness: changelog.yml owns `test`.
+  release-script-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: node --test Tools/upm-release.test.mjs Tools/promotion-check.test.mjs
