@@ -354,3 +354,158 @@ test("--date and --bump as the final argument require a value", (t) => {
     assert.equal(missingBump.status, 2);
     assert.match(missingBump.stderr, /--bump requires a value/);
 });
+
+// ------------------------------------------------- internal dependency bumps
+
+/** Beta depends on Alpha; Gamma depends on Beta. `body` null = no [Unreleased]. */
+function chain(body = null) {
+    return {
+        Alpha: ALPHA,
+        Beta: {
+            "package.json": manifest("com.arman.beta", { dependencies: { "com.arman.alpha": "0.1.0" } }),
+            "CHANGELOG.md": changelog(body),
+            "LICENSE.md": "MIT\r\n",
+        },
+        Gamma: {
+            "package.json": manifest("com.arman.gamma", { dependencies: { "com.arman.beta": "0.1.0" } }),
+            "CHANGELOG.md": changelog(null),
+            "LICENSE.md": "MIT\r\n",
+        },
+    };
+}
+
+test("a dependent with nothing of its own is cascaded a patch bump", (t) => {
+    const repo = makeRepo(t, chain());
+    const { status, report } = json(repo);
+    assert.equal(status, 0);
+    assert.deepEqual(
+        report.plan.map((p) => [p.name, p.to, p.level]),
+        [["com.arman.alpha", "0.2.0", "feature"], ["com.arman.beta", "0.1.1", "fix"], ["com.arman.gamma", "0.1.1", "fix"]],
+    );
+    // The cascade is transitive: Gamma is here only because Beta moved.
+    assert.match(report.plan[2].reason, /com\.arman\.beta/);
+});
+
+test("a cascaded dependent's manifest range moves to the new version", (t) => {
+    const repo = makeRepo(t, chain());
+    assert.equal(json(repo).status, 0);
+    assert.match(read(repo, "Beta", "package.json"), /"com\.arman\.alpha": "0\.2\.0"/);
+    assert.match(read(repo, "Beta", "package.json"), /"version": "0\.1\.1"/);
+    assert.match(read(repo, "Gamma", "package.json"), /"com\.arman\.beta": "0\.1\.1"/);
+});
+
+test("a cascaded dependent gets a generated Changed entry, then a version heading", (t) => {
+    const repo = makeRepo(t, chain());
+    assert.equal(json(repo).status, 0);
+    const text = read(repo, "Beta", "CHANGELOG.md");
+    assert.ok(text.includes("## [0.1.1] - 2026-09-02"), text);
+    assert.ok(!text.includes("[Unreleased]"), text);
+    assert.ok(text.includes("### Changed"), text);
+    assert.ok(text.includes("- Updated `com.arman.alpha` to `0.2.0`."), text);
+    // CRLF in, CRLF out — every changelog in the repo is CRLF.
+    assert.ok(!/[^\r]\n/.test(text), JSON.stringify(text));
+});
+
+test("a dependent with its own entries keeps its own level and still gets the bullet", (t) => {
+    const repo = makeRepo(t, chain("### Fixed\r\n\r\n- Stopped the leak.\r\n"));
+    const { status, report } = json(repo);
+    assert.equal(status, 0);
+    assert.deepEqual(
+        report.plan.map((p) => [p.name, p.to, p.level]),
+        [["com.arman.alpha", "0.2.0", "feature"], ["com.arman.beta", "0.1.1", "fix"], ["com.arman.gamma", "0.1.1", "fix"]],
+    );
+    const text = read(repo, "Beta", "CHANGELOG.md");
+    assert.ok(text.includes("- Stopped the leak."), text);
+    assert.ok(text.includes("- Updated `com.arman.alpha` to `0.2.0`."), text);
+    // Keep a Changelog order: Changed comes before Fixed.
+    assert.ok(text.indexOf("### Changed") < text.indexOf("### Fixed"), text);
+});
+
+test("--bump is honoured for a package the cascade pulled in", (t) => {
+    const repo = makeRepo(t, chain());
+    const { status, report } = json(repo, ["--bump", "com.arman.beta=minor"]);
+    assert.equal(status, 0);
+    assert.deepEqual(report.plan.map((p) => [p.name, p.to]), [
+        ["com.arman.alpha", "0.2.0"],
+        ["com.arman.beta", "0.2.0"],
+        ["com.arman.gamma", "0.1.1"],
+    ]);
+});
+
+test("--only still cascades, so the release is never left inconsistent", (t) => {
+    const repo = makeRepo(t, chain());
+    const { status, report } = json(repo, ["--only", "Alpha"]);
+    assert.equal(status, 0);
+    assert.deepEqual(report.plan.map((p) => p.name), ["com.arman.alpha", "com.arman.beta", "com.arman.gamma"]);
+});
+
+test("a package that depends on nothing being released is left alone", (t) => {
+    const repo = makeRepo(t, {
+        Alpha: ALPHA,
+        Beta: {
+            "package.json": manifest("com.arman.beta"),
+            "CHANGELOG.md": changelog(null),
+            "LICENSE.md": "MIT\r\n",
+        },
+    });
+    const { status, report } = json(repo);
+    assert.equal(status, 0);
+    assert.deepEqual(report.plan.map((p) => p.name), ["com.arman.alpha"]);
+    assert.match(read(repo, "Beta", "package.json"), /"version": "0\.1\.0"/);
+});
+
+test("a private dependent is never cascaded", (t) => {
+    const repo = makeRepo(t, {
+        Alpha: ALPHA,
+        Beta: {
+            "package.json": manifest("com.arman.beta", { private: true, dependencies: { "com.arman.alpha": "0.1.0" } }),
+            "CHANGELOG.md": changelog(null),
+            "LICENSE.md": "MIT\r\n",
+        },
+    });
+    const { status, report } = json(repo);
+    assert.equal(status, 0);
+    assert.deepEqual(report.plan.map((p) => p.name), ["com.arman.alpha"]);
+});
+
+test("--dry-run writes no cascaded change", (t) => {
+    const repo = makeRepo(t, chain());
+    const { status, report } = json(repo, ["--dry-run"]);
+    assert.equal(status, 0);
+    assert.equal(report.plan.length, 3);
+    assert.match(read(repo, "Beta", "package.json"), /"com\.arman\.alpha": "0\.1\.0"/);
+    assert.match(read(repo, "Beta", "package.json"), /"version": "0\.1\.0"/);
+    assert.ok(!read(repo, "Beta", "CHANGELOG.md").includes("Updated"));
+});
+
+test("the plan reports each dependency range it rewrote", (t) => {
+    const repo = makeRepo(t, chain());
+    const { report } = json(repo);
+    assert.deepEqual(report.plan[0].dependencyUpdates, []);
+    assert.deepEqual(report.plan[1].dependencyUpdates, [
+        { name: "com.arman.alpha", from: "0.1.0", to: "0.2.0" },
+    ]);
+});
+
+test("--only never demotes a cascaded dependent that earned more than a patch", (t) => {
+    const repo = makeRepo(t, chain("### Removed\r\n\r\n- Dropped the legacy entry point.\r\n"));
+    const { status, report } = json(repo, ["--only", "Alpha"]);
+    assert.equal(status, 0);
+    // Beta was pulled in by the cascade, but its own `### Removed` decides its
+    // level — 0.x folds breaking onto the minor.
+    assert.deepEqual(report.plan.map((p) => [p.name, p.to, p.level]), [
+        ["com.arman.alpha", "0.2.0", "feature"],
+        ["com.arman.beta", "0.2.0", "breaking"],
+        ["com.arman.gamma", "0.1.1", "fix"],
+    ]);
+    assert.ok(read(repo, "Beta", "CHANGELOG.md").includes("- Updated `com.arman.alpha` to `0.2.0`."));
+});
+
+test("--only reports a cascaded dependent whose own entries cannot be planned", (t) => {
+    const repo = makeRepo(t, chain("- A bullet under no `###` heading at all.\r\n"));
+    const { status, report } = json(repo, ["--only", "Alpha"]);
+    assert.equal(status, 1);
+    assert.ok(report.errors.some((e) => /com\.arman\.beta: has entries .* could not be given a version/.test(e)), JSON.stringify(report.errors));
+    // Atomic as ever: the error stopped every write, not just Beta's.
+    assert.match(read(repo, "Alpha", "package.json"), /"version": "0\.1\.0"/);
+});
