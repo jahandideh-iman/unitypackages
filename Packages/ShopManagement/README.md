@@ -9,7 +9,7 @@ in Unity IAP, an in-game currency wallet, an ad-reward flow, or a test double.
 
 ## What it provides
 
-Everything lives in the `Arman.Foundation.ShopManagement.Core` namespace.
+Everything lives in the `Arman.ShopManagement` namespace.
 
 | Type | Purpose |
 |---|---|
@@ -29,7 +29,7 @@ Everything lives in the `Arman.Foundation.ShopManagement.Core` namespace.
 Define what a package grants, and how it is paid for:
 
 ```csharp
-using Arman.Foundation.ShopManagement.Core;
+using Arman.ShopManagement;
 
 public class CoinPackage : IShopPackage
 {
@@ -105,3 +105,5 @@ foreach (CoinPackage coins in shop.PackagesOfType<CoinPackage>())
   the previous delegate.
 - **`AddPackage` does not deduplicate**, and `Packages()` returns the live internal list — copy it
   before mutating the shop while iterating.
+- **Flat namespace.** The runtime lives in `Arman.ShopManagement` (formerly
+  `Arman.Foundation.ShopManagement.Core`); the scripts are flat under `Runtime/Scripts`.

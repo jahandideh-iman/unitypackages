@@ -1,5 +1,5 @@
 ﻿
-using Arman.Game.InventorySystem.Core;
+using Arman.InventorySystem;
 
 namespace Arman.Mocks.Game.InventorySystem
 {

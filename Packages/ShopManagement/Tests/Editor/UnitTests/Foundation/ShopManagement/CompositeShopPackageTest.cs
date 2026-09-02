@@ -1,8 +1,8 @@
-﻿using Arman.Foundation.ShopManagement.Core;
+﻿using Arman.ShopManagement;
 using Arman.Mocks.Foundation.ShopManagement.Core;
 using NUnit.Framework;
 
-namespace Arman.Tests.Foundation.ShopManagement.Core
+namespace Arman.ShopManagement.Tests
 {
     public class CompositeShopPackageTest
     {

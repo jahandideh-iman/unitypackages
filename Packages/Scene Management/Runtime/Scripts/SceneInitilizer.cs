@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Arman.SceneMangement
+namespace Arman.SceneManagement
 {
     [DefaultExecutionOrder(-100)]
     public abstract class SceneInitilizer : MonoBehaviour

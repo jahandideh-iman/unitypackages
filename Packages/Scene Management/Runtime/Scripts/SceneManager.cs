@@ -1,5 +1,5 @@
 ﻿
-namespace Arman.SceneMangement
+namespace Arman.SceneManagement
 {
     public class SceneManager
     {

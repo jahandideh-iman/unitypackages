@@ -6,18 +6,13 @@ transition. Unity implementations pool `Component` prefabs under a container tra
 
 ## What it provides
 
-Namespace `Arman.ObjectPooling.Core`:
+Namespace `Arman.ObjectPooling`:
 
 | Type | Purpose |
 |---|---|
 | `IPoolable` | `OnAcquired()` and `OnReleased()` — the pooled object's lifecycle hooks. |
 | `IObjectPool<T>` | `Acquire()`, `Release(obj)`, `Reserve(count)`, `Size()`. |
 | `BasicObjectPool<T>` | Abstract pool; subclasses supply `CreateObject`, `ActivateObject`, `DeactivateObject`. |
-
-Namespace `Arman.ObjectPooling.Unity`:
-
-| Type | Purpose |
-|---|---|
 | `UnityComponentObjectPool<T>` | `BasicObjectPool<T>` for `Component` prefabs; `SetComponentPrefab`, `SetPoolingContainer`. |
 | `MonobehaviorObjectPool<T>` | `MonoBehaviour` front-end over a `UnityComponentObjectPool<T>`. |
 | `ScriptableObjectPool<T>` | `ScriptableObject` front-end over the same, with `Setup(Transform)`. |
@@ -27,7 +22,7 @@ Namespace `Arman.ObjectPooling.Unity`:
 Pooling a Unity component. The pooled type must implement `IPoolable`:
 
 ```csharp
-using Arman.ObjectPooling.Core;
+using Arman.ObjectPooling;
 using UnityEngine;
 
 public class Bullet : MonoBehaviour, IPoolable
@@ -38,7 +33,7 @@ public class Bullet : MonoBehaviour, IPoolable
 ```
 
 ```csharp
-using Arman.ObjectPooling.Unity;
+using Arman.ObjectPooling;
 
 var pool = new UnityComponentObjectPool<Bullet>();
 pool.SetComponentPrefab(bulletPrefab);
@@ -56,7 +51,7 @@ int idle = pool.Size();    // objects sitting in the pool, not objects in use
 Writing a pool for a plain C# type — subclass `BasicObjectPool<T>`:
 
 ```csharp
-using Arman.ObjectPooling.Core;
+using Arman.ObjectPooling;
 
 public class ProjectilePool : BasicObjectPool<Projectile>
 {
@@ -94,3 +89,5 @@ bulletPoolAsset.Setup(poolRoot);
   same object twice, is not detected.
 - **`ScriptableObjectPool<T>` is an asset and outlives play mode.** Its `Setup(Transform)` must be
   called again with a live container each time a scene loads.
+- **Flat namespace.** The runtime lives in `Arman.ObjectPooling` (formerly
+  `Arman.ObjectPooling.Core` and `Arman.ObjectPooling.Unity`); the scripts are flat under `Runtime/Scripts`.

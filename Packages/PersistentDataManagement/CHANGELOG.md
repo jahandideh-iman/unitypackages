@@ -11,6 +11,11 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `Delete(IChannel channel)` on `IPersistentDataManager` and `IPersistentDataIOStreamFactory`, implemented in `BasicPersistentDataManager`, the memory-based and file-based stream factories, to remove a channel's saved data. Deleting an unregistered channel does not throw.
 
+### Changed
+
+- Flattened the internal folder layout: runtime scripts now live directly under `Runtime/Scripts` (the `Foundation/Core` and `Foundation/Unity` split is gone), unit tests are flat in `Tests/Editor/UnitTests` and mocks in `Tests/Editor/Mocks`.
+- Simplified the public namespaces: every runtime type moved to `Arman.PersistentDataManagement`, and unit tests and their mocks now live in `Arman.PersistentDataManagement.Tests`. The `Arman.Foundation.Core...` and `Arman.Foundation.Unity...` namespaces are removed — update `using` directives to match.
+
 ## [0.1.0] - 2026-08-30
 
 First release of *Persistent Data Management*.

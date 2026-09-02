@@ -8,7 +8,7 @@ than a framework you buy into.
 
 ## What it provides
 
-Everything lives in the `Arman.Utilty.Unity` namespace.
+Everything lives in the `Arman.UnityUtilities` namespace.
 
 | Type | Purpose |
 |---|---|
@@ -26,7 +26,7 @@ Unity does not serialize an open generic `UnityEvent<T>`, so a concrete subclass
 argument type. These four cover the common primitives:
 
 ```csharp
-using Arman.Utilty.Unity;
+using Arman.UnityUtilities;
 using UnityEngine;
 
 public class HealthDisplay : MonoBehaviour
@@ -78,8 +78,8 @@ animationPlayer.Stop();
 
 ## Things to know
 
-- **The namespace is `Arman.Utilty.Unity`** — note the spelling. It is kept as-is because renaming it
-  would break every consumer's `using`.
+- **The namespace is `Arman.UnityUtilities`** — it was renamed from `Arman.Utilty.Unity` (which
+  carried a "Utilty" typo), so any out-of-tree `using` referring to the old name needs updating.
 - **`DelayHandler` calls `StopAllCoroutines()`** when a timer starts or stops. If you run other
   coroutines on the same GameObject, they will be cancelled too — give the handler its own object.
 - **`UnityAnimationPlayer` wraps the legacy `Animation` component**, not `Animator`. It is for

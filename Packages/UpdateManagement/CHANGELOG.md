@@ -7,6 +7,10 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Flattened `Runtime/Scripts/Core` and `Runtime/Scripts/Unity` and consolidated all runtime types into the `Arman.UpdateManagement` namespace (previously `Arman.UpdateManagement.Foundation` / `Arman.UpdateManagement.Foundation.Unity`).
+
 ## [0.1.0] - 2026-08-30
 
 First release of *Update Management*.

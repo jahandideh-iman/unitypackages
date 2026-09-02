@@ -7,6 +7,11 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Flattened the runtime source tree: all `.cs` files now live directly under `Runtime/Scripts` (the `Development/Base/DevelopmentConsole` and `Development/Unity` subfolders are gone), and `Arman.DevelopmentConsole.asmdef` moved to the `Runtime/` root.
+- Simplified the namespace: every runtime type is now in `Arman.DevelopmentConsole` — the former `Arman.Development.DevelopmentConsole.Base`, `Arman.Development.DevelopmentConsole.Unity` and `Arman.Presentation` namespaces are gone. Update `using` directives to match.
+
 ## [0.1.0] - 2026-08-30
 
 First release of *Development Console*.

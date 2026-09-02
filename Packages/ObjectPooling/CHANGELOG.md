@@ -7,6 +7,10 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Flattened `Runtime/Scripts` into a single folder and merged the runtime namespaces `Arman.ObjectPooling.Core` and `Arman.ObjectPooling.Unity` into `Arman.ObjectPooling`.
+
 ## [0.1.0] - 2026-08-30
 
 First release of *Object Pooling*.
