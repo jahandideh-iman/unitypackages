@@ -6,6 +6,10 @@
 //   frozen-section   A version section whose `<package-name>/<version>` tag
 //                    already exists must not be edited — it is a published
 //                    record of what shipped.
+//   empty-unreleased A `## [Unreleased]` heading with no entries under it is
+//                    noise. Delete the heading, or put something under it.
+//                    Checked repo-wide at the head commit, not just on the
+//                    packages this pull request touched. No waiver.
 //
 //     node Tools/changelog-check.mjs --base <ref> --head <ref> [--json]
 //
@@ -237,6 +241,30 @@ function frozenProblem(folder, name, base, head, tags) {
     return versions.length > 0 ? { rule: "frozen-section", versions } : null;
 }
 
+/**
+ * Rule 3. A `## [Unreleased]` heading exists only while it has entries under
+ * it. Unlike the other two rules this one is repo-wide rather than diff-scoped:
+ * it walks every publishable package at the head commit. An empty heading is
+ * noise wherever it sits, and every package was cleaned before the rule landed,
+ * so nobody is blamed for someone else's leftover.
+ */
+function emptyUnreleasedFolders(head) {
+    const listing = gitOrNull("ls-tree", "--name-only", "-z", `${head}:${PACKAGES_DIR}`);
+    if (listing === null) return [];
+
+    const folders = [];
+    for (const folder of listing.split("\0").filter(Boolean)) {
+        const manifest = manifestAt(head, folder);
+        if (manifest === null || manifest.private === true) continue;
+        const text = changelogAt(head, folder);
+        if (text === null) continue;
+        const section = unreleasedSection(text);
+        if (section === null) continue; // No heading is the healthy state.
+        if (entriesOf(section).length === 0) folders.push({ folder, name: manifest.name ?? null });
+    }
+    return folders;
+}
+
 function inspect(folder, touched, base, head, tags, waived) {
     const headManifest = manifestAt(head, folder);
     if (headManifest === null) return null; // Not a package — a stray Packages/ path.
@@ -276,10 +304,13 @@ function waivedLabels() {
 
 const EXPLANATIONS = {
     "missing-changelog": () => `has no ${CHANGELOG}. Add one and record the change under \`## [Unreleased]\`.`,
-    "missing-section": () => "has no `## [Unreleased]` heading. Add one above the newest version and record the change under it.",
+    "missing-section": () =>
+        "has no `## [Unreleased]` heading. Create one above the newest version together with the entry describing this change — the heading exists only while it has entries.",
     "missing-entry": () => "changed, but nothing was added under `## [Unreleased]`. Describe the change there.",
     "frozen-section": (problem) =>
         `edits ${problem.versions.map((v) => `\`${v}\``).join(", ")}, which ${problem.versions.length > 1 ? "have" : "has"} already been tagged and published. Released history must not change — put the note under \`## [Unreleased]\` instead.`,
+    "empty-unreleased": () =>
+        "has a `## [Unreleased]` heading with nothing under it. Delete the heading, or put an entry under it. (A bare `### Added` is not an entry.)",
 };
 
 function render(report) {
@@ -309,9 +340,13 @@ function render(report) {
     const failing = report.packages.filter((pkg) => pkg.problems.length > 0);
     if (failing.length > 0) {
         const rules = new Set(failing.flatMap((pkg) => pkg.problems.map((p) => p.rule)));
+        const waivable = [...rules].filter((rule) => WAIVER_LABELS[rule] !== undefined);
         lines.push("");
-        lines.push(`${failing.length} package(s) need attention. Waiver labels for these rules:`);
-        for (const rule of rules) lines.push(`  ${rule} → ${WAIVER_LABELS[rule]}`);
+        lines.push(`${failing.length} package(s) need attention.`);
+        if (waivable.length > 0) {
+            lines.push("Waiver labels for these rules:");
+            for (const rule of waivable) lines.push(`  ${rule} → ${WAIVER_LABELS[rule]}`);
+        }
     }
     return lines;
 }
@@ -351,6 +386,8 @@ function usage() {
             "",
             "Set PR_LABELS to a JSON array to honour the waiver labels:",
             ...Object.entries(WAIVER_LABELS).map(([rule, label]) => `  ${rule} → ${label}`),
+            "",
+            "`empty-unreleased` has no waiver: delete the heading or fill it in.",
         ].join("\n"),
     );
 }
@@ -380,10 +417,23 @@ try {
     fail(error.message);
 }
 
+const byFolder = new Map();
 for (const [folder, touched] of [...packagesTouched(files)].sort((a, b) => a[0].localeCompare(b[0]))) {
     const result = inspect(folder, touched, from, flags.head, tags, report.waived);
-    if (result !== null) report.packages.push(result);
+    if (result !== null) byFolder.set(folder, result);
 }
+
+// Repo-wide, so a package the pull request never touched still reports.
+for (const { folder, name } of emptyUnreleasedFolders(flags.head)) {
+    const existing = byFolder.get(folder);
+    if (existing === undefined) {
+        byFolder.set(folder, { folder, name, files: [], problems: [{ rule: "empty-unreleased" }] });
+    } else if (existing.skipped === undefined) {
+        existing.problems.push({ rule: "empty-unreleased" });
+    }
+}
+
+report.packages = [...byFolder.values()].sort((a, b) => a.folder.localeCompare(b.folder));
 report.ok = !report.packages.some((pkg) => pkg.problems.length > 0);
 
 writeStepSummary(report);

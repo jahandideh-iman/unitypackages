@@ -303,20 +303,21 @@ Under the current direction: releasing is **creating a git tag**, not uploading.
 
 **A published package name and version are permanent.** Verify both before a first publish.
 
-### Changelogs — two rules, enforced in CI
+### Changelogs — three rules, enforced in CI
 
 A package CHANGELOG carries a `## [Unreleased]` heading **only while it has entries under it**. The contributor with something to record creates the heading; `upm-release.mjs prepare` renames it to a version heading and leaves nothing in its place. The headings seeded across all 18 packages on 2026-08-30 were deleted on 2026-09-02 — an empty heading is now a CI failure, see `empty-unreleased` below. `.github/workflows/changelog.yml` runs `Tools/changelog-check.mjs` on every PR into `dev` or `master` — dependency-free Node, same as the release tooling, and runnable locally:
 
 ```powershell
 node Tools/changelog-check.mjs --base dev --head HEAD
 node Tools/changelog-check.mjs --base dev --head HEAD --json
-node --test Tools/changelog-check.test.mjs    # the check's own tests, 31 of them
+node --test Tools/changelog-check.test.mjs    # the check's own tests, 37 of them
 ```
 
 | Rule | What it enforces | Waiver label |
 |--|--|--|
 | `missing-entry` | A change to a package's **shipped code** must be recorded under that package's `## [Unreleased]` heading. | `no-changelog` |
 | `frozen-section` | A version section whose `<package-name>/<version>` tag **already exists** must not be edited or deleted. | `changelog-rewrite` |
+| `empty-unreleased` | A `## [Unreleased]` heading must have at least one entry under it. Checked **repo-wide** at the head commit, not just on the packages the PR touched. | *none* |
 
 The two waivers are deliberately separate — "this change needs no entry" is not the same claim as "I may rewrite what `0.1.0` says it shipped". Labels are read *inside* the script rather than gating the job with `if:`, so the check always reports a real success instead of `skipped`; that matters if it is ever made a required check, because a skipped required check blocks the merge.
 
@@ -331,6 +332,8 @@ Details worth not re-deriving:
 * Trailing whitespace inside a frozen section is ignored — no reader can see it.
 * **The release PR is not a false positive.** Renaming `## [Unreleased]` to `## [0.2.0]` satisfies `missing-entry` on its own, because opening a version section that did not exist at the base is exactly what a release does. That version has no tag yet, so `frozen-section` does not fire on it either; the tag comes after the merge.
 * `frozen-section` reads `git tag`, so CI checks out with `fetch-depth: 0`. A shallow fetch would leave the tag list empty and silently disable the rule.
+* `empty-unreleased` has **no waiver label**, deliberately: "I need an empty heading" is not a claim worth being able to make. Delete the heading or fill it in.
+* It is the one rule that is not diff-scoped. Every publishable package's CHANGELOG is read at the head commit, which is only fair because all 18 were cleaned before the rule landed (2026-09-02).
 
 ## Git and hosting
 
