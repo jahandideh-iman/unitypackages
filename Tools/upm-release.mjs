@@ -6,6 +6,10 @@
 //   node Tools/upm-release.mjs validate
 //   node Tools/upm-release.mjs pack [--out PackageExports]
 //   node Tools/upm-release.mjs tag [--push] [--dry-run] [--only <package>]
+//   node Tools/upm-release.mjs prepare [--dry-run] [--bump <pkg>=<part>]
+//
+// Tools/release.bat is a one-line wrapper over the same commands, for a
+// Windows shell where `node Tools/...` is more to type than it is worth.
 //
 // Under the OpenUPM model a git tag <package-name>/<version> IS the release —
 // there is no upload step and no registry secret. See
@@ -385,6 +389,168 @@ export function replaceManifestVersion(text, version) {
     return text.replace(pattern, `$1"${version}"`);
 }
 
+// ------------------------------------------- internal dependency cascade
+
+const INTERNAL_PREFIX = "com.arman.";
+const CHANGED = "Changed";
+const SECTION_ORDER = Object.keys(SECTION_LEVELS);
+
+/** This repo's own dependencies of a manifest, as `[name, range]` pairs. */
+export function internalDependencies(manifest) {
+    const deps = manifest?.dependencies;
+    if (deps === null || typeof deps !== "object" || deps === undefined) return [];
+    return Object.entries(deps).filter(([name]) => name.startsWith(INTERNAL_PREFIX));
+}
+
+/**
+ * The same targeted single-line rewrite as replaceManifestVersion, aimed at one
+ * dependency's range. The pattern anchors on `"<name>":` as a key, so a
+ * package's own `"name": "com.arman.x"` line can never match by accident.
+ */
+export function replaceManifestDependency(text, name, version) {
+    const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const pattern = new RegExp(`^([ \\t]*"${escaped}"[ \\t]*:[ \\t]*)"[^"]*"`, "gm");
+    const matches = text.match(pattern) ?? [];
+    if (matches.length !== 1) {
+        throw new Error(`package.json must contain exactly one \`"${name}"\` dependency line, found ${matches.length}`);
+    }
+    return text.replace(pattern, `$1"${version}"`);
+}
+
+/** The one wording for a dependency bump, so every release diff reads alike. */
+function dependencyBullet(name, version) {
+    return `- Updated \`${name}\` to \`${version}\`.`;
+}
+
+/**
+ * Files bullets under `### Changed` inside `## [Unreleased]`, creating either
+ * heading when it is missing — a package pulled in purely by the cascade
+ * usually has neither. The new `## [Unreleased]` goes directly above the
+ * newest version section, so releaseChangelog can promote it afterwards:
+ * exactly one code path ever writes a version heading.
+ */
+export function addChangedEntries(text, bullets) {
+    if (bullets.length === 0) return text;
+    const eol = text.includes("\r\n") ? "\r\n" : "\n";
+    const lines = text.split(/\r?\n/);
+
+    let range = unreleasedRange(lines);
+    if (range === null) {
+        const at = lines.findIndex((line) => H2.test(line));
+        lines.splice(at === -1 ? lines.length : at, 0, "## [Unreleased]", "");
+        range = unreleasedRange(lines);
+    }
+
+    const body = lines.slice(range.start + 1, range.end);
+    const rank = (name) => SECTION_ORDER.indexOf(name.trim().toLowerCase());
+    const headings = body.map((line) => line.match(SUB_HEADING));
+    const existing = headings.findIndex((match) => match !== null && rank(match[1]) === rank(CHANGED));
+
+    if (existing !== -1) {
+        // Append to the end of that sub-section, before its trailing blanks.
+        let at = headings.findIndex((match, i) => i > existing && match !== null);
+        if (at === -1) at = body.length;
+        while (at > existing + 1 && body[at - 1].trim() === "") at -= 1;
+        body.splice(at, 0, ...bullets);
+    } else {
+        // Insert the whole sub-section, in Keep a Changelog's order among
+        // whatever sub-headings the section already carries.
+        let at = headings.findIndex((match) => match !== null && rank(match[1]) > rank(CHANGED));
+        if (at === -1) at = body.length;
+        body.splice(at, 0, `### ${CHANGED}`, "", ...bullets, "");
+    }
+
+    lines.splice(range.start + 1, range.end - range.start - 1, ...body);
+    return lines.join(eol);
+}
+
+/**
+ * Extends a plan with every package that transitively depends on something in
+ * it, and records the range rewrites each planned package needs.
+ *
+ * A dependent carrying nothing of its own still gets a patch bump: its
+ * manifest changes, and the repo's `0.1.0` has to keep meaning the published
+ * `0.1.0`, so the change needs a version of its own to travel under.
+ *
+ * `packages` is every publishable package, not the `--only` selection —
+ * otherwise `--only` would publish a package whose dependents still pin a
+ * version that is no longer what the repo says. `own` is what each package's
+ * own changelog earns it, for the same reason: `--only` narrows what is
+ * *asked* for, and must never quietly release a dependent's own features
+ * under a patch bump it did not earn.
+ */
+export function cascadeDependents(packages, plan, { bumps = new Map(), own = new Map(), unplannable = new Set() } = {}) {
+    const planned = new Map(plan.map((entry) => [entry.name, entry]));
+    const errors = [];
+    const failed = new Set();
+
+    const moved = (pkg) =>
+        internalDependencies(pkg.manifest).some(([name, range]) => planned.get(name)?.to !== undefined && planned.get(name).to !== range);
+
+    // A fixpoint sweep rather than a topological sort: the graph has three
+    // edges, and this stays correct even if it ever grows a cycle.
+    for (let growing = true; growing; ) {
+        growing = false;
+        for (const pkg of packages) {
+            if (!pkg.name || planned.has(pkg.name) || failed.has(pkg.name) || !moved(pkg)) continue;
+
+            // It has entries of its own: release it at the level they earn,
+            // and let the dependency note ride along as one more bullet.
+            const mine = own.get(pkg.name);
+            if (mine !== undefined) {
+                planned.set(pkg.name, { ...mine });
+                growing = true;
+                continue;
+            }
+            if (unplannable.has(pkg.name)) {
+                errors.push(
+                    `${pkg.name}: has entries under \`## [Unreleased]\` that could not be given a version, and a dependency bump now needs it released. Fix them, or run \`prepare\` without \`--only\`.`,
+                );
+                failed.add(pkg.name);
+                continue;
+            }
+
+            const requested = bumps.get(pkg.name) ?? bumps.get(pkg.folder);
+            let to;
+            try {
+                to = requested ? explicitBump(pkg.version, requested) : nextVersion(pkg.version, "fix");
+            } catch (error) {
+                errors.push(`${pkg.name}: ${error.message}`);
+                failed.add(pkg.name);
+                continue;
+            }
+            planned.set(pkg.name, {
+                folder: pkg.folder,
+                name: pkg.name,
+                from: pkg.version,
+                to,
+                level: requested ?? "fix",
+                reason: requested ? `${requested}: requested with --bump` : "fix: dependency update",
+                cascaded: true,
+            });
+            growing = true;
+        }
+    }
+
+    // Every planned package — cascaded or not — gets its ranges brought up to
+    // date, so a package released for its own reasons never ships pinning a
+    // sibling's superseded version.
+    const byName = new Map(packages.filter((pkg) => pkg.name).map((pkg) => [pkg.name, pkg]));
+    for (const entry of planned.values()) {
+        const updates = internalDependencies(byName.get(entry.name)?.manifest)
+            .filter(([name, range]) => planned.has(name) && planned.get(name).to !== range)
+            .map(([name, range]) => ({ name, from: range, to: planned.get(name).to }))
+            .sort((a, b) => a.name.localeCompare(b.name));
+        entry.dependencyUpdates = updates;
+        if (entry.cascaded && entry.level === "fix") {
+            entry.reason = `fix: ${updates.map((update) => update.name).join(", ")} moved`;
+        }
+        delete entry.cascaded;
+    }
+
+    return { plan: [...planned.values()].sort((a, b) => a.folder.localeCompare(b.folder)), errors };
+}
+
 /**
  * Works out what each package's next version is, without writing anything.
  * Returns the plan and the packages that could not be planned; a package with
@@ -394,6 +560,9 @@ export function replaceManifestVersion(text, version) {
 export function planPrepare(packages, { bumps = new Map() } = {}) {
     const plan = [];
     const errors = [];
+    // Packages with work waiting that could not be given a version. The
+    // cascade needs to tell these apart from packages with nothing to ship.
+    const unplannable = new Set();
 
     for (const pkg of packages) {
         const file = path.join(pkg.dir, CHANGELOG);
@@ -417,6 +586,7 @@ export function planPrepare(packages, { bumps = new Map() } = {}) {
             errors.push(
                 `${pkg.name ?? pkg.folder}: has entries under \`## [Unreleased]\` but none under a recognised \`###\` heading (Added, Changed, Deprecated, Removed, Fixed, Security). File them, or pass --bump ${pkg.name ?? pkg.folder}=<major|minor|patch>.`,
             );
+            unplannable.add(pkg.name);
             continue;
         }
 
@@ -425,6 +595,7 @@ export function planPrepare(packages, { bumps = new Map() } = {}) {
             to = requested ? explicitBump(pkg.version, requested) : nextVersion(pkg.version, level);
         } catch (error) {
             errors.push(`${pkg.name ?? pkg.folder}: ${error.message}`);
+            unplannable.add(pkg.name);
             continue;
         }
 
@@ -438,7 +609,7 @@ export function planPrepare(packages, { bumps = new Map() } = {}) {
         });
     }
 
-    return { plan, errors };
+    return { plan, errors, unplannable };
 }
 
 // ---------------------------------------------------------------- pack
@@ -552,7 +723,22 @@ function cmdPrepare(packages, flags) {
         return fail(`--date \`${date}\` is not a valid YYYY-MM-DD date`);
     }
 
-    const { plan, errors } = planPrepare(selected, { bumps });
+    const { plan: requested, errors } = planPrepare(selected, { bumps });
+
+    // Bumping a package invalidates every sibling range pinning its old
+    // version, so the cascade is part of the plan, not a follow-up chore.
+    // It needs the whole repo — both the packages it may pull in, and what
+    // each of those has earned on its own. Without `--only` this second pass
+    // computes exactly what the first one did.
+    const all = publishable(packages);
+    const own = planPrepare(all, { bumps });
+    const cascade = cascadeDependents(all, requested, {
+        bumps,
+        own: new Map(own.plan.map((entry) => [entry.name, entry])),
+        unplannable: own.unplannable,
+    });
+    const plan = cascade.plan;
+    errors.push(...cascade.errors);
 
     // Phase 1: compute every rewritten file up front, for every package in
     // the plan, before touching disk. A manifest that can't be rewritten
@@ -564,8 +750,23 @@ function cmdPrepare(packages, flags) {
         const changelogPath = path.join(dir, CHANGELOG);
         const manifestPath = path.join(dir, "package.json");
         try {
-            const changelogText = releaseChangelog(fs.readFileSync(changelogPath, "utf8"), entry.to, date);
-            const manifestText = replaceManifestVersion(fs.readFileSync(manifestPath, "utf8"), entry.to);
+            let changelogText = fs.readFileSync(changelogPath, "utf8");
+            let manifestText = fs.readFileSync(manifestPath, "utf8");
+
+            // Dependency notes are filed under `## [Unreleased]` first and
+            // promoted with everything else below, so a cascaded package's
+            // changelog is indistinguishable from a hand-written one.
+            if (entry.dependencyUpdates.length > 0) {
+                changelogText = addChangedEntries(
+                    changelogText,
+                    entry.dependencyUpdates.map((update) => dependencyBullet(update.name, update.to)),
+                );
+                for (const update of entry.dependencyUpdates) {
+                    manifestText = replaceManifestDependency(manifestText, update.name, update.to);
+                }
+            }
+            changelogText = releaseChangelog(changelogText, entry.to, date);
+            manifestText = replaceManifestVersion(manifestText, entry.to);
             writes.push({ path: changelogPath, contents: changelogText }, { path: manifestPath, contents: manifestText });
         } catch (error) {
             errors.push(`${entry.name ?? entry.folder}: ${error.message}`);
@@ -651,7 +852,8 @@ commands:
   validate            check every publishable package is releasable
   pack                write tarballs (verification aid, not a distribution channel)
   tag                 create <package-name>/<version> tags for new versions
-  prepare             turn each [Unreleased] section into a new version
+  prepare             turn each [Unreleased] section into a new version, and
+                      carry the bump into every dependent's manifest range
 
 options:
   --json              machine-readable output
@@ -662,7 +864,9 @@ options:
   --allow-dirty       tag/prepare: permit a dirty working tree
   --allow-branch      tag/prepare: permit a branch other than ${RELEASE_BRANCH}
   --bump <pkg>=<part> prepare: force major|minor|patch for one package; repeatable
-  --date <YYYY-MM-DD> prepare: the date written into the version heading`);
+  --date <YYYY-MM-DD> prepare: the date written into the version heading
+
+On Windows, \`Tools\\release.bat <command> [options]\` forwards to this script.`);
     return 2;
 }
 
