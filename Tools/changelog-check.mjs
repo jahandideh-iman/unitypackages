@@ -45,7 +45,18 @@ const PACKAGES_DIR = "Packages";
 const CHANGELOG = "CHANGELOG.md";
 const MANIFEST = "package.json";
 
-const WAIVER_LABELS = { "missing-entry": "no-changelog", "frozen-section": "changelog-rewrite" };
+// Keyed by the rule a problem reports, not by the rule as documented: the entry
+// rule has three diagnostics — no CHANGELOG at all, no `## [Unreleased]` heading,
+// and a heading with nothing new under it — and `no-changelog` waives the claim
+// they share ("this change needs no entry"), so all three must map to it. A
+// release pull request trips `missing-section`, since `upm-release.mjs prepare`
+// has already turned every heading into a version heading.
+const WAIVER_LABELS = {
+    "missing-changelog": "no-changelog",
+    "missing-section": "no-changelog",
+    "missing-entry": "no-changelog",
+    "frozen-section": "changelog-rewrite",
+};
 const CODE_DIRS = new Set(["Runtime", "Editor"]);
 
 const H2 = /^##\s/;
@@ -314,7 +325,9 @@ function inspect(folder, touched, base, head, tags, waived) {
 
 /** Which waiver labels this pull request actually carries. */
 function waivedLabels() {
-    const known = Object.values(WAIVER_LABELS);
+    // Deduplicated: several rules share one label, and the report lists what
+    // the pull request carries, not how many rules each label answers for.
+    const known = [...new Set(Object.values(WAIVER_LABELS))];
     const raw = process.env.PR_LABELS;
     if (!raw) return [];
     let labels;
@@ -420,7 +433,12 @@ function usage() {
             "  --json          Emit the report as JSON instead of text.",
             "",
             "Set PR_LABELS to a JSON array to honour the waiver labels:",
-            ...Object.entries(WAIVER_LABELS).map(([rule, label]) => `  ${rule} → ${label}`),
+            ...[...new Set(Object.values(WAIVER_LABELS))].map(
+                (label) =>
+                    `  ${label} → ${Object.keys(WAIVER_LABELS)
+                        .filter((rule) => WAIVER_LABELS[rule] === label)
+                        .join(", ")}`,
+            ),
             "",
             "`empty-unreleased` has no waiver: delete the heading or fill it in.",
             "`unpromoted-unreleased` has none either: run `upm-release.mjs prepare`.",
