@@ -330,12 +330,12 @@ A package CHANGELOG carries a `## [Unreleased]` heading **only while it has entr
 ```powershell
 node Tools/changelog-check.mjs --base dev --head HEAD
 node Tools/changelog-check.mjs --base dev --head HEAD --json
-node --test Tools/changelog-check.test.mjs    # the check's own tests, 49 of them
+node --test Tools/changelog-check.test.mjs    # the check's own tests, 50 of them
 ```
 
 | Rule | What it enforces | Waiver label |
 |--|--|--|
-| `missing-entry` | A change to a package's **shipped code** must be recorded under that package's `## [Unreleased]` heading. Reported as `missing-changelog` or `missing-section` when the file or the heading is what is absent; the waiver covers all three. | `no-changelog` |
+| `missing-entry` | A change to a package's **shipped code** must be recorded under that package's `## [Unreleased]` heading. Reported as `missing-changelog` or `missing-section` when the file or the heading is what is absent; the waiver covers all three. Opening a **new version section** satisfies the rule in place of an entry, so a release PR — where `prepare` has renamed every heading — passes without a waiver. | `no-changelog` |
 | `frozen-section` | A version section whose `<package-name>/<version>` tag **already exists** must not be edited or deleted. | `changelog-rewrite` |
 | `empty-unreleased` | A `## [Unreleased]` heading must have at least one entry under it. Checked **repo-wide** at the head commit, not just on the packages the PR touched. | *none* |
 | `unpromoted-unreleased` | On a PR **into `master`** only: no `## [Unreleased]` heading may survive at all. Also repo-wide. | *none* |

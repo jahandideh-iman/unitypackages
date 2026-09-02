@@ -49,8 +49,8 @@ const MANIFEST = "package.json";
 // rule has three diagnostics — no CHANGELOG at all, no `## [Unreleased]` heading,
 // and a heading with nothing new under it — and `no-changelog` waives the claim
 // they share ("this change needs no entry"), so all three must map to it. A
-// release pull request trips `missing-section`, since `upm-release.mjs prepare`
-// has already turned every heading into a version heading.
+// release pull request needs none of them: `upm-release.mjs prepare` turns each
+// heading into a version heading, and entryProblem() reads that as the entry.
 const WAIVER_LABELS = {
     "missing-changelog": "no-changelog",
     "missing-section": "no-changelog",
@@ -225,17 +225,22 @@ function entryProblem(folder, base, head) {
     const headText = changelogAt(head, folder);
     if (headText === null) return { rule: "missing-changelog" };
 
-    const section = unreleasedSection(headText);
-    if (section === null) return { rule: "missing-section" };
-
     const baseText = changelogAt(base, folder);
-    const baseSection = baseText === null ? null : unreleasedSection(baseText);
-    const before = new Set(baseSection === null ? [] : entriesOf(baseSection));
-    if (entriesOf(section).some((entry) => !before.has(entry))) return null;
 
+    // Tested before the heading itself, because a release pull request has no
+    // `## [Unreleased]` left to find: `prepare` renamed it into the version
+    // section this looks for. Asking about the heading first would report
+    // `missing-section` against the exact shape the release flow produces.
     const knownVersions = new Set(baseText === null ? [] : versionSections(baseText).keys());
     const released = [...versionSections(headText).keys()].filter((v) => !knownVersions.has(v));
     if (released.length > 0) return null;
+
+    const section = unreleasedSection(headText);
+    if (section === null) return { rule: "missing-section" };
+
+    const baseSection = baseText === null ? null : unreleasedSection(baseText);
+    const before = new Set(baseSection === null ? [] : entriesOf(baseSection));
+    if (entriesOf(section).some((entry) => !before.has(entry))) return null;
 
     return { rule: "missing-entry" };
 }
