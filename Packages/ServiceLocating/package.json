@@ -1,7 +1,7 @@
 {
   "name": "com.arman.service-locating",
   "displayName": "Service Locating",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "MIT",
   "unity": "2019.1",
   "description": "Static service locator for Unity: register implementations against an interface, resolve them anywhere with Find<T>(), and replace or clear registrations for testing.",

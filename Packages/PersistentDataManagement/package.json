@@ -1,7 +1,7 @@
 {
   "name": "com.arman.persistent-data-management",
   "displayName": "Persistent Data Management",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "MIT",
   "unity": "2019.1",
   "description": "Serializable data persistence layer with JSON wrapper, PlayerPrefs storage, file I/O via custom streams, and per-channel serialization support.",
@@ -11,7 +11,7 @@
     "email": "jahandidehk.iman@gmail.com"
   },
   "dependencies": {
-    "com.arman.package-basics": "0.1.0"
+    "com.arman.package-basics": "0.2.0"
   },
   "samples": [
     {

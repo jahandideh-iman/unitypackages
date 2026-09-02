@@ -1,7 +1,7 @@
 {
   "name": "com.arman.development-console",
   "displayName": "Development Console",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "MIT",
   "unity": "2019.1",
   "description": "An in-game development console. Methods marked with [DevOption] are discovered by reflection and surfaced as grouped, clickable commands with optional key-combination shortcuts and typed argument prompts. Includes an on-screen FPS profiler.",

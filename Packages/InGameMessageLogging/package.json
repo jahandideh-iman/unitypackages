@@ -1,7 +1,7 @@
 {
   "name": "com.arman.in-game-message-logging",
   "displayName": "In Game Message Logging",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "MIT",
   "unity": "2019.3",
   "description": "Displays log messages inside a running game as a capped, self-expiring on-screen list, so issues can be diagnosed on device without attaching an editor or an external debugger.",
@@ -11,7 +11,7 @@
   },
   "type": "library",
   "dependencies": {
-    "com.arman.unity-utilities": "0.1.0"
+    "com.arman.unity-utilities": "0.2.0"
   },
   "samples": [
     {
