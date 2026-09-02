@@ -7,6 +7,10 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- A `csc.rsp` response file carrying `-nullable:enable` next to every assembly definition, so nullable reference type annotations are enforced when the package is compiled.
+
 ### Changed
 
 - Flattened `Runtime/Scripts/Core` and `Runtime/Scripts/Unity` and consolidated all runtime types into the `Arman.UpdateManagement` namespace (previously `Arman.UpdateManagement.Foundation` / `Arman.UpdateManagement.Foundation.Unity`).
