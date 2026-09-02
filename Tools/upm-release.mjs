@@ -535,36 +535,72 @@ function cmdPrepare(packages, flags) {
         return fail("working tree is dirty. Prepare a clean tree so the release diff is reviewable, or pass --allow-dirty.");
     }
 
+    // Validate --bump against the packages that will actually be prepared,
+    // not the full discovery list — otherwise `--bump PackageTemplate=major`
+    // is silently accepted and then does nothing.
+    const selected = applyOnly(publishable(packages), flags.only);
+
     let bumps;
     try {
-        bumps = parseBumps(flags.bump, packages);
+        bumps = parseBumps(flags.bump, selected);
     } catch (error) {
         return fail(error.message);
     }
 
     const date = flags.date ?? new Date().toISOString().slice(0, 10);
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return fail(`--date \`${date}\` is not YYYY-MM-DD`);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(Date.parse(date))) {
+        return fail(`--date \`${date}\` is not a valid YYYY-MM-DD date`);
+    }
 
-    const selected = applyOnly(publishable(packages), flags.only);
     const { plan, errors } = planPrepare(selected, { bumps });
 
-    const report = { command: "prepare", date, dryRun: flags["dry-run"] === true, plan, errors };
-
-    if (errors.length === 0 && plan.length > 0 && !flags["dry-run"]) {
-        for (const entry of plan) {
-            const dir = path.join(PACKAGES_DIR, entry.folder);
-            const changelogPath = path.join(dir, CHANGELOG);
-            const manifestPath = path.join(dir, "package.json");
-            fs.writeFileSync(
-                changelogPath,
-                releaseChangelog(fs.readFileSync(changelogPath, "utf8"), entry.to, date),
-            );
-            fs.writeFileSync(
-                manifestPath,
-                replaceManifestVersion(fs.readFileSync(manifestPath, "utf8"), entry.to),
-            );
+    // Phase 1: compute every rewritten file up front, for every package in
+    // the plan, before touching disk. A manifest that can't be rewritten
+    // (e.g. not exactly one "version" line) becomes a reported error here,
+    // not an uncaught throw mid-write that leaves the release half-done.
+    const writes = [];
+    for (const entry of plan) {
+        const dir = path.join(PACKAGES_DIR, entry.folder);
+        const changelogPath = path.join(dir, CHANGELOG);
+        const manifestPath = path.join(dir, "package.json");
+        try {
+            const changelogText = releaseChangelog(fs.readFileSync(changelogPath, "utf8"), entry.to, date);
+            const manifestText = replaceManifestVersion(fs.readFileSync(manifestPath, "utf8"), entry.to);
+            writes.push({ path: changelogPath, contents: changelogText }, { path: manifestPath, contents: manifestText });
+        } catch (error) {
+            errors.push(`${entry.name ?? entry.folder}: ${error.message}`);
         }
     }
+
+    // Phase 2: write only if every package in the plan computed cleanly — a
+    // half-rewritten release is worse than none.
+    if (errors.length === 0 && plan.length > 0 && !flags["dry-run"]) {
+        for (const write of writes) fs.writeFileSync(write.path, write.contents);
+    }
+
+    // The written state has to survive the same checks CI runs, before it is
+    // ever committed. Re-discover: the manifests on disk have just changed.
+    // cmdValidate always prints its own report; capture it here so it can't
+    // interleave with (and corrupt) this command's own --json output, and
+    // fold any failure text into our own errors instead of discarding it.
+    if (errors.length === 0 && plan.length > 0 && !flags["dry-run"]) {
+        const only = plan.map((entry) => entry.folder);
+        const captured = [];
+        const originalLog = console.log;
+        let code;
+        console.log = (...args) => captured.push(args.join(" "));
+        try {
+            code = cmdValidate(discoverPackages(), { only });
+        } finally {
+            console.log = originalLog;
+        }
+        if (code !== 0) {
+            errors.push("the prepared packages do not validate. Inspect the diff before committing:");
+            for (const line of captured) if (line.trim() !== "") errors.push(line);
+        }
+    }
+
+    const report = { command: "prepare", date, dryRun: flags["dry-run"] === true, plan, errors };
 
     if (flags.json) {
         console.log(JSON.stringify(report, null, 2));
@@ -585,27 +621,7 @@ function cmdPrepare(packages, flags) {
         }
     }
 
-    if (errors.length > 0) return 1;
-
-    // The written state has to survive the same checks CI runs, before it is
-    // ever committed. Re-discover: the manifests on disk have just changed.
-    // cmdValidate always prints its own report; run it quietly here so it
-    // can't interleave with (and corrupt) this command's own --json output.
-    if (plan.length > 0 && !flags["dry-run"]) {
-        const only = plan.map((entry) => entry.folder);
-        const originalLog = console.log;
-        let code;
-        console.log = () => {};
-        try {
-            code = cmdValidate(discoverPackages(), { only });
-        } finally {
-            console.log = originalLog;
-        }
-        if (code !== 0) {
-            return fail("the prepared packages do not validate. Inspect the diff before committing.");
-        }
-    }
-    return 0;
+    return errors.length > 0 ? 1 : 0;
 }
 
 // ---------------------------------------------------------------- entry
@@ -647,10 +663,19 @@ function parseArgs(argv) {
             continue;
         }
         const key = arg.slice(2);
-        if (key === "out" || key === "date") flags[key] = argv[++i];
-        else if (key === "only") (flags.only ??= []).push(argv[++i]);
-        else if (key === "bump") (flags.bump ??= []).push(argv[++i]);
-        else flags[key] = true;
+        if (key === "out" || key === "date") {
+            const value = argv[++i];
+            if (value === undefined) throw new Error(`--${key} requires a value`);
+            flags[key] = value;
+        } else if (key === "only") {
+            const value = argv[++i];
+            if (value === undefined) throw new Error("--only requires a value");
+            (flags.only ??= []).push(value);
+        } else if (key === "bump") {
+            const value = argv[++i];
+            if (value === undefined) throw new Error("--bump requires a value");
+            (flags.bump ??= []).push(value);
+        } else flags[key] = true;
     }
     return { command: positional[0], flags };
 }
@@ -663,7 +688,13 @@ const invokedDirectly = process.argv[1] !== undefined
 if (invokedDirectly) main();
 
 function main() {
-    const { command, flags } = parseArgs(process.argv.slice(2));
+    let command, flags;
+    try {
+        ({ command, flags } = parseArgs(process.argv.slice(2)));
+    } catch (error) {
+        console.error(`error: ${error.message}`);
+        process.exit(2);
+    }
     if (!command) process.exit(usage());
 
     const packages = discoverPackages();

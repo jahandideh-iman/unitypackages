@@ -222,8 +222,15 @@ test("nothing to prepare exits 0", (t) => {
 test("a dirty tree is refused unless --allow-dirty", (t) => {
     const repo = makeRepo(t, { Alpha: ALPHA });
     fs.writeFileSync(path.join(repo, "Packages", "Alpha", "README.md"), "stray\r\n");
+    // Give the stray file a .meta too, so the only thing under test is the
+    // dirty-tree guard, not an unrelated validate failure.
+    fs.writeFileSync(path.join(repo, "Packages", "Alpha", "README.md.meta"), "fileFormatVersion: 2\r\nguid: 00000000000000000000000000000001\r\n");
     assert.equal(prepare(repo, ["--date", "2026-09-02"]).status, 1);
-    assert.equal(prepare(repo, ["--date", "2026-09-02", "--allow-dirty", "--dry-run"]).status, 0);
+    // --dry-run alone already bypasses the dirty-tree guard (nothing is
+    // written either way), so it isn't a real test of --allow-dirty on its
+    // own — assert --allow-dirty works without --dry-run too.
+    assert.equal(prepare(repo, ["--date", "2026-09-02", "--allow-dirty"]).status, 0);
+    assert.equal(prepare(repo, ["--date", "2026-09-02", "--dry-run"]).status, 0);
 });
 
 test("running on master is refused unless --allow-branch", (t) => {
@@ -233,4 +240,78 @@ test("running on master is refused unless --allow-branch", (t) => {
     assert.equal(refused.status, 1);
     assert.match(refused.stderr, /master/);
     assert.equal(prepare(repo, ["--date", "2026-09-02", "--allow-branch", "--dry-run"]).status, 0);
+});
+
+test("a folder name with a space prepares correctly, CRLF and manifest intact", (t) => {
+    const repo = makeRepo(t, {
+        "UI Management": {
+            "package.json": manifest("com.arman.ui-management"),
+            "CHANGELOG.md": changelog("### Added\r\n\r\n- A widget.\r\n"),
+            "LICENSE.md": "MIT\r\n",
+        },
+    });
+    const { status, report } = json(repo);
+    assert.equal(status, 0);
+    assert.deepEqual(report.plan.map((p) => [p.folder, p.to]), [["UI Management", "0.2.0"]]);
+    const text = read(repo, "UI Management", "CHANGELOG.md");
+    assert.ok(text.includes("\r\n"));
+    assert.ok(!text.includes("[Unreleased]"));
+    assert.match(read(repo, "UI Management", "package.json"), /"version": "0\.2\.0"/);
+});
+
+test("--date defaults to today", (t) => {
+    const repo = makeRepo(t, { Alpha: ALPHA });
+    const result = prepare(repo, ["--json"]);
+    const report = JSON.parse(result.stdout);
+    assert.equal(report.date, new Date().toISOString().slice(0, 10));
+});
+
+test("--date rejects a malformed value", (t) => {
+    const repo = makeRepo(t, { Alpha: ALPHA });
+    const result = prepare(repo, ["--date", "2026-13-45"]);
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /--date/);
+});
+
+test("a manifest that can't be rewritten reports an error and leaves every package untouched", (t) => {
+    const ambiguousManifest = JSON.stringify(
+        {
+            name: "com.arman.beta",
+            version: "0.1.0",
+            displayName: "Beta",
+            description: "A real description.",
+            unity: "6000.0",
+            license: "MIT",
+            nested: { version: "9.9.9" },
+        },
+        null,
+        2,
+    ).replace(/\n/g, "\r\n");
+    const repo = makeRepo(t, {
+        Alpha: ALPHA,
+        Beta: {
+            "package.json": ambiguousManifest,
+            "CHANGELOG.md": changelog("### Added\r\n\r\n- A thing.\r\n"),
+            "LICENSE.md": "MIT\r\n",
+        },
+    });
+    const { status, report } = json(repo);
+    assert.equal(status, 1);
+    assert.match(report.errors.join(" "), /Beta|com\.arman\.beta/);
+    assert.match(report.errors.join(" "), /exactly one/);
+    // Atomicity: Alpha would have computed and written cleanly on its own,
+    // but Beta's failure must stop the whole write, not just Beta's.
+    assert.match(read(repo, "Alpha", "package.json"), /"version": "0\.1\.0"/);
+    assert.ok(read(repo, "Alpha", "CHANGELOG.md").includes("[Unreleased]"));
+});
+
+test("--date and --bump as the final argument require a value", (t) => {
+    const repo = makeRepo(t, { Alpha: ALPHA });
+    const missingDate = prepare(repo, ["--date"]);
+    assert.equal(missingDate.status, 2);
+    assert.match(missingDate.stderr, /--date requires a value/);
+
+    const missingBump = prepare(repo, ["--bump"]);
+    assert.equal(missingBump.status, 2);
+    assert.match(missingBump.stderr, /--bump requires a value/);
 });
