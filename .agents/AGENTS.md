@@ -268,9 +268,15 @@ node Tools/upm-release.mjs pack                # tarballs into PackageExports/ (
 node Tools/upm-release.mjs tag --dry-run       # what would be tagged?
 node Tools/upm-release.mjs tag --push          # create + push tags — THIS IS THE PUBLISH
 node Tools/upm-release.mjs tag --push --only com.arman.service-locating   # one package
+node Tools/upm-release.mjs prepare --dry-run    # what would each [Unreleased] section become?
+node Tools/upm-release.mjs prepare              # rename the headings, bump the versions
 ```
 
 `--only` takes a package id or a folder name (`--only "UI Management"` works), is repeatable, and errors if it matches nothing. It was written for rollout step 4's single-package smoke test; that test is done, but it remains the way to release one package by hand without touching the others. Under `--only`, `validate` still resolves dependencies against *every* package, not just the selected ones.
+
+`prepare` turns every package's `## [Unreleased]` section into a version. Per package: no heading, or a heading with no entries, means skip; otherwise the `###` sub-headings with bullets under them decide the level — `Removed` is breaking, `Added`/`Changed`/`Deprecated` are features, `Fixed`/`Security` are fixes, highest wins — and **while the major is `0`, breaking and feature both land on the minor**. The heading is renamed to `## [X.Y.Z] - YYYY-MM-DD` with nothing left in its place, `package.json`'s `version` line is rewritten in place, and `validate` re-runs over the packages it touched.
+
+`--bump <package>=<major|minor|patch>` overrides the derived level for one package and is repeatable; entries filed under no recognised `###` heading are an error rather than a guess. `prepare` refuses to run **on** `master` and refuses a dirty tree (`--allow-branch`, `--allow-dirty`), the inverse of `tag`'s guards. **It edits files and stops there** — it does not commit, push, tag, or open a pull request. It also leaves `com.arman.*` dependency ranges alone: a dependent pinning `0.1.0` stays valid, because `validate` accepts a dependency at a version that is either current or already tagged.
 
 `validate` checks, per package: parseable JSON; `name` matches `com.arman.<kebab-case-name>`; valid semver; `displayName`; a `description` that is not stock placeholder text; a `unity` minimum version; `license: "MIT"` plus a `LICENSE.md`; **a `.meta` file for every file and folder**; every `com.arman.*` dependency resolving to a non-private package in this repo at a version that is either current or already tagged; and `npm pack --dry-run` succeeding. Exit 0 = all valid, 1 = at least one failure.
 

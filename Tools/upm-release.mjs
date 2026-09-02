@@ -126,6 +126,26 @@ function applyOnly(packages, only) {
     return selected;
 }
 
+/** `--bump <package>=<major|minor|patch>`, repeatable, id or folder name. */
+export function parseBumps(raw, packages) {
+    const bumps = new Map();
+    if (!raw) return bumps;
+    for (const item of Array.isArray(raw) ? raw : [raw]) {
+        const at = item.lastIndexOf("=");
+        if (at === -1) throw new Error(`--bump \`${item}\` is not <package>=<major|minor|patch>`);
+        const target = item.slice(0, at).trim();
+        const part = item.slice(at + 1).trim().toLowerCase();
+        if (!["major", "minor", "patch"].includes(part)) {
+            throw new Error(`--bump \`${item}\`: \`${part}\` is not major, minor, or patch`);
+        }
+        if (!packages.some((p) => p.name === target || p.folder === target)) {
+            throw new Error(`--bump matched no package: ${target}`);
+        }
+        bumps.set(target, part);
+    }
+    return bumps;
+}
+
 // ---------------------------------------------------------------- validate
 
 function missingMetaFiles(dir) {
@@ -365,6 +385,62 @@ export function replaceManifestVersion(text, version) {
     return text.replace(pattern, `$1"${version}"`);
 }
 
+/**
+ * Works out what each package's next version is, without writing anything.
+ * Returns the plan and the packages that could not be planned; a package with
+ * entries under no recognised `###` heading is an error rather than a guess or
+ * a silent skip, because the alternative is releasing the wrong number.
+ */
+export function planPrepare(packages, { bumps = new Map() } = {}) {
+    const plan = [];
+    const errors = [];
+
+    for (const pkg of packages) {
+        const file = path.join(pkg.dir, CHANGELOG);
+        if (!fs.existsSync(file)) {
+            errors.push(`${pkg.folder}: no ${CHANGELOG}`);
+            continue;
+        }
+        const text = fs.readFileSync(file, "utf8");
+        const lines = text.split(/\r?\n/);
+        const range = unreleasedRange(lines);
+        if (range === null) continue; // No heading: nothing is waiting to ship.
+
+        const body = lines.slice(range.start + 1, range.end);
+        if (unreleasedEntries(body).length === 0) continue; // Empty: nothing to ship.
+
+        const requested = bumps.get(pkg.name) ?? bumps.get(pkg.folder);
+        const sections = populatedSubsections(body);
+        const level = requested ? null : bumpLevel(sections);
+
+        if (!requested && level === null) {
+            errors.push(
+                `${pkg.name ?? pkg.folder}: has entries under \`## [Unreleased]\` but none under a recognised \`###\` heading (Added, Changed, Deprecated, Removed, Fixed, Security). File them, or pass --bump ${pkg.name ?? pkg.folder}=<major|minor|patch>.`,
+            );
+            continue;
+        }
+
+        let to;
+        try {
+            to = requested ? explicitBump(pkg.version, requested) : nextVersion(pkg.version, level);
+        } catch (error) {
+            errors.push(`${pkg.name ?? pkg.folder}: ${error.message}`);
+            continue;
+        }
+
+        plan.push({
+            folder: pkg.folder,
+            name: pkg.name,
+            from: pkg.version,
+            to,
+            level: requested ?? level,
+            reason: requested ? `${requested}: requested with --bump` : `${level}: ${sections.join(", ")}`,
+        });
+    }
+
+    return { plan, errors };
+}
+
 // ---------------------------------------------------------------- pack
 
 function cmdPack(packages, flags) {
@@ -450,6 +526,88 @@ function cmdTag(packages, flags) {
     return 0;
 }
 
+function cmdPrepare(packages, flags) {
+    const branch = git("rev-parse", "--abbrev-ref", "HEAD").out;
+    if (branch === RELEASE_BRANCH && !flags["allow-branch"]) {
+        return fail(`on branch \`${branch}\`. Prepare a release on a branch off \`dev\`, not on \`${RELEASE_BRANCH}\`. Pass --allow-branch to override.`);
+    }
+    if (git("status", "--porcelain").out && !flags["allow-dirty"] && !flags["dry-run"]) {
+        return fail("working tree is dirty. Prepare a clean tree so the release diff is reviewable, or pass --allow-dirty.");
+    }
+
+    let bumps;
+    try {
+        bumps = parseBumps(flags.bump, packages);
+    } catch (error) {
+        return fail(error.message);
+    }
+
+    const date = flags.date ?? new Date().toISOString().slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return fail(`--date \`${date}\` is not YYYY-MM-DD`);
+
+    const selected = applyOnly(publishable(packages), flags.only);
+    const { plan, errors } = planPrepare(selected, { bumps });
+
+    const report = { command: "prepare", date, dryRun: flags["dry-run"] === true, plan, errors };
+
+    if (errors.length === 0 && plan.length > 0 && !flags["dry-run"]) {
+        for (const entry of plan) {
+            const dir = path.join(PACKAGES_DIR, entry.folder);
+            const changelogPath = path.join(dir, CHANGELOG);
+            const manifestPath = path.join(dir, "package.json");
+            fs.writeFileSync(
+                changelogPath,
+                releaseChangelog(fs.readFileSync(changelogPath, "utf8"), entry.to, date),
+            );
+            fs.writeFileSync(
+                manifestPath,
+                replaceManifestVersion(fs.readFileSync(manifestPath, "utf8"), entry.to),
+            );
+        }
+    }
+
+    if (flags.json) {
+        console.log(JSON.stringify(report, null, 2));
+    } else {
+        for (const error of errors) console.error(`error: ${error}`);
+        if (plan.length === 0) {
+            console.log("nothing to prepare — no package has entries under `## [Unreleased]`.");
+        } else {
+            for (const entry of plan) {
+                console.log(`  ${entry.name ?? entry.folder}  ${entry.from} → ${entry.to}   (${entry.reason})`);
+            }
+            console.log(
+                `\n${plan.length} package(s) ${flags["dry-run"] ? "would be prepared" : "prepared"} for ${date}.`,
+            );
+            if (!flags["dry-run"]) {
+                console.log("Review the diff, commit it, and open a pull request into `dev`.");
+            }
+        }
+    }
+
+    if (errors.length > 0) return 1;
+
+    // The written state has to survive the same checks CI runs, before it is
+    // ever committed. Re-discover: the manifests on disk have just changed.
+    // cmdValidate always prints its own report; run it quietly here so it
+    // can't interleave with (and corrupt) this command's own --json output.
+    if (plan.length > 0 && !flags["dry-run"]) {
+        const only = plan.map((entry) => entry.folder);
+        const originalLog = console.log;
+        let code;
+        console.log = () => {};
+        try {
+            code = cmdValidate(discoverPackages(), { only });
+        } finally {
+            console.log = originalLog;
+        }
+        if (code !== 0) {
+            return fail("the prepared packages do not validate. Inspect the diff before committing.");
+        }
+    }
+    return 0;
+}
+
 // ---------------------------------------------------------------- entry
 
 function fail(message) {
@@ -464,15 +622,18 @@ commands:
   validate            check every publishable package is releasable
   pack                write tarballs (verification aid, not a distribution channel)
   tag                 create <package-name>/<version> tags for new versions
+  prepare             turn each [Unreleased] section into a new version
 
 options:
   --json              machine-readable output
   --only <pkg>        limit to one package, by id or folder name; repeatable
   --out <dir>         pack destination (default: PackageExports)
   --push              tag: push the created tags to origin (this is the publish)
-  --dry-run           tag: report what would happen, change nothing
-  --allow-dirty       tag: permit a dirty working tree
-  --allow-branch      tag: permit a branch other than ${RELEASE_BRANCH}`);
+  --dry-run           tag/prepare: report what would happen, change nothing
+  --allow-dirty       tag/prepare: permit a dirty working tree
+  --allow-branch      tag/prepare: permit a branch other than ${RELEASE_BRANCH}
+  --bump <pkg>=<part> prepare: force major|minor|patch for one package; repeatable
+  --date <YYYY-MM-DD> prepare: the date written into the version heading`);
     return 2;
 }
 
@@ -486,8 +647,9 @@ function parseArgs(argv) {
             continue;
         }
         const key = arg.slice(2);
-        if (key === "out") flags[key] = argv[++i];
+        if (key === "out" || key === "date") flags[key] = argv[++i];
         else if (key === "only") (flags.only ??= []).push(argv[++i]);
+        else if (key === "bump") (flags.bump ??= []).push(argv[++i]);
         else flags[key] = true;
     }
     return { command: positional[0], flags };
@@ -512,6 +674,8 @@ function main() {
             process.exit(cmdPack(packages, flags));
         case "tag":
             process.exit(cmdTag(packages, flags));
+        case "prepare":
+            process.exit(cmdPrepare(packages, flags));
         default:
             console.error(`error: unknown command \`${command}\``);
             process.exit(usage());
