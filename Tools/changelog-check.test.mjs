@@ -302,6 +302,36 @@ test("reports a missing [Unreleased] heading distinctly from a missing entry", (
     assert.deepEqual(problemsOf(report, "Alpha"), ["missing-section"]);
 });
 
+// The shape of a release pull request after `upm-release.mjs prepare`: the
+// heading is gone precisely because its entries became a version section, and
+// that promotion *is* the record of the change. Reporting `missing-section`
+// here would demand the package undo the release it is opening.
+test("accepts a heading promoted into a new version section", (t) => {
+    const base = alphaBase({
+        "Packages/Alpha/CHANGELOG.md": changelog("### Added\n\n- A `Value` field.\n\n"),
+    });
+    const repo = makeRepo(
+        t,
+        base,
+        {
+            "Packages/Alpha/Runtime/Alpha.cs": "public class Alpha { public int Value; }\n",
+            "Packages/Alpha/CHANGELOG.md":
+                PREAMBLE + "## [0.2.0] - 2026-08-30\n\n### Added\n\n- A `Value` field.\n\n" + RELEASED,
+            "Packages/Alpha/package.json": JSON.stringify(
+                { name: "com.arman.alpha", version: "0.2.0" },
+                null,
+                2,
+            ),
+        },
+        { tags: [ALPHA_TAG] },
+    );
+
+    const { status, report } = check(repo, { baseBranch: "master" });
+
+    assert.equal(status, 0, JSON.stringify(report, null, 2));
+    assert.deepEqual(problemsOf(report, "Alpha"), []);
+});
+
 test("reports a missing CHANGELOG distinctly", (t) => {
     const base = alphaBase();
     delete base["Packages/Alpha/CHANGELOG.md"];
