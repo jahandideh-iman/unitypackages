@@ -41,7 +41,7 @@
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "com.arman.unity-utilities": "0.1.0"
+        "com.arman.unity-utilities": "0.2.0"
       }
     },
     "com.arman.inventory-system": {
@@ -73,7 +73,7 @@
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "com.arman.package-basics": "0.1.0"
+        "com.arman.package-basics": "0.2.0"
       }
     },
     "com.arman.scene-management": {
@@ -111,7 +111,7 @@
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "com.arman.package-basics": "0.1.0"
+        "com.arman.package-basics": "0.2.0"
       }
     },
     "com.unity.2d.animation": {

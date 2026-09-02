@@ -50,6 +50,32 @@ namespace Arman.PersistentDataManagement.Tests
         }
 
         [Test]
+        public void LoadingAChannelThatWasNeverSavedShouldNotThrow()
+        {
+            manager.Register(serializerA, channel1);
+
+            var action = new TestDelegate(() => manager.Load(channel1));
+
+            Assert.That(action, Throws.Nothing);
+            Assert.That(serializerA.IsDeserialized(), Is.False);
+        }
+
+        [Test]
+        public void LoadingAChannelWhoseStoredDataIsEmptyShouldNotThrow()
+        {
+            var streamFactory = new MemoryBasedPersistetDataIOStreamFactory();
+            streamFactory.CreateWriteStreamFor(channel1).Dispose();
+
+            manager.SetPersistentDataIOStreamFactory(streamFactory);
+            manager.Register(serializerA, channel1);
+
+            var action = new TestDelegate(() => manager.Load(channel1));
+
+            Assert.That(action, Throws.Nothing);
+            Assert.That(serializerA.IsDeserialized(), Is.False);
+        }
+
+        [Test]
         public void LoadingAnUnregisterChannelShouldRaiseAnException()
         {
             var action = new TestDelegate(() =>

@@ -5,6 +5,13 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- `JSONPersistentDataWrapper.ReadFrom` no longer throws on empty or whitespace-only content. `JsonNode.ParseJsonString` answers it with `null`, and every later read then dereferenced that null root -- so one save interrupted mid-write (which leaves a zero-byte file) broke every subsequent load of that channel. Empty content now loads as "nothing saved yet".
+- `JSONPersistentDataWrapper.BeginReadingBlock` no longer throws on a key that is not present. It yields an empty block instead, so reads inside it return their defaults and the matching `EndReadingBlock` still balances. `BasicPersistentDataManager.Load` opens the `"Data"` block unconditionally, so this was reachable from any store that reports a channel as readable before anything has been written to it -- `MemoryBasedPersistetDataIOStreamFactory` always does.
+
 ## [0.2.0] - 2026-09-02
 
 ### Added

@@ -119,7 +119,20 @@ namespace Arman.UpdateManagement
 
             var count = updatablesTemp.Count;
             for (int i = count-1; i >= 0; --i)
-                updatablesTemp[i].UpdateTime(amount * data.timeScale);
+            {
+                try
+                {
+                    updatablesTemp[i].UpdateTime(amount * data.timeScale);
+                }
+                catch (Exception)
+                {
+                    // A misbehaving or destroyed-but-still-registered IUpdatable must never
+                    // abort the rest of this channel's tick -- neither this frame nor any
+                    // future one, since it stays registered and would throw again every
+                    // frame. Evict it and let the channel carry on.
+                    data.RemoveUpdatable(updatablesTemp[i]);
+                }
+            }
         }
 
         public bool IsChannelGloballyPaused(IChannel channel)

@@ -5,6 +5,16 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- `ChannelStateChangedEvent` on `IUpdateManager`. `BasicUpdateManager` already raised it, but the interface did not declare it and `UnityUpdateManager` did not forward it, so a consumer holding an `IUpdateManager` -- which is all a Service Locator hands out -- could not subscribe.
+
+### Fixed
+
+- An `IUpdatable` whose `UpdateTime` throws no longer aborts the rest of its channel's tick. It stayed registered, so the exception repeated every frame and the channel never advanced again; it is now unregistered and the remaining updatables carry on.
+
 ## [0.2.0] - 2026-09-02
 
 ### Added

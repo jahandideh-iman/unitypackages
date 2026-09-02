@@ -51,7 +51,7 @@ A package folder follows the standard UPM layout. Actual usage across the 18 pac
 | Folder | Used by | Purpose |
 |--|--|--|
 | `Runtime/` | 18 / 18 | Runtime code + its asmdef. Every package has one. |
-| `Tests/Editor/` | 9 | EditMode tests, own asmdef. |
+| `Tests/Editor/` | 10 | EditMode tests, own asmdef. |
 | `Samples~/` | 3 | Importable example content — see below. |
 | `Editor/` | 3 | Editor-only code, own asmdef. |
 

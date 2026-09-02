@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using System.IO;
+using System.Text;
 
 namespace Arman.PersistentDataManagement.Tests
 {
@@ -129,6 +130,75 @@ namespace Arman.PersistentDataManagement.Tests
                 Assert.That(dataWrapper.ReadBoolean("Key4"), Is.EqualTo(false));
             }
 
+        }
+
+        [Test]
+        public void ReadFromAnEmptyStreamShouldLeaveTheWrapperEmpty()
+        {
+            dataWrapper.ReadFrom(ReaderOver(""));
+
+            Assert.That(dataWrapper.HasKey("Key"), Is.False);
+            Assert.That(dataWrapper.ReadInt("Key", 7), Is.EqualTo(7));
+        }
+
+        [Test]
+        public void ReadFromAWhitespaceOnlyStreamShouldLeaveTheWrapperEmpty()
+        {
+            dataWrapper.ReadFrom(ReaderOver(" \r\n\t "));
+
+            Assert.That(dataWrapper.HasKey("Key"), Is.False);
+            Assert.That(dataWrapper.ReadString("Key", "default"), Is.EqualTo("default"));
+        }
+
+        [Test]
+        public void WritingAfterReadingFromAnEmptyStreamShouldStillWork()
+        {
+            dataWrapper.ReadFrom(ReaderOver(""));
+
+            dataWrapper.WriteInt("Key", 5);
+
+            Assert.That(dataWrapper.ReadInt("Key"), Is.EqualTo(5));
+        }
+
+        [Test]
+        public void ReadingAnAbsentBlockShouldYieldDefaults()
+        {
+            dataWrapper.WriteInt("outerKey", 1);
+
+            dataWrapper.BeginReadingBlock("absent");
+
+            Assert.That(dataWrapper.HasKey("outerKey"), Is.False);
+            Assert.That(dataWrapper.ReadInt("anything", 9), Is.EqualTo(9));
+        }
+
+        [Test]
+        public void EndingAnAbsentBlockShouldRestoreTheEnclosingBlock()
+        {
+            dataWrapper.WriteInt("outerKey", 1);
+
+            dataWrapper.BeginReadingBlock("absent");
+            dataWrapper.EndReadingBlock();
+
+            Assert.That(dataWrapper.ReadInt("outerKey"), Is.EqualTo(1));
+        }
+
+        [Test]
+        public void BlocksNestedInsideAnAbsentBlockShouldAlsoBeAbsent()
+        {
+            dataWrapper.WriteInt("outerKey", 1);
+
+            dataWrapper.BeginReadingBlock("absent");
+            dataWrapper.BeginReadingBlock("alsoAbsent");
+            Assert.That(dataWrapper.ReadInt("anything", 9), Is.EqualTo(9));
+            dataWrapper.EndReadingBlock();
+            dataWrapper.EndReadingBlock();
+
+            Assert.That(dataWrapper.ReadInt("outerKey"), Is.EqualTo(1));
+        }
+
+        private static StreamReader ReaderOver(string content)
+        {
+            return new StreamReader(new MemoryStream(Encoding.UTF8.GetBytes(content)));
         }
     }
 }

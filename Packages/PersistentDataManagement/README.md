@@ -138,6 +138,9 @@ var manager = new BasicPersistentDataManager(
   which is why `DeserializeFrom` should supply sensible fallbacks.
 - **A serializer with no matching block in the file is skipped**, not reset. Adding a new serializer
   to an existing save works without a migration.
+- **A truncated or empty save file loads as "nothing saved yet".** `JSONPersistentDataWrapper` treats
+  empty content, and a block key that is not present, as absent rather than an error — so a save
+  interrupted mid-write costs you that channel's data, not every later load of it.
 - **The save version is written but never verified on load.** `SetSaveVersion` records a `Version` in
   the metadata block for your own migration logic; the manager itself does not compare it.
 - **`Register` with no channel uses an internal default channel**, whose file is named `_internal`.
