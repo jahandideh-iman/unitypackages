@@ -8,7 +8,7 @@ library.
 
 ## What it provides
 
-Everything lives in the `Arman.Foundation.EventManagement` namespace.
+Everything lives in the `Arman.EventManagement` namespace.
 
 | Type | Purpose |
 |---|---|
@@ -22,7 +22,7 @@ Everything lives in the `Arman.Foundation.EventManagement` namespace.
 An event is a plain class:
 
 ```csharp
-using Arman.Foundation.EventManagement;
+using Arman.EventManagement;
 
 public class PlayerDied : IGameEvent
 {
@@ -61,6 +61,7 @@ events.UnRegister(scoreBoard);
 
 ## Things to know
 
+- **Namespace simplification.** The runtime namespace is now `Arman.EventManagement`; the former `Arman.Foundation.EventManagement` namespace is gone. Update any `using` directives (and test namespaces, now `Arman.EventManagement.Tests`) to match.
 - **This is a broadcast bus, not a subscription-by-type bus.** Every listener is called for every
   event; type filtering happens inside `OnEvent`. That keeps the manager trivial, and costs a virtual
   call per listener per event — fine for gameplay events, wrong for per-frame traffic.

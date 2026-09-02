@@ -1,8 +1,7 @@
 ﻿
-using Arman.Foundation.Core.PersistentDataManagement;
 using System;
 
-namespace Arman.Mocks.Foundation.Core.PersistentDataManagement
+namespace Arman.PersistentDataManagement.Tests
 {
     public class PersistentDataSerializerMock : IPersistentDataSerializer
     {

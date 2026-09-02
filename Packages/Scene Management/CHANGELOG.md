@@ -5,6 +5,12 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Simplified the public namespace: every runtime type moved to `Arman.SceneManagement`. The former `Arman.SceneMangement` namespace (note the "Mangement" typo) is removed — update `using` directives to match.
+
 ## [0.1.0] - 2026-08-30
 
 First release of *Scene Management*.

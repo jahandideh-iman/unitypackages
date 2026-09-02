@@ -1,10 +1,10 @@
 ﻿
-using Arman.Game.InventorySystem.Core;
+using Arman.InventorySystem;
 using Arman.Mocks.Game.InventorySystem;
 using NUnit.Framework;
 
 
-namespace Arman.Tests.Game.InventorySystem.Core
+namespace Arman.InventorySystem.Tests
 {
 
     public class BasicInventoryTest

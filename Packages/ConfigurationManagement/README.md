@@ -9,7 +9,7 @@ the target object and mutates it.
 
 ## What it provides
 
-Namespace `Arman.Foundation.Core.ConfigurationManagement`:
+Namespace `Arman.ConfigurationManagement` (core types):
 
 | Type | Purpose |
 |---|---|
@@ -20,7 +20,7 @@ Namespace `Arman.Foundation.Core.ConfigurationManagement`:
 | `CompositeConfigurer<T>` | Groups several `IConfigurer<T>` and applies them in order. |
 | `DynamicConfigurer<T>` | Built from `Action<T>` delegates added with `AddConfigAction`. |
 
-Namespace `Arman.Foundation.Unity.Configuration`:
+Namespace `Arman.ConfigurationManagement` (Unity types):
 
 | Type | Purpose |
 |---|---|
@@ -34,7 +34,7 @@ Namespace `Arman.Foundation.Unity.Configuration`:
 Configuring an object through a dynamic configurer:
 
 ```csharp
-using Arman.Foundation.Core.ConfigurationManagement;
+using Arman.ConfigurationManagement;
 
 var configuration = new BasicConfigurationManager();
 
@@ -62,8 +62,7 @@ Driving it from Editor assets. Write a `ScriptableConfiguration` subclass, regis
 `UnityConfigurationMaster`, and point a `UnityConfigurationManager` at that master:
 
 ```csharp
-using Arman.Foundation.Core.ConfigurationManagement;
-using Arman.Foundation.Unity.Configuration;
+using Arman.ConfigurationManagement;
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "Config/Enemy")]
@@ -88,6 +87,7 @@ unityConfigurationManager.Configure(newEnemy);
 
 ## Things to know
 
+- **Namespace simplification.** The runtime namespace is now `Arman.ConfigurationManagement`; the former `Arman.Foundation.Core.ConfigurationManagement` and `Arman.Foundation.Unity.Configuration` namespaces are gone. Update any `using` directives (and test namespaces, now `Arman.ConfigurationManagement.Tests`) to match.
 - **`UnityConfigurationManager.Init()` is not implicit.** It is what walks the assigned
   `configurationMaster` and registers every configurer under it.
 - **One configurer per target type.** `Register<T>` keys a dictionary on `typeof(T)`, so registering

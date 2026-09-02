@@ -1,7 +1,7 @@
 ﻿using NUnit.Framework;
-using Arman.Foundation.EventManagement;
+using Arman.EventManagement;
 
-namespace Arman.Tests.Foundation.EventManagement
+namespace Arman.EventManagement.Tests
 {
     public class EventManagerTest
     {

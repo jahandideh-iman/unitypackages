@@ -7,7 +7,7 @@ returns a result.
 
 ## What it provides
 
-Namespace `Arman.AssetProviding.Foundation`:
+Namespace `Arman.AssetProviding`:
 
 | Type | Purpose |
 |---|---|
@@ -19,19 +19,19 @@ Namespace `Arman.AssetProviding.Foundation`:
 | `IAssetProviderService` / `ChainedAssetProviderService` | Holds one chained sync provider and one chained async provider. |
 | `AssetProviderExtensions` | `InstantiateById<T>`, `InstantiateByType<T>` and their async variants. |
 
-Namespace `Arman.AssetProviding.Data` — `ScriptableObject` configuration assets so providers can be
+Namespace `Arman.AssetProviding` — `ScriptableObject` configuration assets so providers can be
 authored in the Editor: `AssetProviderConfig` (abstract, with `CreateSyncProvider()` /
 `CreateAsyncProvider()`), `ResourcesAssetProviderConfig`, `TableBasedAssetProviderConfig`, and
 `BasicAssetProviderServiceConfig` (`CreateAssetProviderService()`).
 
-Namespace `Arman.AssetProviding.Utility` — `ChainedContainer<T>`, `UnityAssetUtilities`, `TaskUtilities`.
+Namespace `Arman.AssetProviding` — `ChainedContainer<T>`, `UnityAssetUtilities`, `TaskUtilities`.
 
 ## Usage
 
 Build a service by hand and load through the chain:
 
 ```csharp
-using Arman.AssetProviding.Foundation;
+using Arman.AssetProviding;
 using UnityEngine;
 
 var service = new ChainedAssetProviderService();
@@ -61,7 +61,7 @@ Enemy spawned = service.ISyncUnityAssetProvider.InstantiateById<Enemy>("Enemy", 
 Or drive it from Editor-authored configuration:
 
 ```csharp
-using Arman.AssetProviding.Data;
+using Arman.AssetProviding;
 
 // basicServiceConfig is a BasicAssetProviderServiceConfig asset.
 ChainedAssetProviderService service = basicServiceConfig.CreateAssetProviderService();
@@ -76,3 +76,4 @@ ChainedAssetProviderService service = basicServiceConfig.CreateAssetProviderServ
   `service.ISyncUnityAssetProvider` / `service.IAsyncUnityAssetProvider` to load.
 - **`TableBasedAssetProvider` takes its table at construction**; the `TableBasedAssetProviderConfig`
   asset builds that dictionary from a serialized id/asset list.
+- **Flat namespace.** The runtime lives in `Arman.AssetProviding` (formerly `Arman.AssetProviding.Utility`, `Arman.AssetProviding.Foundation` [including its `.Service` and `.AssetProviders` subnamespaces], and `Arman.AssetProviding.Data`); the scripts are flat under `Runtime/Scripts`.

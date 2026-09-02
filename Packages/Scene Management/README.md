@@ -9,8 +9,7 @@ not race the `Awake` order of everything else in the scene.
 
 ## What it provides
 
-Everything lives in the `Arman.SceneMangement` namespace — note the spelling; it is preserved because
-renaming it would break every consumer's `using`.
+Everything lives in the `Arman.SceneManagement` namespace.
 
 | Type | Purpose |
 |---|---|
@@ -22,7 +21,7 @@ renaming it would break every consumer's `using`.
 Take a `SceneManager` as a dependency rather than calling Unity's static API:
 
 ```csharp
-using Arman.SceneMangement;
+using Arman.SceneManagement;
 
 public class LevelFlow
 {
@@ -37,7 +36,7 @@ public class LevelFlow
 Give each scene one bootstrap component:
 
 ```csharp
-using Arman.SceneMangement;
+using Arman.SceneManagement;
 
 public class LevelInitializer : SceneInitilizer
 {
@@ -53,8 +52,9 @@ public class LevelInitializer : SceneInitilizer
 - **`Init()` runs from `Awake`, at execution order -100.** `[DefaultExecutionOrder(-100)]` puts it
   ahead of ordinary components, so anything the scene needs registered is ready before their `Awake`.
   Components with a more negative order of their own still run first.
-- **The namespace is `Arman.SceneMangement`** and the class is `SceneInitilizer` — both misspellings
-  are deliberate and frozen for compatibility.
+- **The namespace is `Arman.SceneManagement`** — it was renamed from `Arman.SceneMangement` (which
+  carried a "Mangement" typo), so any out-of-tree `using` referring to the old name needs updating.
+  The class name `SceneInitilizer` keeps its separate misspelling for compatibility.
 - **`SceneManager` shadows Unity's own `SceneManager`.** In a file that has both `using` directives you
   will need to qualify one of them.
 - **`Open` is a single-scene, synchronous `LoadScene`.** There is no additive load, no async load and

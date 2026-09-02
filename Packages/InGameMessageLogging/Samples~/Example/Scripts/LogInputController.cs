@@ -1,10 +1,9 @@
-﻿using Arman.Presentation.InGameMessageLogging;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Arman.Samples.InGameMessageLogging
+namespace Arman.InGameMessageLogging.Samples
 {
     public class LogInputController : MonoBehaviour
     {
