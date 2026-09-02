@@ -557,6 +557,34 @@ test("the no-changelog label waives a missing entry", (t) => {
     assert.deepEqual(report.waived, ["no-changelog"]);
 });
 
+test("the no-changelog label waives a missing [Unreleased] heading", (t) => {
+    // What a release pull request looks like: `upm-release.mjs prepare` has
+    // turned the heading into a version heading, and the version bump in
+    // package.json still counts as shipped code changing.
+    const base = alphaBase({ "Packages/Alpha/CHANGELOG.md": changelogWithoutUnreleased() });
+    const repo = makeRepo(t, base, {
+        "Packages/Alpha/Runtime/Alpha.cs": "public class Alpha { public int Value; }\n",
+    });
+
+    const { status, report } = check(repo, { env: { PR_LABELS: '["no-changelog"]' } });
+
+    assert.equal(status, 0);
+    assert.equal(report.ok, true);
+});
+
+test("the no-changelog label waives a missing CHANGELOG", (t) => {
+    const base = alphaBase();
+    delete base["Packages/Alpha/CHANGELOG.md"];
+    const repo = makeRepo(t, base, {
+        "Packages/Alpha/Runtime/Alpha.cs": "public class Alpha { public int Value; }\n",
+    });
+
+    const { status, report } = check(repo, { env: { PR_LABELS: '["no-changelog"]' } });
+
+    assert.equal(status, 0);
+    assert.equal(report.ok, true);
+});
+
 test("the no-changelog label does not waive a frozen-section edit", (t) => {
     // Different concerns: "this needs no entry" is not "I may rewrite 0.1.0".
     const repo = makeRepo(
