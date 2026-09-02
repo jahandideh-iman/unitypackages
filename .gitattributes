@@ -1,0 +1,4 @@
+# Batch files keep CRLF wherever they are checked out. cmd.exe is only reliably
+# happy with CRLF, and without this a Linux checkout (CI) gets LF — which is how
+# `release.bat is CRLF` first failed on the runner while passing on Windows.
+*.bat text eol=crlf
