@@ -1,10 +1,9 @@
 ﻿
-using Arman.Foundation.Core.PersistentDataManagement;
-using Arman.Utility.Core;
+using Arman.PackageBasics;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Arman.Mocks.Foundation.Core.PersistentDataManagement
+namespace Arman.PersistentDataManagement.Tests
 {
     public class PersistentDataIOStreamFactoryMock : IPersistentDataIOStreamFactory
     {

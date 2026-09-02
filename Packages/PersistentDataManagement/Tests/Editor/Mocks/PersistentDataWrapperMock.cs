@@ -1,9 +1,8 @@
 ﻿
-using Arman.Foundation.Core.PersistentDataManagement;
 using System;
 using System.IO;
 
-namespace Arman.Mocks.Foundation.Core.PersistentDataManagement
+namespace Arman.PersistentDataManagement.Tests
 {
     public class PersistentDataWrapperMock : IPersistentDataWrapper
     {
