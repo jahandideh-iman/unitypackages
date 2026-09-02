@@ -104,7 +104,7 @@ submitted.
 |--|--|--|
 | `Asset Providing` | `com.arman.asset-providing` | 0.1.0 |
 | `ComponentSystem` | `com.arman.component-system` | 0.1.0 |
-| `ConfigurationManagement` | `com.arman.configuration-management` | 1.0.0 |
+| `ConfigurationManagement` | `com.arman.configuration-management` | 0.1.0 |
 | `DevelopmentConsole` | `com.arman.development-console` | 0.1.0 |
 | `EventManagement` | `com.arman.event-management` | 0.1.0 |
 | `HttpConnection` | `com.arman.http-connection` | 0.1.0 |
@@ -122,6 +122,12 @@ submitted.
 
 This table duplicates [`.agents/AGENTS.md`](../../.agents/AGENTS.md) § *Package catalogue*, which is
 the source of truth if the two ever disagree.
+
+> **Amended 2026-08-31 — `configuration-management` reads `0.1.0`.** It was the one package listed at
+> `1.0.0`; the release-readiness pass normalised it to `0.1.0` on 2026-08-30 so all 17 share one
+> first version, and it published at `0.1.0`. The table had been left at the old value, disagreeing
+> with the catalogue in `AGENTS.md` — corrected here, and in §5 below, which drew the same
+> distinction.
 
 Two other fields worth knowing:
 - `gitTagIgnore` — excludes tags from the build pipeline.
@@ -188,6 +194,12 @@ jobs:
 > `workflow_dispatch` block and restore `if: github.event_name == 'push'`. The steady-state design
 > is the one in the YAML above: bump `version`, open a PR, merge, and the tag happens by itself.
 
+> **Amended 2026-08-31 — the gate is gone.** Step 4 proved the path and all 17 packages published, so
+> the `workflow_dispatch` block and its `publish`/`only` inputs were deleted and the `tag` job is back
+> to `if: github.event_name == 'push' && github.ref == 'refs/heads/master'`. The YAML above is now
+> the implementation, not an aspiration: **merging a release PR into `master` publishes.** The ref
+> condition is load-bearing — without it the same job would publish on every push to `dev`.
+
 `Tools/upm-release.mjs` is the same dependency-free Node script from the first design, with
 `validate` and `pack` unchanged. Only the release subcommand differs:
 
@@ -214,14 +226,23 @@ Unity's docs state that **experimental packages "either use `0` as the major par
 or the `-exp.#` suffix"**, and that experimental and pre-release packages do not appear in the
 Package Manager's install list by default. `Enable Pre-release Packages` reveals pre-release ones.
 
-That is a problem for this repo on its face: **16 of 17 packages are `0.x`** (only
-`configuration-management` is `1.0.0`).
+That is a problem for this repo on its face: **all 17 packages are `0.x`.** (When this was written
+`configuration-management` was `1.0.0` and the other 16 were `0.x`; it was normalised to `0.1.0` on
+2026-08-30 — see the amendment in §3.)
 
 > **Amended 2026-08-30 — `-preview` dropped.** Seven packages (six publishable, plus
 > `PackageTemplate`) carried a `-preview` suffix. All seven were bumped to plain `0.1.0`, so **no
 > package carries a pre-release suffix any more** and `Enable Pre-release Packages` is no longer
 > relevant. This removes the `-preview` half of the risk below; the `0.x` half is untouched and
 > still has to be settled by the smoke test.
+
+> **Amended 2026-08-31 — the registry half is settled.** `com.arman.service-locating@0.1.0` built and
+> listed on OpenUPM, and on 2026-08-31 the other 16 followed; all 17 resolve at `0.1.0` from
+> `package.openupm.com`, dependencies included. So a `0.x` package from a scoped registry is *served*
+> without complaint. What step 4 asked for and this does **not** answer is the second half — whether
+> a `0.x` package appears unprompted in the Package Manager **install list**, which still wants
+> checking in a scratch project. If it turns out not to, option (a) below (add by name) applies;
+> nothing published so far forecloses option (b).
 
 **However** — the same Unity documentation adds that these lifecycle states *"only apply to packages
 that Unity develops internally,"* and in practice third-party packages from a scoped registry do
@@ -247,22 +268,24 @@ Ordered so the risky, irreversible steps come after the cheap verification.
    `com.arman.foundation.persistent_data_managemement` → `com.arman.persistent-data-management`
    rename. *(Done 2026-08-23, as part of normalising all 18 ids to `com.arman.<kebab-case-name>`.
    `minVersion` turned out to be unnecessary — see §3.)*
-3. 🟡 **Add `Tools/upm-release.mjs` and the workflow.** Merge a no-op version bump and confirm the
+3. ✅ **Add `Tools/upm-release.mjs` and the workflow.** Merge a no-op version bump and confirm the
    `tag` job creates exactly the tags expected.
    *(Script and `.github/workflows/release.yml` written 2026-08-30 and exercised locally: `validate`
    passes 17/17 and fails correctly on seeded defects, `pack` produces 17 tarballs with `.meta` files
-   intact, `tag --dry-run` plans the expected 17 tags and the dirty-tree guard fires. **Not yet run in
-   CI** — the workflow has never executed on GitHub, so the no-op-bump confirmation is still owed.
-   The `tag` job ships gated to `workflow_dispatch` so that merging it cannot tag anything; see the
-   amendment in §4.)*
-4. **Smoke test — one package.** Tag `com.arman.service-locating` only — run the `release` workflow
-   manually with `publish` ticked once the other 16 versions are unchanged, or tag by hand:
-   `git tag -a com.arman.service-locating/0.1.0 -m ... && git push origin com.arman.service-locating/0.1.0`.
-   Then submit that one package to OpenUPM. Confirm: the build succeeds, the version appears on the
-   listing page, and — per §5 — that it is actually visible in the Unity Package Manager window of a
-   scratch project.
-5. **Submit the remaining 16** once step 4 is proven, and **drop the `workflow_dispatch` gate** so
+   intact, `tag --dry-run` plans the expected tags and the dirty-tree guard fires. `validate` and
+   `pack` have since run green in CI on every PR; the `tag` job's own `push` path first runs with the
+   gate removal in step 5.)*
+4. ✅ **Smoke test — one package.** Tag `com.arman.service-locating` only, then submit that one
+   package to OpenUPM. Confirm: the build succeeds, the version appears on the listing page, and —
+   per §5 — that it is actually visible in the Unity Package Manager window of a scratch project.
+   *(Done 2026-08-30: tagged by hand, submitted, and live at `0.1.0` on `package.openupm.com` by
+   12:11 UTC. The Package Manager **install-list** half of the check is still owed — see the
+   amendment in §5.)*
+5. ✅ **Submit the remaining 16** once step 4 is proven, and **drop the `workflow_dispatch` gate** so
    merges tag automatically from then on.
+   *(Done 2026-08-31: 16 tags pushed from `master`, submitted as one PR to `openupm/openupm`, and all
+   17 packages now resolve at `0.1.0` with their `com.arman.*` dependencies intact. The gate is
+   removed — see the amendment in §4.)*
 6. **Repoint the consuming game project.** Add `"com.arman"` to the *existing* OpenUPM scoped registry entry:
 
    ```json

@@ -1,7 +1,7 @@
 {
   "name": "com.arman.scene-management",
   "displayName": "Scene Management",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "MIT",
   "unity": "2019.1",
   "description": "A scene loading helper plus SceneInitilizer, an abstract MonoBehaviour that runs a per-scene Init() from Awake at an early execution order, giving each scene a deterministic bootstrap point.",

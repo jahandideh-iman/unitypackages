@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using Arman.ConfigurationManagement;
 
 [CustomPropertyDrawer(typeof(AutoFillAssetArrayAttribute))]
 public class AutoFillAssetArrayAttributeDrawer : PropertyDrawer

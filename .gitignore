@@ -84,3 +84,6 @@ crashlytics-build.properties
 # not a distribution channel. Never commit tarballs (see .agents/AGENTS.md).
 /PackageExports/
 *.tgz
+
+# Subagent-driven-development scratch (ledgers, briefs, review packages)
+/.superpowers/

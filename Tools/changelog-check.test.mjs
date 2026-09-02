@@ -31,6 +31,15 @@ const RELEASED = `## [0.1.0] - 2026-08-29
 Initial release.
 `;
 
+/**
+ * A placeholder [Unreleased] entry, used wherever a fixture needs *some*
+ * entry under the heading but the test itself isn't about the entry's
+ * content. Since the `empty-unreleased` rule is repo-wide, an untouched
+ * package's CHANGELOG must not be left with a genuinely empty heading, or
+ * every diff-scoped test would trip it as a side effect.
+ */
+const STABLE_ENTRY = "### Fixed\n\n- Unrelated cleanup.\n\n";
+
 /** A CHANGELOG with an empty [Unreleased] section — the seeded shape. */
 function changelog(unreleasedBody = "", released = RELEASED) {
     return `${PREAMBLE}## [Unreleased]\n\n${unreleasedBody}${released}`;
@@ -95,12 +104,14 @@ function applyAndCommit(repo, changes, message) {
     git(repo, "commit", "-m", message);
 }
 
-function check(repo, { base = "main", head = "feature", env = {} } = {}) {
-    const result = spawnSync(
-        process.execPath,
-        ["Tools/changelog-check.mjs", "--base", base, "--head", head, "--json"],
-        { cwd: repo, encoding: "utf8", env: { ...process.env, ...env } },
-    );
+function check(repo, { base = "main", head = "feature", baseBranch = null, env = {} } = {}) {
+    const args = ["Tools/changelog-check.mjs", "--base", base, "--head", head, "--json"];
+    if (baseBranch !== null) args.push("--base-branch", baseBranch);
+    const result = spawnSync(process.execPath, args, {
+        cwd: repo,
+        encoding: "utf8",
+        env: { ...process.env, ...env },
+    });
     let report;
     try {
         report = JSON.parse(result.stdout);
@@ -114,7 +125,7 @@ function check(repo, { base = "main", head = "feature", env = {} } = {}) {
 function alphaBase(extra = {}) {
     return {
         "Packages/Alpha/package.json": JSON.stringify({ name: "com.arman.alpha", version: "0.1.0" }, null, 2),
-        "Packages/Alpha/CHANGELOG.md": changelog(),
+        "Packages/Alpha/CHANGELOG.md": changelog(STABLE_ENTRY),
         "Packages/Alpha/README.md": "# Alpha\n",
         "Packages/Alpha/Runtime/Alpha.cs": "public class Alpha { }\n",
         "Packages/Alpha/Runtime/Alpha.cs.meta": "guid: 1111\n",
@@ -174,7 +185,7 @@ test("fails when the only [Unreleased] addition is a bare sub-heading", (t) => {
     const { status, report } = check(repo);
 
     assert.equal(status, 1);
-    assert.deepEqual(problemsOf(report, "Alpha"), ["missing-entry"]);
+    assert.deepEqual(problemsOf(report, "Alpha").sort(), ["empty-unreleased", "missing-entry"]);
 });
 
 test("fails when the package.json changes without an [Unreleased] entry", (t) => {
@@ -291,6 +302,36 @@ test("reports a missing [Unreleased] heading distinctly from a missing entry", (
     assert.deepEqual(problemsOf(report, "Alpha"), ["missing-section"]);
 });
 
+// The shape of a release pull request after `upm-release.mjs prepare`: the
+// heading is gone precisely because its entries became a version section, and
+// that promotion *is* the record of the change. Reporting `missing-section`
+// here would demand the package undo the release it is opening.
+test("accepts a heading promoted into a new version section", (t) => {
+    const base = alphaBase({
+        "Packages/Alpha/CHANGELOG.md": changelog("### Added\n\n- A `Value` field.\n\n"),
+    });
+    const repo = makeRepo(
+        t,
+        base,
+        {
+            "Packages/Alpha/Runtime/Alpha.cs": "public class Alpha { public int Value; }\n",
+            "Packages/Alpha/CHANGELOG.md":
+                PREAMBLE + "## [0.2.0] - 2026-08-30\n\n### Added\n\n- A `Value` field.\n\n" + RELEASED,
+            "Packages/Alpha/package.json": JSON.stringify(
+                { name: "com.arman.alpha", version: "0.2.0" },
+                null,
+                2,
+            ),
+        },
+        { tags: [ALPHA_TAG] },
+    );
+
+    const { status, report } = check(repo, { baseBranch: "master" });
+
+    assert.equal(status, 0, JSON.stringify(report, null, 2));
+    assert.deepEqual(problemsOf(report, "Alpha"), []);
+});
+
 test("reports a missing CHANGELOG distinctly", (t) => {
     const base = alphaBase();
     delete base["Packages/Alpha/CHANGELOG.md"];
@@ -330,7 +371,7 @@ test("handles a package folder whose name contains a space", (t) => {
             null,
             2,
         ),
-        "Packages/Scene Management/CHANGELOG.md": changelog(),
+        "Packages/Scene Management/CHANGELOG.md": changelog(STABLE_ENTRY),
         "Packages/Scene Management/Runtime/Scenes.cs": "public class Scenes { }\n",
     };
     const repo = makeRepo(t, base, {
@@ -369,7 +410,7 @@ test("fails when an already-tagged version section is edited", (t) => {
         t,
         alphaBase(),
         {
-            "Packages/Alpha/CHANGELOG.md": changelog("", "## [0.1.0] - 2026-08-29\n\nRewritten history.\n"),
+            "Packages/Alpha/CHANGELOG.md": changelog(STABLE_ENTRY, "## [0.1.0] - 2026-08-29\n\nRewritten history.\n"),
         },
         { tags: [ALPHA_TAG] },
     );
@@ -387,7 +428,7 @@ test("fails when an already-tagged version's heading date is edited", (t) => {
         t,
         alphaBase(),
         {
-            "Packages/Alpha/CHANGELOG.md": changelog("", "## [0.1.0] - 2020-01-01\n\nInitial release.\n"),
+            "Packages/Alpha/CHANGELOG.md": changelog(STABLE_ENTRY, "## [0.1.0] - 2020-01-01\n\nInitial release.\n"),
         },
         { tags: [ALPHA_TAG] },
     );
@@ -402,7 +443,7 @@ test("fails when an already-tagged version section is deleted", (t) => {
     const repo = makeRepo(
         t,
         alphaBase(),
-        { "Packages/Alpha/CHANGELOG.md": `${PREAMBLE}## [Unreleased]\n\n` },
+        { "Packages/Alpha/CHANGELOG.md": `${PREAMBLE}## [Unreleased]\n\n${STABLE_ENTRY}` },
         { tags: [ALPHA_TAG] },
     );
 
@@ -419,7 +460,7 @@ test("checks frozen sections even when no shipped code changed", (t) => {
         t,
         alphaBase(),
         {
-            "Packages/Alpha/CHANGELOG.md": changelog("", "## [0.1.0] - 2026-08-29\n\nRewritten history.\n"),
+            "Packages/Alpha/CHANGELOG.md": changelog(STABLE_ENTRY, "## [0.1.0] - 2026-08-29\n\nRewritten history.\n"),
         },
         { tags: [ALPHA_TAG] },
     );
@@ -432,13 +473,13 @@ test("checks frozen sections even when no shipped code changed", (t) => {
 
 test("allows editing a version section that has no tag yet", (t) => {
     const untagged = "## [0.2.0] - 2026-08-30\n\nNot yet released.\n\n" + RELEASED;
-    const base = alphaBase({ "Packages/Alpha/CHANGELOG.md": changelog("", untagged) });
+    const base = alphaBase({ "Packages/Alpha/CHANGELOG.md": changelog(STABLE_ENTRY, untagged) });
     const repo = makeRepo(
         t,
         base,
         {
             "Packages/Alpha/CHANGELOG.md": changelog(
-                "",
+                STABLE_ENTRY,
                 "## [0.2.0] - 2026-08-30\n\nStill being written.\n\n" + RELEASED,
             ),
         },
@@ -460,7 +501,7 @@ test("allows renaming [Unreleased] to a version heading at release time", (t) =>
         base,
         {
             "Packages/Alpha/CHANGELOG.md": changelog(
-                "",
+                STABLE_ENTRY,
                 "## [0.2.0] - 2026-08-30\n\n### Added\n\n- A `Value` field.\n\n" + RELEASED,
             ),
             "Packages/Alpha/package.json": JSON.stringify(
@@ -483,7 +524,7 @@ test("ignores a trailing-whitespace-only change in a tagged section", (t) => {
         t,
         alphaBase(),
         {
-            "Packages/Alpha/CHANGELOG.md": changelog("", "## [0.1.0] - 2026-08-29  \n\nInitial release.   \n"),
+            "Packages/Alpha/CHANGELOG.md": changelog(STABLE_ENTRY, "## [0.1.0] - 2026-08-29  \n\nInitial release.   \n"),
         },
         { tags: [ALPHA_TAG] },
     );
@@ -503,7 +544,7 @@ test("reports a missing entry and a frozen-section edit together", (t) => {
         {
             "Packages/Alpha/Runtime/Alpha.cs": "public class Alpha { public int Value; }\n",
             "Packages/Alpha/CHANGELOG.md": changelog(
-                "",
+                STABLE_ENTRY,
                 "## [0.1.0] - 2026-08-29\n\nInitial release.\n\n- A `Value` field.\n",
             ),
         },
@@ -521,7 +562,7 @@ test("ignores tags belonging to a different package", (t) => {
         t,
         alphaBase(),
         {
-            "Packages/Alpha/CHANGELOG.md": changelog("", "## [0.1.0] - 2026-08-29\n\nRewritten history.\n"),
+            "Packages/Alpha/CHANGELOG.md": changelog(STABLE_ENTRY, "## [0.1.0] - 2026-08-29\n\nRewritten history.\n"),
         },
         { tags: ["com.arman.beta/0.1.0"] },
     );
@@ -546,13 +587,41 @@ test("the no-changelog label waives a missing entry", (t) => {
     assert.deepEqual(report.waived, ["no-changelog"]);
 });
 
+test("the no-changelog label waives a missing [Unreleased] heading", (t) => {
+    // What a release pull request looks like: `upm-release.mjs prepare` has
+    // turned the heading into a version heading, and the version bump in
+    // package.json still counts as shipped code changing.
+    const base = alphaBase({ "Packages/Alpha/CHANGELOG.md": changelogWithoutUnreleased() });
+    const repo = makeRepo(t, base, {
+        "Packages/Alpha/Runtime/Alpha.cs": "public class Alpha { public int Value; }\n",
+    });
+
+    const { status, report } = check(repo, { env: { PR_LABELS: '["no-changelog"]' } });
+
+    assert.equal(status, 0);
+    assert.equal(report.ok, true);
+});
+
+test("the no-changelog label waives a missing CHANGELOG", (t) => {
+    const base = alphaBase();
+    delete base["Packages/Alpha/CHANGELOG.md"];
+    const repo = makeRepo(t, base, {
+        "Packages/Alpha/Runtime/Alpha.cs": "public class Alpha { public int Value; }\n",
+    });
+
+    const { status, report } = check(repo, { env: { PR_LABELS: '["no-changelog"]' } });
+
+    assert.equal(status, 0);
+    assert.equal(report.ok, true);
+});
+
 test("the no-changelog label does not waive a frozen-section edit", (t) => {
     // Different concerns: "this needs no entry" is not "I may rewrite 0.1.0".
     const repo = makeRepo(
         t,
         alphaBase(),
         {
-            "Packages/Alpha/CHANGELOG.md": changelog("", "## [0.1.0] - 2026-08-29\n\nRewritten history.\n"),
+            "Packages/Alpha/CHANGELOG.md": changelog(STABLE_ENTRY, "## [0.1.0] - 2026-08-29\n\nRewritten history.\n"),
         },
         { tags: [ALPHA_TAG] },
     );
@@ -568,7 +637,7 @@ test("the changelog-rewrite label waives a frozen-section edit", (t) => {
         t,
         alphaBase(),
         {
-            "Packages/Alpha/CHANGELOG.md": changelog("", "## [0.1.0] - 2026-08-29\n\nFixed a broken link.\n"),
+            "Packages/Alpha/CHANGELOG.md": changelog(STABLE_ENTRY, "## [0.1.0] - 2026-08-29\n\nFixed a broken link.\n"),
         },
         { tags: [ALPHA_TAG] },
     );
@@ -609,4 +678,219 @@ test("writes a summary when GITHUB_STEP_SUMMARY is set", (t) => {
     check(repo, { env: { GITHUB_STEP_SUMMARY: summary } });
 
     assert.match(fs.readFileSync(summary, "utf8"), /Alpha/);
+});
+
+// ---------------------------------------------------------- empty-unreleased
+
+/** The rule ids reported against a folder, across every package in the report. */
+function problemsFor(report, folder) {
+    const pkg = report.packages.find((p) => p.folder === folder);
+    return pkg === undefined ? [] : pkg.problems.map((p) => p.rule);
+}
+
+test("empty-unreleased: an empty heading fails, even in an untouched package", (t) => {
+    const repo = makeRepo(
+        t,
+        {
+            ...alphaBase(),
+            "Packages/Beta/package.json": JSON.stringify({ name: "com.arman.beta", version: "0.1.0" }, null, 2),
+            "Packages/Beta/CHANGELOG.md": changelog(),
+        },
+        { "Packages/Alpha/README.md": "# Alpha\n\nA doc fix.\n" },
+    );
+    const { status, report } = check(repo);
+    assert.equal(status, 1);
+    assert.deepEqual(problemsFor(report, "Beta"), ["empty-unreleased"]);
+});
+
+test("empty-unreleased: a heading with only a bare ### sub-heading fails", (t) => {
+    const repo = makeRepo(t, alphaBase({ "Packages/Alpha/CHANGELOG.md": changelog("### Added\n\n") }), {
+        "Packages/Alpha/README.md": "# Alpha\n\nA doc fix.\n",
+    });
+    const { status, report } = check(repo);
+    assert.equal(status, 1);
+    assert.deepEqual(problemsFor(report, "Alpha"), ["empty-unreleased"]);
+});
+
+test("empty-unreleased: a heading with entries passes", (t) => {
+    const repo = makeRepo(t, alphaBase({ "Packages/Alpha/CHANGELOG.md": changelog("### Added\n\n- A thing.\n\n") }), {
+        "Packages/Alpha/README.md": "# Alpha\n\nA doc fix.\n",
+    });
+    const { status, report } = check(repo);
+    assert.equal(status, 0);
+    assert.deepEqual(problemsFor(report, "Alpha"), []);
+});
+
+test("empty-unreleased: no heading at all passes", (t) => {
+    const repo = makeRepo(t, alphaBase({ "Packages/Alpha/CHANGELOG.md": changelogWithoutUnreleased() }), {
+        "Packages/Alpha/README.md": "# Alpha\n\nA doc fix.\n",
+    });
+    const { status, report } = check(repo);
+    assert.equal(status, 0);
+    assert.deepEqual(problemsFor(report, "Alpha"), []);
+});
+
+test("empty-unreleased: a private package is skipped", (t) => {
+    const repo = makeRepo(
+        t,
+        {
+            ...alphaBase({ "Packages/Alpha/CHANGELOG.md": changelogWithoutUnreleased() }),
+            "Packages/Template/package.json": JSON.stringify(
+                { name: "com.arman.template", version: "0.1.0", private: true },
+                null,
+                2,
+            ),
+            "Packages/Template/CHANGELOG.md": changelog(),
+        },
+        { "Packages/Alpha/README.md": "# Alpha\n\nA doc fix.\n" },
+    );
+    const { status, report } = check(repo);
+    assert.equal(status, 0);
+    assert.deepEqual(problemsFor(report, "Template"), []);
+});
+
+test("empty-unreleased: deleting an empty heading is what fixes it", (t) => {
+    const repo = makeRepo(t, alphaBase(), {
+        "Packages/Alpha/CHANGELOG.md": changelogWithoutUnreleased(),
+    });
+    const { status, report } = check(repo);
+    assert.equal(status, 0);
+    assert.deepEqual(problemsFor(report, "Alpha"), []);
+});
+
+// A package added in the pull request, seeded with the empty [Unreleased]
+// heading every new package starts with, must not trip empty-unreleased —
+// it is new, the same as inspect()'s own "skipped: new" packages, and the
+// repo-wide sweep in emptyUnreleasedFolders() must agree rather than
+// re-deriving "is this package new" a second way.
+test("empty-unreleased: a package new in the pull request is not reported", (t) => {
+    const repo = makeRepo(t, alphaBase(), {
+        "Packages/Beta/package.json": JSON.stringify({ name: "com.arman.beta", version: "0.1.0" }, null, 2),
+        "Packages/Beta/CHANGELOG.md": changelog(),
+        "Packages/Beta/README.md": "# Beta\n",
+    });
+    const { status, report } = check(repo);
+    assert.equal(status, 0);
+    assert.equal(skipOf(report, "Beta"), "new");
+    assert.deepEqual(problemsFor(report, "Beta"), []);
+});
+
+// ------------------------------------------------------ unpromoted-unreleased
+
+// The release gate. On a pull request into `master` every [Unreleased] section
+// should already have been turned into a version heading by `upm-release.mjs
+// prepare`; one that survives means the promotion step was skipped, and the
+// work would land on the release branch still labelled unreleased. The rule is
+// inert on every other base branch, where a populated [Unreleased] is the
+// healthy state that `missing-entry` insists on.
+
+test("unpromoted-unreleased: a populated heading fails a pull request into master", (t) => {
+    const repo = makeRepo(t, alphaBase(), {
+        "Packages/Alpha/README.md": "# Alpha\n\nA doc fix.\n",
+    });
+    const { status, report } = check(repo, { baseBranch: "master" });
+    assert.equal(status, 1);
+    assert.equal(report.ok, false);
+    assert.deepEqual(problemsFor(report, "Alpha"), ["unpromoted-unreleased"]);
+});
+
+test("unpromoted-unreleased: an untouched package is reported too", (t) => {
+    const repo = makeRepo(
+        t,
+        {
+            ...alphaBase({ "Packages/Alpha/CHANGELOG.md": changelogWithoutUnreleased() }),
+            "Packages/Beta/package.json": JSON.stringify({ name: "com.arman.beta", version: "0.1.0" }, null, 2),
+            "Packages/Beta/CHANGELOG.md": changelog("### Added\n\n- A thing.\n\n"),
+        },
+        { "Packages/Alpha/README.md": "# Alpha\n\nA doc fix.\n" },
+    );
+    const { status, report } = check(repo, { baseBranch: "master" });
+    assert.equal(status, 1);
+    assert.deepEqual(problemsFor(report, "Beta"), ["unpromoted-unreleased"]);
+});
+
+test("unpromoted-unreleased: no heading at all is what a release pull request looks like", (t) => {
+    const repo = makeRepo(t, alphaBase({ "Packages/Alpha/CHANGELOG.md": changelogWithoutUnreleased() }), {
+        "Packages/Alpha/README.md": "# Alpha\n\nA doc fix.\n",
+    });
+    const { status, report } = check(repo, { baseBranch: "master" });
+    assert.equal(status, 0);
+    assert.equal(report.ok, true);
+    assert.deepEqual(problemsFor(report, "Alpha"), []);
+});
+
+// An empty heading is unpromoted too, and reporting both rules against it would
+// give the reader two diagnostics with one remedy between them.
+test("unpromoted-unreleased: an empty heading reports this rule alone, not empty-unreleased", (t) => {
+    const repo = makeRepo(t, alphaBase({ "Packages/Alpha/CHANGELOG.md": changelog() }), {
+        "Packages/Alpha/README.md": "# Alpha\n\nA doc fix.\n",
+    });
+    const { status, report } = check(repo, { baseBranch: "master" });
+    assert.equal(status, 1);
+    assert.deepEqual(problemsFor(report, "Alpha"), ["unpromoted-unreleased"]);
+});
+
+test("unpromoted-unreleased: inert on a pull request into dev", (t) => {
+    const repo = makeRepo(t, alphaBase(), {
+        "Packages/Alpha/README.md": "# Alpha\n\nA doc fix.\n",
+    });
+    const { status, report } = check(repo, { baseBranch: "dev" });
+    assert.equal(status, 0);
+    assert.deepEqual(problemsFor(report, "Alpha"), []);
+});
+
+test("unpromoted-unreleased: inert when no base branch is supplied", (t) => {
+    const repo = makeRepo(t, alphaBase(), {
+        "Packages/Alpha/README.md": "# Alpha\n\nA doc fix.\n",
+    });
+    const { status, report } = check(repo);
+    assert.equal(status, 0);
+    assert.deepEqual(problemsFor(report, "Alpha"), []);
+});
+
+test("unpromoted-unreleased: a private package is exempt", (t) => {
+    const repo = makeRepo(
+        t,
+        {
+            ...alphaBase({ "Packages/Alpha/CHANGELOG.md": changelogWithoutUnreleased() }),
+            "Packages/Template/package.json": JSON.stringify(
+                { name: "com.arman.template", version: "0.1.0", private: true },
+                null,
+                2,
+            ),
+            "Packages/Template/CHANGELOG.md": changelog("### Added\n\n- A thing.\n\n"),
+        },
+        { "Packages/Alpha/README.md": "# Alpha\n\nA doc fix.\n" },
+    );
+    const { status, report } = check(repo, { baseBranch: "master" });
+    assert.equal(status, 0);
+    assert.deepEqual(problemsFor(report, "Template"), []);
+});
+
+// Unlike empty-unreleased, a package new in the pull request gets no exemption
+// here. `empty-unreleased` spares it because a brand-new package legitimately
+// carries the empty scaffold heading while it is being written; a release pull
+// request is the opposite situation — a package crossing into `master` for the
+// first time still has to name the version it is publishing as.
+test("unpromoted-unreleased: a package new in the pull request is not exempt", (t) => {
+    const repo = makeRepo(t, alphaBase({ "Packages/Alpha/CHANGELOG.md": changelogWithoutUnreleased() }), {
+        "Packages/Beta/package.json": JSON.stringify({ name: "com.arman.beta", version: "0.1.0" }, null, 2),
+        "Packages/Beta/CHANGELOG.md": changelog("### Added\n\n- A thing.\n\n"),
+        "Packages/Beta/README.md": "# Beta\n",
+    });
+    const { status, report } = check(repo, { baseBranch: "master" });
+    assert.equal(status, 1);
+    assert.deepEqual(problemsFor(report, "Beta"), ["unpromoted-unreleased"]);
+});
+
+test("unpromoted-unreleased: has no waiver label", (t) => {
+    const repo = makeRepo(t, alphaBase(), {
+        "Packages/Alpha/README.md": "# Alpha\n\nA doc fix.\n",
+    });
+    const { status, report } = check(repo, {
+        baseBranch: "master",
+        env: { PR_LABELS: JSON.stringify(["no-changelog", "changelog-rewrite"]) },
+    });
+    assert.equal(status, 1);
+    assert.deepEqual(problemsFor(report, "Alpha"), ["unpromoted-unreleased"]);
 });

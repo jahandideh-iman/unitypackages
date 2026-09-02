@@ -1,4 +1,4 @@
-﻿using Arman.Foundation.ShopManagement.Core;
+﻿using Arman.ShopManagement;
 using System;
 
 namespace Arman.Mocks.Foundation.ShopManagement.Core

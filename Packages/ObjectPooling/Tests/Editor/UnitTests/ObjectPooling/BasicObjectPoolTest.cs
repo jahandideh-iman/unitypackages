@@ -1,7 +1,7 @@
-﻿using Arman.ObjectPooling.Core;
+﻿using Arman.ObjectPooling;
 using NUnit.Framework;
 
-namespace Arman.Tests.ObjectPooling.Core
+namespace Arman.ObjectPooling.Tests
 {
 
     public class MockObject : IPoolable

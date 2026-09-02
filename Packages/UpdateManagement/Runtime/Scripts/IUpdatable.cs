@@ -1,0 +1,14 @@
+﻿
+
+namespace Arman.UpdateManagement
+{
+    public interface IUpdatable 
+    {
+        // NOTE: The name is due to the naming clash with Unity's Update.
+        // TODO: Find a better name.
+        void UpdateTime(float dt);
+
+        //void OnPaused();
+        //void OnResumed();
+    }
+}

@@ -1,11 +1,9 @@
-﻿using Arman.Foundation.Core.PersistentDataManagement;
-using Arman.Foundation.Unity.PersistentDataManagement;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Arman.Samples.PersistentDataManagement
+namespace Arman.PersistentDataManagement.Samples
 {
 
     public class ExamplePersistentDataSerializer : IPersistentDataSerializer

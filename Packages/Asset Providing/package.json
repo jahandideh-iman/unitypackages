@@ -1,7 +1,7 @@
 {
   "name": "com.arman.asset-providing",
   "displayName": "Asset Providing",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "MIT",
   "unity": "2019.1",
   "description": "Loads Unity assets through pluggable providers, by id or by type, synchronously or asynchronously. Providers can be chained so a lookup falls through to the next one, and configured as ScriptableObject assets in the Editor.",

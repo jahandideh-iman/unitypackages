@@ -8,7 +8,7 @@ The point is that adding a cheat costs one attribute, so the console stays usefu
 
 ## What it provides
 
-Everything lives in the `Arman.Development.DevelopmentConsole.Base` namespace.
+Everything lives in the `Arman.DevelopmentConsole` namespace.
 
 | Type | Purpose |
 |---|---|
@@ -27,7 +27,7 @@ Everything lives in the `Arman.Development.DevelopmentConsole.Base` namespace.
 Declare options by subclassing `DevelopmentOptionsDefinition`. The methods must be `static`:
 
 ```csharp
-using Arman.Development.DevelopmentConsole.Base;
+using Arman.DevelopmentConsole;
 using UnityEngine;
 
 public class CheatOptions : DevelopmentOptionsDefinition
