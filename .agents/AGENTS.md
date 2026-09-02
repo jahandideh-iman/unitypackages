@@ -305,7 +305,7 @@ Under the current direction: releasing is **creating a git tag**, not uploading.
 
 ### Changelogs — two rules, enforced in CI
 
-Every package CHANGELOG carries an empty `## [Unreleased]` heading above its newest version, seeded across all 18 on 2026-08-30. `.github/workflows/changelog.yml` runs `Tools/changelog-check.mjs` on every PR into `dev` or `master` — dependency-free Node, same as the release tooling, and runnable locally:
+A package CHANGELOG carries a `## [Unreleased]` heading **only while it has entries under it**. The contributor with something to record creates the heading; `upm-release.mjs prepare` renames it to a version heading and leaves nothing in its place. The headings seeded across all 18 packages on 2026-08-30 were deleted on 2026-09-02 — an empty heading is now a CI failure, see `empty-unreleased` below. `.github/workflows/changelog.yml` runs `Tools/changelog-check.mjs` on every PR into `dev` or `master` — dependency-free Node, same as the release tooling, and runnable locally:
 
 ```powershell
 node Tools/changelog-check.mjs --base dev --head HEAD
@@ -384,7 +384,7 @@ The *source* of a release PR is enforced separately, by `promotion-guard` in `re
 3. Add `"license": "MIT"` plus a `LICENSE.md` and its `.meta`.
 4. Rename the asmdefs to `Arman.<NewName>.Runtime` etc. and update their `name` fields.
 5. Declare any `com.arman.*` dependencies with exact versions.
-6. Write a `README.md` and a `CHANGELOG.md` that keeps the template's `## [Unreleased]` heading — see [the changelog rules](#changelogs--two-rules-enforced-in-ci).
+6. Write a `README.md` and a `CHANGELOG.md` with **no `## [Unreleased]` heading** — add one when you have an entry to put under it. See [the changelog rules](#changelogs--two-rules-enforced-in-ci).
 7. Verify with `npm pack --dry-run` from the package folder.
 
 ## Known inconsistencies
