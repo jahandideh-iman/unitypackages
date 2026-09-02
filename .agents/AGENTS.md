@@ -132,7 +132,7 @@ Unity tests run through the official [Unity CLI](https://unity.com/blog/meet-the
 
 ## CI
 
-`.github/workflows/tests.yml` runs the test suites on every same-repo pull request and on pushes to `dev` and `master`. `.github/workflows/release.yml` separately runs `validate` and `pack`, and `.github/workflows/changelog.yml` enforces [the changelog rules](#changelogs--two-rules-enforced-in-ci). Design notes: [`docs/specs/2026-08-30-pr-test-ci-design.md`](../docs/specs/2026-08-30-pr-test-ci-design.md).
+`.github/workflows/tests.yml` runs the test suites on every same-repo pull request and on pushes to `dev` and `master`. `.github/workflows/release.yml` separately runs `validate` and `pack`, and `.github/workflows/changelog.yml` enforces [the changelog rules](#changelogs--three-rules-enforced-in-ci). Design notes: [`docs/specs/2026-08-30-pr-test-ci-design.md`](../docs/specs/2026-08-30-pr-test-ci-design.md).
 
 | Job | Runner | Notes |
 |--|--|--|
@@ -268,9 +268,15 @@ node Tools/upm-release.mjs pack                # tarballs into PackageExports/ (
 node Tools/upm-release.mjs tag --dry-run       # what would be tagged?
 node Tools/upm-release.mjs tag --push          # create + push tags — THIS IS THE PUBLISH
 node Tools/upm-release.mjs tag --push --only com.arman.service-locating   # one package
+node Tools/upm-release.mjs prepare --dry-run    # what would each [Unreleased] section become?
+node Tools/upm-release.mjs prepare              # rename the headings, bump the versions
 ```
 
 `--only` takes a package id or a folder name (`--only "UI Management"` works), is repeatable, and errors if it matches nothing. It was written for rollout step 4's single-package smoke test; that test is done, but it remains the way to release one package by hand without touching the others. Under `--only`, `validate` still resolves dependencies against *every* package, not just the selected ones.
+
+`prepare` turns every package's `## [Unreleased]` section into a version. Per package: no heading, or a heading with no entries, means skip; otherwise the `###` sub-headings with bullets under them decide the level — `Removed` is breaking, `Added`/`Changed`/`Deprecated` are features, `Fixed`/`Security` are fixes, highest wins — and **while the major is `0`, breaking and feature both land on the minor**. The heading is renamed to `## [X.Y.Z] - YYYY-MM-DD` with nothing left in its place, `package.json`'s `version` line is rewritten in place, and `validate` re-runs over the packages it touched.
+
+`--bump <package>=<major|minor|patch>` overrides the derived level for one package and is repeatable; entries filed under no recognised `###` heading are an error rather than a guess. `prepare` refuses to run **on** `master` and refuses a dirty tree (`--allow-branch`, `--allow-dirty`), the inverse of `tag`'s guards. **It edits files and stops there** — it does not commit, push, tag, or open a pull request. It also leaves `com.arman.*` dependency ranges alone: a dependent pinning `0.1.0` stays valid, because `validate` accepts a dependency at a version that is either current or already tagged.
 
 `validate` checks, per package: parseable JSON; `name` matches `com.arman.<kebab-case-name>`; valid semver; `displayName`; a `description` that is not stock placeholder text; a `unity` minimum version; `license: "MIT"` plus a `LICENSE.md`; **a `.meta` file for every file and folder**; every `com.arman.*` dependency resolving to a non-private package in this repo at a version that is either current or already tagged; and `npm pack --dry-run` succeeding. Exit 0 = all valid, 1 = at least one failure.
 
@@ -297,20 +303,21 @@ Under the current direction: releasing is **creating a git tag**, not uploading.
 
 **A published package name and version are permanent.** Verify both before a first publish.
 
-### Changelogs — two rules, enforced in CI
+### Changelogs — three rules, enforced in CI
 
-Every package CHANGELOG carries an empty `## [Unreleased]` heading above its newest version, seeded across all 18 on 2026-08-30. `.github/workflows/changelog.yml` runs `Tools/changelog-check.mjs` on every PR into `dev` or `master` — dependency-free Node, same as the release tooling, and runnable locally:
+A package CHANGELOG carries a `## [Unreleased]` heading **only while it has entries under it**. The contributor with something to record creates the heading; `upm-release.mjs prepare` renames it to a version heading and leaves nothing in its place. The headings seeded across all 18 packages on 2026-08-30 were deleted on 2026-09-02 — an empty heading is now a CI failure, see `empty-unreleased` below. `.github/workflows/changelog.yml` runs `Tools/changelog-check.mjs` on every PR into `dev` or `master` — dependency-free Node, same as the release tooling, and runnable locally:
 
 ```powershell
 node Tools/changelog-check.mjs --base dev --head HEAD
 node Tools/changelog-check.mjs --base dev --head HEAD --json
-node --test Tools/changelog-check.test.mjs    # the check's own tests, 31 of them
+node --test Tools/changelog-check.test.mjs    # the check's own tests, 37 of them
 ```
 
 | Rule | What it enforces | Waiver label |
 |--|--|--|
 | `missing-entry` | A change to a package's **shipped code** must be recorded under that package's `## [Unreleased]` heading. | `no-changelog` |
 | `frozen-section` | A version section whose `<package-name>/<version>` tag **already exists** must not be edited or deleted. | `changelog-rewrite` |
+| `empty-unreleased` | A `## [Unreleased]` heading must have at least one entry under it. Checked **repo-wide** at the head commit, not just on the packages the PR touched. | *none* |
 
 The two waivers are deliberately separate — "this change needs no entry" is not the same claim as "I may rewrite what `0.1.0` says it shipped". Labels are read *inside* the script rather than gating the job with `if:`, so the check always reports a real success instead of `skipped`; that matters if it is ever made a required check, because a skipped required check blocks the merge.
 
@@ -325,6 +332,8 @@ Details worth not re-deriving:
 * Trailing whitespace inside a frozen section is ignored — no reader can see it.
 * **The release PR is not a false positive.** Renaming `## [Unreleased]` to `## [0.2.0]` satisfies `missing-entry` on its own, because opening a version section that did not exist at the base is exactly what a release does. That version has no tag yet, so `frozen-section` does not fire on it either; the tag comes after the merge.
 * `frozen-section` reads `git tag`, so CI checks out with `fetch-depth: 0`. A shallow fetch would leave the tag list empty and silently disable the rule.
+* `empty-unreleased` has **no waiver label**, deliberately: "I need an empty heading" is not a claim worth being able to make. Delete the heading or fill it in.
+* It is the one rule that is not diff-scoped. Every publishable package's CHANGELOG is read at the head commit, which is only fair because all 18 were cleaned before the rule landed (2026-09-02).
 
 ## Git and hosting
 
@@ -348,6 +357,10 @@ So the day-to-day loop is: branch from `dev` → PR into `dev` → merge. `gh pr
 Releasing is a promotion, not a separate build. Bump the `version` fields on `dev` and merge them normally, then open one release PR `dev` → `master`. Once it merges, tag from `master` — see [Distribution and releases](#distribution-and-releases). Nothing is cherry-picked and `master` is never committed to directly, so `master` is always a commit that also exists on `dev`.
 
 This split is enforced in two places, and both are deliberate belt-and-braces: `Tools/upm-release.mjs` refuses to tag off `master` (`RELEASE_BRANCH`, overridable with `--allow-branch`), and the `tag` job in `release.yml` is conditioned on `github.ref == 'refs/heads/master'`. The workflow condition is the one that matters, now that the job runs on `push`: it is the only thing stopping a routine push to `dev` from publishing every package. Keep it.
+
+The *source* of a release PR is enforced separately, by `promotion-guard` in `release.yml` (`Tools/promotion-check.mjs`): a pull request into `master` from anything other than `dev` fails. A GitHub ruleset cannot express this — rulesets target a destination ref and say nothing about a pull request's source — so the ruleset's job is to make `promotion-guard` a **required** check. Run it by hand with `node Tools/promotion-check.mjs --event pull_request --base master --head my-branch`.
+
+`master` carries a ruleset — [`.github/rulesets/master.json`](../.github/rulesets/master.json), applied with `gh api repos/:owner/:repo/rulesets --input .github/rulesets/master.json` — that requires a pull request, requires `promotion-guard`, `validate`, and `pack` to pass, and blocks force pushes and branch deletion. **It has no bypass actors, repository owner included.** Merging into `master` publishes permanently; a bypass is the door this flow exists to close.
 
 ## Unity `.meta` files
 
@@ -376,7 +389,7 @@ This split is enforced in two places, and both are deliberate belt-and-braces: `
 3. Add `"license": "MIT"` plus a `LICENSE.md` and its `.meta`.
 4. Rename the asmdefs to `Arman.<NewName>.Runtime` etc. and update their `name` fields.
 5. Declare any `com.arman.*` dependencies with exact versions.
-6. Write a `README.md` and a `CHANGELOG.md` that keeps the template's `## [Unreleased]` heading — see [the changelog rules](#changelogs--two-rules-enforced-in-ci).
+6. Write a `README.md` and a `CHANGELOG.md` with **no `## [Unreleased]` heading** — add one when you have an entry to put under it. See [the changelog rules](#changelogs--three-rules-enforced-in-ci).
 7. Verify with `npm pack --dry-run` from the package folder.
 
 ## Known inconsistencies

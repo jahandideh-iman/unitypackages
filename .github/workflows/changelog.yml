@@ -1,15 +1,19 @@
 name: changelog
 
-# Two rules, both in Tools/changelog-check.mjs — see .agents/AGENTS.md:
+# Three rules, all in Tools/changelog-check.mjs — see .agents/AGENTS.md:
 #
-#   missing-entry    A change to a package's shipped code must be recorded
-#                    under that package's `## [Unreleased]` heading.
-#   frozen-section   A version section whose `<package-name>/<version>` tag
-#                    already exists must not be edited.
+#   missing-entry      A change to a package's shipped code must be recorded
+#                      under that package's `## [Unreleased]` heading.
+#   frozen-section     A version section whose `<package-name>/<version>` tag
+#                      already exists must not be edited.
+#   empty-unreleased   An `## [Unreleased]` heading with no entries under it
+#                      must not be committed. No waiver label applies — the
+#                      fix is always to add an entry or remove the heading.
 #
 # `labeled`/`unlabeled` are in the trigger list so that adding a waiver label
 # (`no-changelog`, `changelog-rewrite`) re-runs the check and turns it green
-# without an empty push.
+# without an empty push. Those two labels only waive missing-entry and
+# frozen-section respectively; empty-unreleased has no waiver.
 
 on:
   pull_request:

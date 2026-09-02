@@ -126,6 +126,26 @@ function applyOnly(packages, only) {
     return selected;
 }
 
+/** `--bump <package>=<major|minor|patch>`, repeatable, id or folder name. */
+export function parseBumps(raw, packages) {
+    const bumps = new Map();
+    if (!raw) return bumps;
+    for (const item of Array.isArray(raw) ? raw : [raw]) {
+        const at = item.lastIndexOf("=");
+        if (at === -1) throw new Error(`--bump \`${item}\` is not <package>=<major|minor|patch>`);
+        const target = item.slice(0, at).trim();
+        const part = item.slice(at + 1).trim().toLowerCase();
+        if (!["major", "minor", "patch"].includes(part)) {
+            throw new Error(`--bump \`${item}\`: \`${part}\` is not major, minor, or patch`);
+        }
+        if (!packages.some((p) => p.name === target || p.folder === target)) {
+            throw new Error(`--bump matched no package: ${target}`);
+        }
+        bumps.set(target, part);
+    }
+    return bumps;
+}
+
 // ---------------------------------------------------------------- validate
 
 function missingMetaFiles(dir) {
@@ -245,6 +265,182 @@ function cmdValidate(packages, flags) {
     return failed === 0 ? 0 : 1;
 }
 
+// ---------------------------------------------------------------- prepare
+
+const CHANGELOG = "CHANGELOG.md";
+const H2 = /^##\s/;
+const H2_VERSION = /^##\s+\[([^\]]+)\]/;
+const UNRELEASED = /^unreleased$/i;
+const SUB_HEADING = /^#{3,}\s+(.+?)\s*$/;
+const PLAIN_SEMVER = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
+
+// Keep a Changelog's six sections, mapped to what each implies about the API.
+// `Removed` is the only breaking one; while major is 0 it lands on the minor
+// all the same, which is the whole point of the 0.x rule below.
+const SECTION_LEVELS = {
+    added: "feature",
+    changed: "feature",
+    deprecated: "feature",
+    removed: "breaking",
+    fixed: "fix",
+    security: "fix",
+};
+const LEVEL_RANK = { fix: 1, feature: 2, breaking: 3 };
+
+/** The `## [Unreleased]` heading's line index and the index past its body. */
+export function unreleasedRange(lines) {
+    const start = lines.findIndex((line) => H2_VERSION.test(line) && UNRELEASED.test(line.match(H2_VERSION)[1]));
+    if (start === -1) return null;
+    const rest = lines.slice(start + 1);
+    const offset = rest.findIndex((line) => H2.test(line));
+    return { start, end: offset === -1 ? lines.length : start + 1 + offset };
+}
+
+/**
+ * The body's entry lines. Identical to `entriesOf` in changelog-check.mjs —
+ * "does this section have entries" must mean one thing in both scripts, or a
+ * pull request can pass the check and then be skipped by the release.
+ */
+export function unreleasedEntries(lines) {
+    return lines.map((line) => line.trim()).filter((line) => line !== "" && !SUB_HEADING.test(line));
+}
+
+/** The `###` sub-headings with at least one line under them, in file order. */
+export function populatedSubsections(lines) {
+    const found = [];
+    let current = null;
+    for (const line of lines) {
+        const heading = line.match(SUB_HEADING);
+        if (heading) {
+            current = { name: heading[1], entries: 0 };
+            found.push(current);
+            continue;
+        }
+        if (current !== null && line.trim() !== "") current.entries += 1;
+    }
+    return found.filter((section) => section.entries > 0).map((section) => section.name);
+}
+
+/** The highest level the sub-headings imply, or null if none is recognised. */
+export function bumpLevel(names) {
+    let best = null;
+    for (const name of names) {
+        const level = SECTION_LEVELS[name.trim().toLowerCase()];
+        if (level === undefined) continue;
+        if (best === null || LEVEL_RANK[level] > LEVEL_RANK[best]) best = level;
+    }
+    return best;
+}
+
+function parts(version) {
+    const match = PLAIN_SEMVER.exec(version);
+    if (match === null) throw new Error(`version \`${version}\` is not plain X.Y.Z semver`);
+    return match.slice(1, 4).map(Number);
+}
+
+/**
+ * 0.x-aware. Below 1.0.0 the major is reserved, so a breaking change bumps the
+ * minor exactly as a feature does — the two are indistinguishable to a consumer
+ * pinning `0.1.0`, which is precisely what 0.x means.
+ */
+export function nextVersion(version, level) {
+    const [major, minor, patch] = parts(version);
+    if (major === 0) return level === "fix" ? `0.${minor}.${patch + 1}` : `0.${minor + 1}.0`;
+    if (level === "breaking") return `${major + 1}.0.0`;
+    if (level === "feature") return `${major}.${minor + 1}.0`;
+    return `${major}.${minor}.${patch + 1}`;
+}
+
+/** `--bump pkg=minor` asked for a part, so no 0.x remapping is applied. */
+export function explicitBump(version, part) {
+    const [major, minor, patch] = parts(version);
+    if (part === "major") return `${major + 1}.0.0`;
+    if (part === "minor") return `${major}.${minor + 1}.0`;
+    if (part === "patch") return `${major}.${minor}.${patch + 1}`;
+    throw new Error(`unknown bump part \`${part}\`, expected major, minor, or patch`);
+}
+
+/** Renames `## [Unreleased]` to `## [X.Y.Z] - DATE`, leaving nothing behind. */
+export function releaseChangelog(text, version, date) {
+    const eol = text.includes("\r\n") ? "\r\n" : "\n";
+    const lines = text.split(/\r?\n/);
+    const range = unreleasedRange(lines);
+    if (range === null) throw new Error("no `## [Unreleased]` heading");
+    lines[range.start] = `## [${version}] - ${date}`;
+    return lines.join(eol);
+}
+
+/**
+ * A targeted single-line replacement, not parse-and-reserialise: key order,
+ * indentation, and the trailing newline all survive, so the diff is one line.
+ * More than one `"version"` key means the file is not shaped as expected —
+ * refuse rather than rewrite the wrong one.
+ */
+export function replaceManifestVersion(text, version) {
+    const pattern = /^([ \t]*"version"[ \t]*:[ \t]*)"[^"]*"/gm;
+    const matches = text.match(pattern) ?? [];
+    if (matches.length !== 1) {
+        throw new Error(`package.json must contain exactly one \`"version"\` line, found ${matches.length}`);
+    }
+    return text.replace(pattern, `$1"${version}"`);
+}
+
+/**
+ * Works out what each package's next version is, without writing anything.
+ * Returns the plan and the packages that could not be planned; a package with
+ * entries under no recognised `###` heading is an error rather than a guess or
+ * a silent skip, because the alternative is releasing the wrong number.
+ */
+export function planPrepare(packages, { bumps = new Map() } = {}) {
+    const plan = [];
+    const errors = [];
+
+    for (const pkg of packages) {
+        const file = path.join(pkg.dir, CHANGELOG);
+        if (!fs.existsSync(file)) {
+            errors.push(`${pkg.folder}: no ${CHANGELOG}`);
+            continue;
+        }
+        const text = fs.readFileSync(file, "utf8");
+        const lines = text.split(/\r?\n/);
+        const range = unreleasedRange(lines);
+        if (range === null) continue; // No heading: nothing is waiting to ship.
+
+        const body = lines.slice(range.start + 1, range.end);
+        if (unreleasedEntries(body).length === 0) continue; // Empty: nothing to ship.
+
+        const requested = bumps.get(pkg.name) ?? bumps.get(pkg.folder);
+        const sections = populatedSubsections(body);
+        const level = requested ? null : bumpLevel(sections);
+
+        if (!requested && level === null) {
+            errors.push(
+                `${pkg.name ?? pkg.folder}: has entries under \`## [Unreleased]\` but none under a recognised \`###\` heading (Added, Changed, Deprecated, Removed, Fixed, Security). File them, or pass --bump ${pkg.name ?? pkg.folder}=<major|minor|patch>.`,
+            );
+            continue;
+        }
+
+        let to;
+        try {
+            to = requested ? explicitBump(pkg.version, requested) : nextVersion(pkg.version, level);
+        } catch (error) {
+            errors.push(`${pkg.name ?? pkg.folder}: ${error.message}`);
+            continue;
+        }
+
+        plan.push({
+            folder: pkg.folder,
+            name: pkg.name,
+            from: pkg.version,
+            to,
+            level: requested ?? level,
+            reason: requested ? `${requested}: requested with --bump` : `${level}: ${sections.join(", ")}`,
+        });
+    }
+
+    return { plan, errors };
+}
+
 // ---------------------------------------------------------------- pack
 
 function cmdPack(packages, flags) {
@@ -330,6 +526,117 @@ function cmdTag(packages, flags) {
     return 0;
 }
 
+function cmdPrepare(packages, flags) {
+    const branch = git("rev-parse", "--abbrev-ref", "HEAD").out;
+    if (branch === RELEASE_BRANCH && !flags["allow-branch"]) {
+        return fail(`on branch \`${branch}\`. Prepare a release on a branch off \`dev\`, not on \`${RELEASE_BRANCH}\`. Pass --allow-branch to override.`);
+    }
+    if (git("status", "--porcelain").out && !flags["allow-dirty"] && !flags["dry-run"]) {
+        return fail("working tree is dirty. Prepare a clean tree so the release diff is reviewable, or pass --allow-dirty.");
+    }
+
+    // Validate --bump against the packages that will actually be prepared,
+    // not the full discovery list — otherwise `--bump PackageTemplate=major`
+    // is silently accepted and then does nothing.
+    const selected = applyOnly(publishable(packages), flags.only);
+
+    let bumps;
+    try {
+        bumps = parseBumps(flags.bump, selected);
+    } catch (error) {
+        return fail(error.message);
+    }
+
+    const date = flags.date ?? new Date().toISOString().slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(Date.parse(date))) {
+        return fail(`--date \`${date}\` is not a valid YYYY-MM-DD date`);
+    }
+
+    const { plan, errors } = planPrepare(selected, { bumps });
+
+    // Phase 1: compute every rewritten file up front, for every package in
+    // the plan, before touching disk. A manifest that can't be rewritten
+    // (e.g. not exactly one "version" line) becomes a reported error here,
+    // not an uncaught throw mid-write that leaves the release half-done.
+    const writes = [];
+    for (const entry of plan) {
+        const dir = path.join(PACKAGES_DIR, entry.folder);
+        const changelogPath = path.join(dir, CHANGELOG);
+        const manifestPath = path.join(dir, "package.json");
+        try {
+            const changelogText = releaseChangelog(fs.readFileSync(changelogPath, "utf8"), entry.to, date);
+            const manifestText = replaceManifestVersion(fs.readFileSync(manifestPath, "utf8"), entry.to);
+            writes.push({ path: changelogPath, contents: changelogText }, { path: manifestPath, contents: manifestText });
+        } catch (error) {
+            errors.push(`${entry.name ?? entry.folder}: ${error.message}`);
+        }
+    }
+
+    // Phase 2: write only if every package in the plan computed cleanly — a
+    // half-rewritten release is worse than none.
+    if (errors.length === 0 && plan.length > 0 && !flags["dry-run"]) {
+        for (const write of writes) fs.writeFileSync(write.path, write.contents);
+    }
+
+    // The written state has to survive the same checks CI runs, before it is
+    // ever committed. Re-discover: the manifests on disk have just changed.
+    // cmdValidate always prints its own report; capture it here so it can't
+    // interleave with (and corrupt) this command's own --json output, and
+    // fold any failure text into our own errors instead of discarding it.
+    //
+    // Gated on `!flags["dry-run"]` deliberately, not as an oversight: a dry
+    // run writes nothing, so there is nothing on disk to validate. The
+    // asymmetry is real — a `--dry-run` plan cannot surface a validation
+    // failure the real run would hit — and accepted as the cost of "dry-run
+    // touches nothing."
+    if (errors.length === 0 && plan.length > 0 && !flags["dry-run"]) {
+        const only = plan.map((entry) => entry.folder);
+        const captured = [];
+        const originalLog = console.log;
+        let code;
+        console.log = (...args) => captured.push(args.join(" "));
+        try {
+            code = cmdValidate(discoverPackages(), { only });
+        } finally {
+            console.log = originalLog;
+        }
+        if (code !== 0) {
+            errors.push("the prepared packages do not validate. Inspect the diff before committing:");
+            for (const line of captured) if (line.trim() !== "") errors.push(line);
+        }
+    }
+
+    const report = { command: "prepare", date, dryRun: flags["dry-run"] === true, plan, errors };
+
+    if (flags.json) {
+        console.log(JSON.stringify(report, null, 2));
+    } else {
+        for (const error of errors) console.error(`error: ${error}`);
+        if (plan.length === 0) {
+            console.log("nothing to prepare — no package has entries under `## [Unreleased]`.");
+        } else {
+            for (const entry of plan) {
+                console.log(`  ${entry.name ?? entry.folder}  ${entry.from} → ${entry.to}   (${entry.reason})`);
+            }
+            if (errors.length === 0) {
+                console.log(
+                    `\n${plan.length} package(s) ${flags["dry-run"] ? "would be prepared" : "prepared"} for ${date}.`,
+                );
+                if (!flags["dry-run"]) {
+                    console.log("Review the diff, commit it, and open a pull request into `dev`.");
+                }
+            } else {
+                // Phase 1 collected errors, so the write loop above never ran —
+                // nothing on disk changed. Say so plainly; on a terminal stdout
+                // and stderr interleave, and this is the line the user sees last.
+                console.log(`\nnothing written — ${plan.length} package(s) would have been prepared for ${date}.`);
+            }
+        }
+    }
+
+    return errors.length > 0 ? 1 : 0;
+}
+
 // ---------------------------------------------------------------- entry
 
 function fail(message) {
@@ -344,15 +651,18 @@ commands:
   validate            check every publishable package is releasable
   pack                write tarballs (verification aid, not a distribution channel)
   tag                 create <package-name>/<version> tags for new versions
+  prepare             turn each [Unreleased] section into a new version
 
 options:
   --json              machine-readable output
   --only <pkg>        limit to one package, by id or folder name; repeatable
   --out <dir>         pack destination (default: PackageExports)
   --push              tag: push the created tags to origin (this is the publish)
-  --dry-run           tag: report what would happen, change nothing
-  --allow-dirty       tag: permit a dirty working tree
-  --allow-branch      tag: permit a branch other than ${RELEASE_BRANCH}`);
+  --dry-run           tag/prepare: report what would happen, change nothing
+  --allow-dirty       tag/prepare: permit a dirty working tree
+  --allow-branch      tag/prepare: permit a branch other than ${RELEASE_BRANCH}
+  --bump <pkg>=<part> prepare: force major|minor|patch for one package; repeatable
+  --date <YYYY-MM-DD> prepare: the date written into the version heading`);
     return 2;
 }
 
@@ -366,25 +676,52 @@ function parseArgs(argv) {
             continue;
         }
         const key = arg.slice(2);
-        if (key === "out") flags[key] = argv[++i];
-        else if (key === "only") (flags.only ??= []).push(argv[++i]);
-        else flags[key] = true;
+        if (key === "out" || key === "date") {
+            const value = argv[++i];
+            if (value === undefined || value.startsWith("--")) throw new Error(`--${key} requires a value`);
+            flags[key] = value;
+        } else if (key === "only") {
+            const value = argv[++i];
+            if (value === undefined || value.startsWith("--")) throw new Error("--only requires a value");
+            (flags.only ??= []).push(value);
+        } else if (key === "bump") {
+            const value = argv[++i];
+            if (value === undefined || value.startsWith("--")) throw new Error("--bump requires a value");
+            (flags.bump ??= []).push(value);
+        } else flags[key] = true;
     }
     return { command: positional[0], flags };
 }
 
-const { command, flags } = parseArgs(process.argv.slice(2));
-if (!command) process.exit(usage());
+// Importable for tests: the dispatch runs only when this file is the entry
+// point, not when Tools/upm-release.test.mjs imports the helpers above.
+const invokedDirectly = process.argv[1] !== undefined
+    && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 
-const packages = discoverPackages();
-switch (command) {
-    case "validate":
-        process.exit(cmdValidate(packages, flags));
-    case "pack":
-        process.exit(cmdPack(packages, flags));
-    case "tag":
-        process.exit(cmdTag(packages, flags));
-    default:
-        console.error(`error: unknown command \`${command}\``);
-        process.exit(usage());
+if (invokedDirectly) main();
+
+function main() {
+    let command, flags;
+    try {
+        ({ command, flags } = parseArgs(process.argv.slice(2)));
+    } catch (error) {
+        console.error(`error: ${error.message}`);
+        process.exit(2);
+    }
+    if (!command) process.exit(usage());
+
+    const packages = discoverPackages();
+    switch (command) {
+        case "validate":
+            process.exit(cmdValidate(packages, flags));
+        case "pack":
+            process.exit(cmdPack(packages, flags));
+        case "tag":
+            process.exit(cmdTag(packages, flags));
+        case "prepare":
+            process.exit(cmdPrepare(packages, flags));
+        default:
+            console.error(`error: unknown command \`${command}\``);
+            process.exit(usage());
+    }
 }
