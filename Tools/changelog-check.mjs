@@ -1,17 +1,25 @@
 #!/usr/bin/env node
-// Guards each package's CHANGELOG on a pull request, with two rules:
+// Guards each package's CHANGELOG on a pull request, with four rules:
 //
-//   missing-entry    A change to a package's shipped code must be recorded
-//                    under that package's `## [Unreleased]` heading.
-//   frozen-section   A version section whose `<package-name>/<version>` tag
-//                    already exists must not be edited — it is a published
-//                    record of what shipped.
-//   empty-unreleased A `## [Unreleased]` heading with no entries under it is
-//                    noise. Delete the heading, or put something under it.
-//                    Checked repo-wide at the head commit, not just on the
-//                    packages this pull request touched. No waiver.
+//   missing-entry         A change to a package's shipped code must be
+//                         recorded under that package's `## [Unreleased]`
+//                         heading.
+//   frozen-section        A version section whose `<package-name>/<version>`
+//                         tag already exists must not be edited — it is a
+//                         published record of what shipped.
+//   empty-unreleased      A `## [Unreleased]` heading with no entries under it
+//                         is noise. Delete the heading, or put something under
+//                         it. Checked repo-wide at the head commit, not just
+//                         on the packages this pull request touched. No waiver.
+//   unpromoted-unreleased On a pull request into the release branch, no
+//                         `## [Unreleased]` heading may survive at all:
+//                         `upm-release.mjs prepare` turns each one into a
+//                         version heading, and a heading that is still there
+//                         means that step was skipped. Repo-wide, and inert on
+//                         every other base branch. No waiver.
 //
-//     node Tools/changelog-check.mjs --base <ref> --head <ref> [--json]
+//     node Tools/changelog-check.mjs --base <ref> --head <ref>
+//                                    [--base-branch <name>] [--json]
 //
 // Shipped code means anything under `Runtime/` or `Editor/`, plus the
 // `package.json`. Tests, samples, documentation, Markdown, and `.meta` files
@@ -47,6 +55,10 @@ const SUB_HEADING = /^#{3,}\s/;
 
 const DEFAULT_BASE = "dev";
 const DEFAULT_HEAD = "HEAD";
+
+// The branch a release lands on. `--base-branch` is the pull request's base
+// *branch name*, which `--base` (a ref, usually a SHA in CI) cannot supply.
+const RELEASE_BRANCH = "master";
 
 function git(...args) {
     const result = spawnSync("git", args, { cwd: ROOT, encoding: "utf8" });
@@ -242,17 +254,30 @@ function frozenProblem(folder, name, base, head, tags) {
 }
 
 /**
- * Rule 3. A `## [Unreleased]` heading exists only while it has entries under
- * it. Unlike the other two rules this one is repo-wide rather than diff-scoped:
- * it walks every publishable package at the head commit. An empty heading is
- * noise wherever it sits, and every package was cleaned before the rule landed,
- * so nobody is blamed for someone else's leftover.
+ * Rules 3 and 4, which share one walk because they ask the same question of
+ * the same files. Unlike the first two rules these are repo-wide rather than
+ * diff-scoped: every publishable package at the head commit is inspected, not
+ * just the ones this pull request touched.
+ *
+ * Rule 3, `empty-unreleased`: a `## [Unreleased]` heading exists only while it
+ * has entries under it. An empty heading is noise wherever it sits, and every
+ * package was cleaned before the rule landed, so nobody is blamed for someone
+ * else's leftover.
+ *
+ * Rule 4, `unpromoted-unreleased`: on a pull request into the release branch
+ * the heading must be gone entirely — `upm-release.mjs prepare` rewrites each
+ * one into a version heading, so a survivor means the release was assembled
+ * without that step and the work would land on the release branch still
+ * labelled unreleased. It supersedes rule 3 rather than compounding with it:
+ * an empty heading is unpromoted too, and one remedy deserves one diagnostic.
+ *
+ * Returns `{ folder, name, rule }` per offending package.
  */
-function emptyUnreleasedFolders(head) {
+function unreleasedProblems(head, releasePullRequest) {
     const listing = gitOrNull("ls-tree", "--name-only", "-z", `${head}:${PACKAGES_DIR}`);
     if (listing === null) return [];
 
-    const folders = [];
+    const found = [];
     for (const folder of listing.split("\0").filter(Boolean)) {
         const manifest = manifestAt(head, folder);
         if (manifest === null || manifest.private === true) continue;
@@ -260,9 +285,12 @@ function emptyUnreleasedFolders(head) {
         if (text === null) continue;
         const section = unreleasedSection(text);
         if (section === null) continue; // No heading is the healthy state.
-        if (entriesOf(section).length === 0) folders.push({ folder, name: manifest.name ?? null });
+
+        const entry = { folder, name: manifest.name ?? null };
+        if (releasePullRequest) found.push({ ...entry, rule: "unpromoted-unreleased" });
+        else if (entriesOf(section).length === 0) found.push({ ...entry, rule: "empty-unreleased" });
     }
-    return folders;
+    return found;
 }
 
 function inspect(folder, touched, base, head, tags, waived) {
@@ -311,6 +339,8 @@ const EXPLANATIONS = {
         `edits ${problem.versions.map((v) => `\`${v}\``).join(", ")}, which ${problem.versions.length > 1 ? "have" : "has"} already been tagged and published. Released history must not change — put the note under \`## [Unreleased]\` instead.`,
     "empty-unreleased": () =>
         "has a `## [Unreleased]` heading with nothing under it. Delete the heading, or put an entry under it. (A bare `### Added` is not an entry.)",
+    "unpromoted-unreleased": () =>
+        `still has a \`## [Unreleased]\` heading, which must not reach \`${RELEASE_BRANCH}\`. Run \`node Tools/upm-release.mjs prepare\` on the source branch to turn it into a version heading, then push.`,
 };
 
 function render(report) {
@@ -360,15 +390,17 @@ function writeStepSummary(report) {
 // ------------------------------------------------------------------------ main
 
 function parseArgs(argv) {
-    const flags = { base: DEFAULT_BASE, head: DEFAULT_HEAD, json: false };
+    const flags = { base: DEFAULT_BASE, head: DEFAULT_HEAD, baseBranch: null, json: false };
+    const named = { "--base": "base", "--head": "head", "--base-branch": "baseBranch" };
     for (let i = 0; i < argv.length; i += 1) {
         const arg = argv[i];
         if (arg === "--json") flags.json = true;
         else if (arg === "--help" || arg === "-h") flags.help = true;
-        else if (arg === "--base" || arg === "--head") {
+        else if (named[arg] !== undefined) {
             const value = argv[i + 1];
-            if (value === undefined) fail(`${arg} needs a value`);
-            flags[arg.slice(2)] = value;
+            // An absent value would otherwise swallow the next flag as its own.
+            if (value === undefined || value.startsWith("--")) fail(`${arg} needs a value`);
+            flags[named[arg]] = value;
             i += 1;
         } else fail(`unknown argument: ${arg}`);
     }
@@ -378,16 +410,20 @@ function parseArgs(argv) {
 function usage() {
     console.log(
         [
-            "Usage: node Tools/changelog-check.mjs [--base <ref>] [--head <ref>] [--json]",
+            "Usage: node Tools/changelog-check.mjs [--base <ref>] [--head <ref>]",
+            "                                     [--base-branch <name>] [--json]",
             "",
-            `  --base   Branch or commit the pull request merges into (default: ${DEFAULT_BASE}).`,
-            `  --head   Branch or commit the pull request proposes (default: ${DEFAULT_HEAD}).`,
-            "  --json   Emit the report as JSON instead of text.",
+            `  --base          Branch or commit the pull request merges into (default: ${DEFAULT_BASE}).`,
+            `  --head          Branch or commit the pull request proposes (default: ${DEFAULT_HEAD}).`,
+            `  --base-branch   The base's branch name. Only \`${RELEASE_BRANCH}\` changes anything: it`,
+            "                  turns on `unpromoted-unreleased`, the release gate.",
+            "  --json          Emit the report as JSON instead of text.",
             "",
             "Set PR_LABELS to a JSON array to honour the waiver labels:",
             ...Object.entries(WAIVER_LABELS).map(([rule, label]) => `  ${rule} → ${label}`),
             "",
             "`empty-unreleased` has no waiver: delete the heading or fill it in.",
+            "`unpromoted-unreleased` has none either: run `upm-release.mjs prepare`.",
         ].join("\n"),
     );
 }
@@ -398,7 +434,17 @@ if (flags.help) {
     process.exit(0);
 }
 
-const report = { ok: true, base: flags.base, head: flags.head, waived: waivedLabels(), packages: [] };
+const isReleasePullRequest = flags.baseBranch === RELEASE_BRANCH;
+
+const report = {
+    ok: true,
+    base: flags.base,
+    head: flags.head,
+    baseBranch: flags.baseBranch,
+    releasePullRequest: isReleasePullRequest,
+    waived: waivedLabels(),
+    packages: [],
+};
 
 let from;
 try {
@@ -424,18 +470,27 @@ for (const [folder, touched] of [...packagesTouched(files)].sort((a, b) => a[0].
 }
 
 // Repo-wide, so a package the pull request never touched still reports.
-for (const { folder, name } of emptyUnreleasedFolders(flags.head)) {
+for (const { folder, name, rule } of unreleasedProblems(flags.head, isReleasePullRequest)) {
+    // A package added in this pull request carries the empty [Unreleased]
+    // heading every new package starts with, so `empty-unreleased` spares it —
+    // the same "is this package new" test inspect() uses, rather than a second
+    // derivation of it. `unpromoted-unreleased` grants no such exemption: a
+    // package crossing into the release branch for the first time still has to
+    // name the version it publishes as.
+    const isNew = manifestAt(from, folder) === null;
+    const exempt = isNew && rule === "empty-unreleased";
+
     const existing = byFolder.get(folder);
     if (existing === undefined) {
-        // Same "is this package new" test inspect() uses, so a package added
-        // in this pull request with a still-empty [Unreleased] heading isn't
-        // flagged — there is nothing to skip flagging on top of.
-        const isNew = manifestAt(from, folder) === null;
-        const entry = { folder, name, files: [], problems: isNew ? [] : [{ rule: "empty-unreleased" }] };
-        if (isNew) entry.skipped = "new";
+        const entry = { folder, name, files: [], problems: exempt ? [] : [{ rule }] };
+        if (exempt) entry.skipped = "new";
         byFolder.set(folder, entry);
-    } else if (existing.skipped === undefined) {
-        existing.problems.push({ rule: "empty-unreleased" });
+    } else if (!exempt) {
+        // (Private packages never reach here — the sweep drops them.)
+        // A reported problem outranks the "new" note, which would otherwise
+        // render in its place and hide it.
+        delete existing.skipped;
+        existing.problems.push({ rule });
     }
 }
 
