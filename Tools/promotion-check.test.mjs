@@ -18,7 +18,15 @@ const SCRIPT = path.join(HERE, "promotion-check.mjs");
 function run(env = {}, args = ["--json"]) {
     const result = spawnSync(process.execPath, [SCRIPT, ...args], {
         encoding: "utf8",
-        env: { ...process.env, GITHUB_EVENT_NAME: "", GITHUB_BASE_REF: "", GITHUB_HEAD_REF: "", ...env },
+        env: {
+            ...process.env,
+            GITHUB_EVENT_NAME: "",
+            GITHUB_BASE_REF: "",
+            GITHUB_HEAD_REF: "",
+            PR_HEAD_REPO: "",
+            GITHUB_REPOSITORY: "",
+            ...env,
+        },
     });
     return { status: result.status, stdout: result.stdout, stderr: result.stderr };
 }
@@ -33,9 +41,36 @@ test("a pull request from dev into master is allowed", () => {
         GITHUB_EVENT_NAME: "pull_request",
         GITHUB_BASE_REF: "master",
         GITHUB_HEAD_REF: "dev",
+        PR_HEAD_REPO: "jahandideh-iman/unitypackages",
+        GITHUB_REPOSITORY: "jahandideh-iman/unitypackages",
     });
     assert.equal(status, 0);
     assert.equal(r.ok, true);
+});
+
+test("a fork's branch named dev into master is refused", () => {
+    const { status, report: r } = report({
+        GITHUB_EVENT_NAME: "pull_request",
+        GITHUB_BASE_REF: "master",
+        GITHUB_HEAD_REF: "dev",
+        PR_HEAD_REPO: "someone-else/unitypackages",
+        GITHUB_REPOSITORY: "jahandideh-iman/unitypackages",
+    });
+    assert.equal(status, 1);
+    assert.equal(r.ok, false);
+    assert.match(r.reason, /fork/);
+});
+
+test("a missing head repository into master is refused, not waved through", () => {
+    const { status, report: r } = report({
+        GITHUB_EVENT_NAME: "pull_request",
+        GITHUB_BASE_REF: "master",
+        GITHUB_HEAD_REF: "dev",
+        PR_HEAD_REPO: "",
+        GITHUB_REPOSITORY: "jahandideh-iman/unitypackages",
+    });
+    assert.equal(status, 1);
+    assert.equal(r.ok, false);
 });
 
 test("a pull request from a feature branch into master is refused", () => {
@@ -80,6 +115,8 @@ test("refs/heads/ prefixes are tolerated", () => {
         GITHUB_EVENT_NAME: "pull_request",
         GITHUB_BASE_REF: "refs/heads/master",
         GITHUB_HEAD_REF: "refs/heads/dev",
+        PR_HEAD_REPO: "jahandideh-iman/unitypackages",
+        GITHUB_REPOSITORY: "jahandideh-iman/unitypackages",
     });
     assert.equal(status, 0);
 });

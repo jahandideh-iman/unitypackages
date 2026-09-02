@@ -427,7 +427,13 @@ for (const [folder, touched] of [...packagesTouched(files)].sort((a, b) => a[0].
 for (const { folder, name } of emptyUnreleasedFolders(flags.head)) {
     const existing = byFolder.get(folder);
     if (existing === undefined) {
-        byFolder.set(folder, { folder, name, files: [], problems: [{ rule: "empty-unreleased" }] });
+        // Same "is this package new" test inspect() uses, so a package added
+        // in this pull request with a still-empty [Unreleased] heading isn't
+        // flagged — there is nothing to skip flagging on top of.
+        const isNew = manifestAt(from, folder) === null;
+        const entry = { folder, name, files: [], problems: isNew ? [] : [{ rule: "empty-unreleased" }] };
+        if (isNew) entry.skipped = "new";
+        byFolder.set(folder, entry);
     } else if (existing.skipped === undefined) {
         existing.problems.push({ rule: "empty-unreleased" });
     }

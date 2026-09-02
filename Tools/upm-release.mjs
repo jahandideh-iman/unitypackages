@@ -583,6 +583,12 @@ function cmdPrepare(packages, flags) {
     // cmdValidate always prints its own report; capture it here so it can't
     // interleave with (and corrupt) this command's own --json output, and
     // fold any failure text into our own errors instead of discarding it.
+    //
+    // Gated on `!flags["dry-run"]` deliberately, not as an oversight: a dry
+    // run writes nothing, so there is nothing on disk to validate. The
+    // asymmetry is real — a `--dry-run` plan cannot surface a validation
+    // failure the real run would hit — and accepted as the cost of "dry-run
+    // touches nothing."
     if (errors.length === 0 && plan.length > 0 && !flags["dry-run"]) {
         const only = plan.map((entry) => entry.folder);
         const captured = [];
@@ -612,11 +618,18 @@ function cmdPrepare(packages, flags) {
             for (const entry of plan) {
                 console.log(`  ${entry.name ?? entry.folder}  ${entry.from} → ${entry.to}   (${entry.reason})`);
             }
-            console.log(
-                `\n${plan.length} package(s) ${flags["dry-run"] ? "would be prepared" : "prepared"} for ${date}.`,
-            );
-            if (!flags["dry-run"]) {
-                console.log("Review the diff, commit it, and open a pull request into `dev`.");
+            if (errors.length === 0) {
+                console.log(
+                    `\n${plan.length} package(s) ${flags["dry-run"] ? "would be prepared" : "prepared"} for ${date}.`,
+                );
+                if (!flags["dry-run"]) {
+                    console.log("Review the diff, commit it, and open a pull request into `dev`.");
+                }
+            } else {
+                // Phase 1 collected errors, so the write loop above never ran —
+                // nothing on disk changed. Say so plainly; on a terminal stdout
+                // and stderr interleave, and this is the line the user sees last.
+                console.log(`\nnothing written — ${plan.length} package(s) would have been prepared for ${date}.`);
             }
         }
     }
@@ -665,15 +678,15 @@ function parseArgs(argv) {
         const key = arg.slice(2);
         if (key === "out" || key === "date") {
             const value = argv[++i];
-            if (value === undefined) throw new Error(`--${key} requires a value`);
+            if (value === undefined || value.startsWith("--")) throw new Error(`--${key} requires a value`);
             flags[key] = value;
         } else if (key === "only") {
             const value = argv[++i];
-            if (value === undefined) throw new Error("--only requires a value");
+            if (value === undefined || value.startsWith("--")) throw new Error("--only requires a value");
             (flags.only ??= []).push(value);
         } else if (key === "bump") {
             const value = argv[++i];
-            if (value === undefined) throw new Error("--bump requires a value");
+            if (value === undefined || value.startsWith("--")) throw new Error("--bump requires a value");
             (flags.bump ??= []).push(value);
         } else flags[key] = true;
     }

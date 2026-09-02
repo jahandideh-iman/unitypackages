@@ -305,6 +305,45 @@ test("a manifest that can't be rewritten reports an error and leaves every packa
     assert.ok(read(repo, "Alpha", "CHANGELOG.md").includes("[Unreleased]"));
 });
 
+test("a phase-1 error means the non-JSON summary says nothing was written, not that it prepared", (t) => {
+    const ambiguousManifest = JSON.stringify(
+        {
+            name: "com.arman.beta",
+            version: "0.1.0",
+            displayName: "Beta",
+            description: "A real description.",
+            unity: "6000.0",
+            license: "MIT",
+            nested: { version: "9.9.9" },
+        },
+        null,
+        2,
+    ).replace(/\n/g, "\r\n");
+    const repo = makeRepo(t, {
+        Alpha: ALPHA,
+        Beta: {
+            "package.json": ambiguousManifest,
+            "CHANGELOG.md": changelog("### Added\r\n\r\n- A thing.\r\n"),
+            "LICENSE.md": "MIT\r\n",
+        },
+    });
+    const result = prepare(repo, ["--date", "2026-09-02"]);
+    assert.equal(result.status, 1);
+    // The truth, not a claim that anything was prepared.
+    assert.match(result.stdout, /nothing written/);
+    assert.doesNotMatch(result.stdout, /\d+ package\(s\) prepared for/);
+    // Same atomicity guarantee as the JSON path: nothing on disk changed.
+    assert.match(read(repo, "Alpha", "package.json"), /"version": "0\.1\.0"/);
+    assert.ok(read(repo, "Alpha", "CHANGELOG.md").includes("[Unreleased]"));
+});
+
+test("--only rejects a value that looks like a flag", (t) => {
+    const repo = makeRepo(t, { Alpha: ALPHA });
+    const result = prepare(repo, ["--only", "--json"]);
+    assert.equal(result.status, 2);
+    assert.match(result.stderr, /--only requires a value/);
+});
+
 test("--date and --bump as the final argument require a value", (t) => {
     const repo = makeRepo(t, { Alpha: ALPHA });
     const missingDate = prepare(repo, ["--date"]);

@@ -697,3 +697,20 @@ test("empty-unreleased: deleting an empty heading is what fixes it", (t) => {
     assert.equal(status, 0);
     assert.deepEqual(problemsFor(report, "Alpha"), []);
 });
+
+// A package added in the pull request, seeded with the empty [Unreleased]
+// heading every new package starts with, must not trip empty-unreleased —
+// it is new, the same as inspect()'s own "skipped: new" packages, and the
+// repo-wide sweep in emptyUnreleasedFolders() must agree rather than
+// re-deriving "is this package new" a second way.
+test("empty-unreleased: a package new in the pull request is not reported", (t) => {
+    const repo = makeRepo(t, alphaBase(), {
+        "Packages/Beta/package.json": JSON.stringify({ name: "com.arman.beta", version: "0.1.0" }, null, 2),
+        "Packages/Beta/CHANGELOG.md": changelog(),
+        "Packages/Beta/README.md": "# Beta\n",
+    });
+    const { status, report } = check(repo);
+    assert.equal(status, 0);
+    assert.equal(skipOf(report, "Beta"), "new");
+    assert.deepEqual(problemsFor(report, "Beta"), []);
+});
