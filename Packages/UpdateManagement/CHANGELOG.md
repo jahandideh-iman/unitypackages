@@ -17,7 +17,7 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- An `IUpdatable` whose `UpdateTime` throws no longer aborts the rest of its channel's tick. It stayed registered, so the exception repeated every frame and the channel never advanced again; it is now unregistered and the remaining updatables carry on.
+- An `IUpdatable` whose `UpdateTime` throws no longer aborts the tick. The exception propagated out of `AdvanceTime`, abandoning the rest of that channel and every channel after it, and it repeated on every later frame. It is now caught and passed to `Debug.LogException`, so the remaining updatables carry on. The offender stays registered and is ticked again on each later frame, so it keeps throwing until the consumer unregisters it.
 
 ## [0.2.0] - 2026-09-02
 
