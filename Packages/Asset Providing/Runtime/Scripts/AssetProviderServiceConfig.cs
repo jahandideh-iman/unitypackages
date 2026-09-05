@@ -3,7 +3,7 @@
 namespace Arman.AssetProviding
 {
     [CreateAssetMenu(menuName = ContextMenuConsts.ROOT_CATEGORY + "Asset Provider Service Config")]
-    public class BasicAssetProviderServiceConfig : ScriptableObject
+    public class AssetProviderServiceConfig : ScriptableObject
     {
         [SerializeField] AssetProviderConfig[] syncProviders;
         [SerializeField] AssetProviderConfig[] asyncProviders;
