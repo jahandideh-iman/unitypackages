@@ -1,6 +1,6 @@
 ﻿
 using Arman.InventorySystem;
-using Arman.Mocks.Game.InventorySystem;
+using Moq;
 using NUnit.Framework;
 
 
@@ -68,18 +68,19 @@ namespace Arman.InventorySystem.Tests
         [Test]
         public void ChangingTheValueOfAnItemShouldUseTheDefinedConstaintOnThatItem()
         {
-            var mockConstraint = new MockInventoryItemConstraint();
+            var constraint = new Mock<IInventoryItemConstraint>();
+            constraint.Setup(c => c.ApplyTo(It.IsAny<int>())).Returns<int>(value => value);
 
-            inventory.SetConstraint(itemA, mockConstraint);
+            inventory.SetConstraint(itemA, constraint.Object);
 
             inventory.SetNumberOf(itemA, 5);
-            Assert.That(mockConstraint.givenValue, Is.EqualTo(5));
+            constraint.Verify(c => c.ApplyTo(5), Times.Once);
 
             inventory.Increase(itemA, 3);
-            Assert.That(mockConstraint.givenValue, Is.EqualTo(5 +3));
+            constraint.Verify(c => c.ApplyTo(5 + 3), Times.Once);
 
             inventory.Decrease(itemA, 1);
-            Assert.That(mockConstraint.givenValue, Is.EqualTo(5 + 3 - 1));
+            constraint.Verify(c => c.ApplyTo(5 + 3 - 1), Times.Once);
         }
 
         [Test]
