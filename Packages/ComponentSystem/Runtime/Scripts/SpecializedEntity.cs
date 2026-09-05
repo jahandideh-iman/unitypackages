@@ -3,9 +3,9 @@ using System.Linq;
 
 namespace Arman.ComponentSystem
 {
-    public class BasicSpecializedEntity<T> : ISpecializedEntity<T> where T :IComponent
+    public class SpecializedEntity<T> : ISpecializedEntity<T> where T :IComponent
     {
-        BasicEntity basicEntity = new BasicEntity();
+        Entity basicEntity = new Entity();
 
         List<T> compList = new List<T>();
 

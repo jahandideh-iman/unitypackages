@@ -9,13 +9,13 @@ namespace Arman.ComponentSystem.Tests
     class ComponentParent : IComponent { };
     class ComponentChild : ComponentParent { };
 
-    public class BasicEntityTest 
+    public class EntityTest 
     {
 
         [Test]
         public void HasTheAddedComponents()
         {
-            var entity = new BasicEntity();
+            var entity = new Entity();
 
             var componentA = new ComponentA();
             var componentB = new ComponentB();
@@ -30,7 +30,7 @@ namespace Arman.ComponentSystem.Tests
         [Test]
         public void ShouldFindComponentByParentType()
         {
-            var entity = new BasicEntity();
+            var entity = new Entity();
 
             var componentChild = new ComponentChild();
 

@@ -5,11 +5,11 @@
         void TryCache(IComponent component);
     }
 
-    public class CacheableBasicEntity<T> : BasicEntity where T : ICache
+    public class CacheableEntity<T> : Entity where T : ICache
     {
         readonly T cache;
 
-        public CacheableBasicEntity(T cache)
+        public CacheableEntity(T cache)
         {
             this.cache = cache;
         }

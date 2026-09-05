@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Arman.ComponentSystem.Tests
 {
-    public class CacheableBasicEntityTest
+    public class CacheableEntityTest
     {
         class CacheMock : ICache
         {
@@ -18,7 +18,7 @@ namespace Arman.ComponentSystem.Tests
         [Test]
         public void AddingComponentShouldCallTryCache()
         {
-            var entity = new CacheableBasicEntity<CacheMock>(new CacheMock());
+            var entity = new CacheableEntity<CacheMock>(new CacheMock());
 
             entity.AddComponents(
                 new ComponentA(),

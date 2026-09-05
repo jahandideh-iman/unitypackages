@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Arman.ComponentSystem
 {
-    public class BasicEntity : IEntity
+    public class Entity : IEntity
     {
         IComponent[] compArray = new IComponent[0];
         List<IComponent> compList = new List<IComponent>(32);
