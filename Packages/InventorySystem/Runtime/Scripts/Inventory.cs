@@ -2,7 +2,7 @@
 
 namespace Arman.InventorySystem
 {
-    public class BasicInventory<T> : IInventory<T> where T : IInventoryItem
+    public class Inventory<T> : IInventory<T> where T : IInventoryItem
     {
         class EmptyConstraint : IInventoryItemConstraint
         {

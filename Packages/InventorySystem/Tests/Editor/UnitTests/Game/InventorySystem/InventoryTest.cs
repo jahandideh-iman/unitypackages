@@ -7,20 +7,20 @@ using NUnit.Framework;
 namespace Arman.InventorySystem.Tests
 {
 
-    public class BasicInventoryTest
+    public class InventoryTest
     {
         public class TestItemType : IInventoryItem
         { }
 
 
-        BasicInventory<TestItemType> inventory;
+        Inventory<TestItemType> inventory;
         TestItemType itemA;
         TestItemType itemB;
 
         [SetUp]
         public void Setup()
         {
-            inventory = new BasicInventory<TestItemType>();
+            inventory = new Inventory<TestItemType>();
             itemA = new TestItemType();
             itemB = new TestItemType();
         }
