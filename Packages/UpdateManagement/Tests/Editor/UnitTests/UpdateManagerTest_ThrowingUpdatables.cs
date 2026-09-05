@@ -1,6 +1,7 @@
 using System;
 using System.Text.RegularExpressions;
 using Arman.PackageBasics;
+using Moq;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -24,17 +25,18 @@ namespace Arman.UpdateManagement.Tests
             channel = new NamedChannel("Channel");
         }
 
-        static UpdatableMock ThrowingUpdatable()
+        static Mock<IUpdatable> ThrowingUpdatable()
         {
-            var throwing = new UpdatableMock();
-            throwing.onUpdateAction = _ => throw new InvalidOperationException(ThrownMessage);
+            var throwing = new Mock<IUpdatable>();
+            throwing.Setup(updatable => updatable.UpdateTime(It.IsAny<float>()))
+                .Throws(new InvalidOperationException(ThrownMessage));
             return throwing;
         }
 
         [Test]
         public void AdvancingTimeShouldNotPropagateAnExceptionFromAnUpdatable()
         {
-            manager.RegisterUpdatable(ThrowingUpdatable(), channel);
+            manager.RegisterUpdatable(ThrowingUpdatable().Object, channel);
 
             LogAssert.Expect(LogType.Exception, ExpectedLog);
 
@@ -44,7 +46,7 @@ namespace Arman.UpdateManagement.Tests
         [Test]
         public void AnExceptionFromAnUpdatableShouldBeLogged()
         {
-            manager.RegisterUpdatable(ThrowingUpdatable(), channel);
+            manager.RegisterUpdatable(ThrowingUpdatable().Object, channel);
 
             LogAssert.Expect(LogType.Exception, ExpectedLog);
 
@@ -54,21 +56,21 @@ namespace Arman.UpdateManagement.Tests
         [Test]
         public void AThrowingUpdatableShouldNotStopTheRestOfTheChannelFromUpdating()
         {
-            var wellBehaved = new UpdatableMock();
+            var wellBehaved = new Mock<IUpdatable>();
 
             // Registered on both sides of the offender: the channel is walked back to
             // front, so one of these would be skipped whichever order it aborted in.
-            var first = new UpdatableMock();
-            manager.RegisterUpdatable(first, channel);
-            manager.RegisterUpdatable(ThrowingUpdatable(), channel);
-            manager.RegisterUpdatable(wellBehaved, channel);
+            var first = new Mock<IUpdatable>();
+            manager.RegisterUpdatable(first.Object, channel);
+            manager.RegisterUpdatable(ThrowingUpdatable().Object, channel);
+            manager.RegisterUpdatable(wellBehaved.Object, channel);
 
             LogAssert.Expect(LogType.Exception, ExpectedLog);
 
             manager.AdvanceTime(1f);
 
-            Assert.That(first.IsUpdated(), Is.True);
-            Assert.That(wellBehaved.IsUpdated(), Is.True);
+            first.Verify(updatable => updatable.UpdateTime(It.IsAny<float>()), Times.Once);
+            wellBehaved.Verify(updatable => updatable.UpdateTime(It.IsAny<float>()), Times.Once);
         }
 
         [Test]
@@ -76,13 +78,13 @@ namespace Arman.UpdateManagement.Tests
         {
             var throwing = ThrowingUpdatable();
 
-            manager.RegisterUpdatable(throwing, channel);
+            manager.RegisterUpdatable(throwing.Object, channel);
 
             LogAssert.Expect(LogType.Exception, ExpectedLog);
 
             manager.AdvanceTime(1f);
 
-            Assert.That(manager.Has(throwing), Is.True);
+            Assert.That(manager.Has(throwing.Object), Is.True);
         }
 
         [Test]
@@ -90,7 +92,7 @@ namespace Arman.UpdateManagement.Tests
         {
             var throwing = ThrowingUpdatable();
 
-            manager.RegisterUpdatable(throwing, channel);
+            manager.RegisterUpdatable(throwing.Object, channel);
 
             LogAssert.Expect(LogType.Exception, ExpectedLog);
             LogAssert.Expect(LogType.Exception, ExpectedLog);
@@ -100,19 +102,19 @@ namespace Arman.UpdateManagement.Tests
             manager.AdvanceTime(1f);
             manager.AdvanceTime(1f);
 
-            Assert.That(throwing.UpdateCallCount(), Is.EqualTo(3));
+            throwing.Verify(updatable => updatable.UpdateTime(It.IsAny<float>()), Times.Exactly(3));
         }
 
         [Test]
         public void AnUpdatableThatDoesNotThrowShouldStayRegistered()
         {
-            var wellBehaved = new UpdatableMock();
+            var wellBehaved = new Mock<IUpdatable>();
 
-            manager.RegisterUpdatable(wellBehaved, channel);
+            manager.RegisterUpdatable(wellBehaved.Object, channel);
             manager.AdvanceTime(1f);
 
-            Assert.That(manager.Has(wellBehaved), Is.True);
-            Assert.That(wellBehaved.UpdateCallCount(), Is.EqualTo(1));
+            Assert.That(manager.Has(wellBehaved.Object), Is.True);
+            wellBehaved.Verify(updatable => updatable.UpdateTime(It.IsAny<float>()), Times.Once);
         }
     }
 }
