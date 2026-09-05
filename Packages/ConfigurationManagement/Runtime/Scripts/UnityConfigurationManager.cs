@@ -7,7 +7,7 @@ namespace Arman.ConfigurationManagement
     {
         public UnityConfigurationMaster configurationMaster;
 
-        BasicConfigurationManager internalConfigManager = new BasicConfigurationManager();
+        ConfigurationManager internalConfigManager = new ConfigurationManager();
 
         public void Init()
         {

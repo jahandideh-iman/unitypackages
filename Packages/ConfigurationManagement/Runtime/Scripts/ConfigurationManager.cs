@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Arman.ConfigurationManagement
 {
-    public class BasicConfigurationManager : IConfigurationManager
+    public class ConfigurationManager : IConfigurationManager
     {
         private Dictionary<Type, IConfigurer> configurers = new Dictionary<Type, IConfigurer>();
 

@@ -43,10 +43,10 @@ namespace Arman.ConfigurationManagement.Tests
     }
 
 
-    public class BasicConfigurationManagerTest 
+    public class ConfigurationManagerTest 
     {
 
-        BasicConfigurationManager configManager;
+        ConfigurationManager configManager;
 
         FakeConfigurer<TypeA> configurerA;
         FakeConfigurer<TypeB> configurerB;
@@ -55,7 +55,7 @@ namespace Arman.ConfigurationManagement.Tests
         [SetUp]
         public void Setup()
         {
-            configManager = new BasicConfigurationManager();
+            configManager = new ConfigurationManager();
 
             configurerA = new FakeConfigurer<TypeA>();
             configurerB = new FakeConfigurer<TypeB>();

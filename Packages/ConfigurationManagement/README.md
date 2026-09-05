@@ -16,7 +16,7 @@ Namespace `Arman.ConfigurationManagement` (core types):
 | `IConfigurer` | `RegisterSelf(IConfigurationManager)` — a configurer adds itself to a manager. |
 | `IConfigurer<T>` | Adds `Configure(T entity)`. |
 | `IConfigurationManager` | `Register<T>`, `Configure<T>`, `Contains<T>`, `FindConfigurer<T>`, `RemoveConfigurer<T>`. |
-| `BasicConfigurationManager` | The plain C# manager; one configurer per target type. |
+| `ConfigurationManager` | The plain C# manager; one configurer per target type. |
 | `CompositeConfigurer<T>` | Groups several `IConfigurer<T>` and applies them in order. |
 | `DynamicConfigurer<T>` | Built from `Action<T>` delegates added with `AddConfigAction`. |
 
@@ -36,7 +36,7 @@ Configuring an object through a dynamic configurer:
 ```csharp
 using Arman.ConfigurationManagement;
 
-var configuration = new BasicConfigurationManager();
+var configuration = new ConfigurationManager();
 
 var enemyConfigurer = new DynamicConfigurer<Enemy>();
 enemyConfigurer.AddConfigAction(enemy => enemy.Health = 100);
