@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace Arman.PersistentDataManagement.Tests
 {
     [TestFixture]
-    public class BasicPersistentDataManagerTest_Loading : BasicPersistentDataManagerTestContext
+    public class PersistentDataManagerTest_Loading : PersistentDataManagerTestContext
     {
         protected PersistentDataSerializerMock serializerC;
 

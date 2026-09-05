@@ -4,9 +4,9 @@ using NUnit.Framework;
 
 namespace Arman.PersistentDataManagement.Tests
 {
-    public class BasicPersistentDataManagerTestContext
+    public class PersistentDataManagerTestContext
     {
-        protected BasicPersistentDataManager manager;
+        protected PersistentDataManager manager;
 
         // The collaborators the default manager was built with. A test that wants to
         // observe one of them builds a new manager, passing the other one through.
@@ -36,12 +36,12 @@ namespace Arman.PersistentDataManagement.Tests
             InternalSetup();
         }
 
-        protected static BasicPersistentDataManager CreateManager(
+        protected static PersistentDataManager CreateManager(
             IPersistentDataIOStreamFactory streamFactory,
             IPersistentDataWrapper dataWrapper,
             int saveVersion = 0)
         {
-            return new BasicPersistentDataManager(streamFactory, dataWrapper, saveVersion);
+            return new PersistentDataManager(streamFactory, dataWrapper, saveVersion);
         }
 
         protected virtual void InternalSetup()

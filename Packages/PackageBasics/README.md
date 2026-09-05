@@ -14,7 +14,7 @@ Namespace `Arman.Utility.Core`:
 | Type | Purpose |
 |---|---|
 | `IContainer<T>` | `Add`, `Contains`, `Find<U>`, `FindAll<U>`, `Items` — a heterogeneous bag queried by subtype. |
-| `BasicContainer<T>` | The in-memory implementation. |
+| `Container<T>` | The in-memory implementation. |
 | `IChannel` | An identity used to partition work into named groups. Requires value `Equals` / `GetHashCode`. |
 | `NamedChannel` | An `IChannel` identified by a string. |
 | `IDedChannel` | An `IChannel` identified by an integer. |
@@ -29,7 +29,7 @@ Namespace `NiceJson` — a bundled third-party JSON parser and serializer (`Json
 ```csharp
 using Arman.Utility.Core;
 
-var systems = new BasicContainer<IGameSystem>();
+var systems = new Container<IGameSystem>();
 systems.Add(new AudioSystem());
 systems.Add(new SaveSystem());
 
@@ -86,7 +86,7 @@ string json = payload.ToJsonString();
 - **`Find<U>()` returns the first assignable match** by linear scan — appropriate at the
   handful-of-items scale this is built for. With no match it returns `null`, so `U` should be a
   reference type; a value-type `U` throws on the cast instead.
-- **`BasicContainer<T>` does not deduplicate.** `Add` appends unconditionally, and `Find<U>()`
+- **`Container<T>` does not deduplicate.** `Add` appends unconditionally, and `Find<U>()`
   returns whichever matching item was added first.
 - **`NiceJson` is vendored third-party code** under `Runtime/ThirdParties/`. Keep it in its own
   namespace and leave it unmodified so it stays upgradable.

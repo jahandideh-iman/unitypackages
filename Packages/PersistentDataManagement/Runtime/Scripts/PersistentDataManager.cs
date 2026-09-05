@@ -6,7 +6,7 @@ namespace Arman.PersistentDataManagement
     using System;
     using SerializerContainer = IContainer<IPersistentDataSerializer>;
 
-    public class BasicPersistentDataManager : IPersistentDataManager
+    public class PersistentDataManager : IPersistentDataManager
     {
         // NOTE: The name (ToString) of the channel must never be used by other channel.
         // TODO: Find a way to guarantee that it never can happen.
@@ -21,14 +21,14 @@ namespace Arman.PersistentDataManagement
         IPersistentDataIOStreamFactory persistentDataIOStreamFactory;
         IPersistentDataWrapper persistentDataWrapper;
 
-        SerializerContainer allSerializers = new BasicContainer<IPersistentDataSerializer>();
+        SerializerContainer allSerializers = new Container<IPersistentDataSerializer>();
         Dictionary<IChannel, SerializerContainer> channelSerializers = new Dictionary<IChannel, SerializerContainer>();
 
         IChannel defaultChannel = new InternalChannel();
 
         int saveVersion;
 
-        public BasicPersistentDataManager(
+        public PersistentDataManager(
             IPersistentDataIOStreamFactory persistentDataIOStreamFactory,
             IPersistentDataWrapper persistentDataWrapper, 
             int saveVersion)
@@ -163,7 +163,7 @@ namespace Arman.PersistentDataManagement
         private void TryCreateChannelData(IChannel channel)
         {
             if (ChannelDoesNotExists(channel))
-                channelSerializers.Add(channel, new BasicContainer<IPersistentDataSerializer>());
+                channelSerializers.Add(channel, new Container<IPersistentDataSerializer>());
         }
 
     }

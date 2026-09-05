@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace Arman.PersistentDataManagement.Tests
 {
     [TestFixture]
-    public class BasicPersistentDataManagerTest_Saving : BasicPersistentDataManagerTestContext
+    public class PersistentDataManagerTest_Saving : PersistentDataManagerTestContext
     {
 
         [Test]

@@ -2,7 +2,7 @@
 
 namespace Arman.PackageBasics
 {
-    public class BasicContainer<T> : IContainer<T>
+    public class Container<T> : IContainer<T>
     {
         List<T> items = new List<T>();
         public U Find<U>() where U : T

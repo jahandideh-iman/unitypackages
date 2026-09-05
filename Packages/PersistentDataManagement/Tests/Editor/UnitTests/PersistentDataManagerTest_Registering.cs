@@ -3,7 +3,7 @@
 namespace Arman.PersistentDataManagement.Tests
 {
     [TestFixture]
-    public class BasicPersistentDataManagerTest_Registering : BasicPersistentDataManagerTestContext
+    public class PersistentDataManagerTest_Registering : PersistentDataManagerTestContext
     {
         [Test]
         public void HasTheRegisterSerializersWithoutChannel()

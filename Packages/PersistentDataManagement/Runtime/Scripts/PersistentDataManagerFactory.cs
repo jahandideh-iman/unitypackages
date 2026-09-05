@@ -10,7 +10,7 @@ namespace Arman.PersistentDataManagement
     {
         public static IPersistentDataManager CreateDefault(int saveVersion = 0)
         {
-            return new BasicPersistentDataManager(
+            return new PersistentDataManager(
                 new FileBasedPersistetDataIOStreamFactory(Application.persistentDataPath),
                 new JSONPersistentDataWrapper(),
                 saveVersion);

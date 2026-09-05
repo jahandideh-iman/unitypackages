@@ -5,6 +5,12 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Removed
+
+- `BasicContainer<T>`, renamed to `Container<T>`. It was the only implementation of `IContainer<T>`, so the `Basic` prefix distinguished it from nothing. **Breaking** — update references to the new name.
+
 ## [0.2.0] - 2026-09-02
 
 ### Added

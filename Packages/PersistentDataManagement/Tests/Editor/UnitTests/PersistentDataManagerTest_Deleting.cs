@@ -3,7 +3,7 @@ using NUnit.Framework;
 
 namespace Arman.PersistentDataManagement.Tests
 {
-    public class BasicPersistentDataManagerTest_Deleting : BasicPersistentDataManagerTestContext
+    public class PersistentDataManagerTest_Deleting : PersistentDataManagerTestContext
     {
         [Test]
         public void DeletingAChannelShouldUsePersistentDataStreamFactoryToDeleteTheChannel()
