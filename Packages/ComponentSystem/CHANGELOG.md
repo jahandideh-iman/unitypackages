@@ -5,6 +5,12 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Removed
+
+- `BasicEntity`, `BasicSpecializedEntity<T>` and `CacheableBasicEntity<T>`, renamed to `Entity`, `SpecializedEntity<T>` and `CacheableEntity<T>`. Each was the only implementation of its interface, so the `Basic` prefix distinguished it from nothing. **Breaking** — update references to the new names.
+
 ## [0.2.0] - 2026-09-02
 
 ### Added

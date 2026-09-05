@@ -11,8 +11,8 @@ namespace Arman.ShopManagement.Tests
         {
             var composite = new CompositeShopPackage();
 
-            var package1 = new ShopPackageMock();
-            var package2 = new ShopPackageMock();
+            var package1 = new FakeShopPackage();
+            var package2 = new FakeShopPackage();
 
             composite.Add(package1);
             composite.Add(package2);

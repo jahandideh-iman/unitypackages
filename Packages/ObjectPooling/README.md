@@ -12,8 +12,8 @@ Namespace `Arman.ObjectPooling`:
 |---|---|
 | `IPoolable` | `OnAcquired()` and `OnReleased()` — the pooled object's lifecycle hooks. |
 | `IObjectPool<T>` | `Acquire()`, `Release(obj)`, `Reserve(count)`, `Size()`. |
-| `BasicObjectPool<T>` | Abstract pool; subclasses supply `CreateObject`, `ActivateObject`, `DeactivateObject`. |
-| `UnityComponentObjectPool<T>` | `BasicObjectPool<T>` for `Component` prefabs; `SetComponentPrefab`, `SetPoolingContainer`. |
+| `ObjectPool<T>` | Abstract pool; subclasses supply `CreateObject`, `ActivateObject`, `DeactivateObject`. |
+| `UnityComponentObjectPool<T>` | `ObjectPool<T>` for `Component` prefabs; `SetComponentPrefab`, `SetPoolingContainer`. |
 | `MonobehaviorObjectPool<T>` | `MonoBehaviour` front-end over a `UnityComponentObjectPool<T>`. |
 | `ScriptableObjectPool<T>` | `ScriptableObject` front-end over the same, with `Setup(Transform)`. |
 
@@ -48,12 +48,12 @@ pool.Release(bullet);
 int idle = pool.Size();    // objects sitting in the pool, not objects in use
 ```
 
-Writing a pool for a plain C# type — subclass `BasicObjectPool<T>`:
+Writing a pool for a plain C# type — subclass `ObjectPool<T>`:
 
 ```csharp
 using Arman.ObjectPooling;
 
-public class ProjectilePool : BasicObjectPool<Projectile>
+public class ProjectilePool : ObjectPool<Projectile>
 {
     protected override Projectile CreateObject() => new Projectile();
     protected override void ActivateObject(Projectile obj) => obj.Enabled = true;

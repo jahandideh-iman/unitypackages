@@ -10,6 +10,7 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - `SetSaveVersion`, `SetPersistentDataWrapper` and `SetPersistentDataIOStreamFactory` on `IPersistentDataManager` and `BasicPersistentDataManager`, along with the parameterless `BasicPersistentDataManager()` constructor. A manager's collaborators are now supplied once through `BasicPersistentDataManager(IPersistentDataIOStreamFactory, IPersistentDataWrapper, int saveVersion)`, so it can no longer be left half-wired or have its wrapper swapped out between a save and the matching load. **Breaking** — construct the manager with its collaborators instead of setting them afterwards.
+- `BasicPersistentDataManager`, renamed to `PersistentDataManager`. It was the only implementation of `IPersistentDataManager`, so the `Basic` prefix distinguished it from nothing. **Breaking** — update references to the new name.
 
 ### Changed
 

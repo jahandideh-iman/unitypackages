@@ -17,7 +17,7 @@ Namespace `Arman.Foundation.Core.PersistentDataManagement`:
 | `IPersistentDataSerializer` | `Key()`, `SerializeTo(...)`, `DeserializeFrom(...)` — implemented by anything with state to save. |
 | `IPersistentDataWrapper` | The encoding. Splits into `IWritablePersistentDataWrapper` and `IReadablePersistentDataWrapper`. |
 | `IPersistentDataIOStreamFactory` | Supplies a `StreamReader`/`StreamWriter` per channel. |
-| `IPersistentDataManager` / `BasicPersistentDataManager` | Registration, `Save`/`SaveAll`, `Load`/`LoadAll`, `Delete`. |
+| `IPersistentDataManager` / `PersistentDataManager` | Registration, `Save`/`SaveAll`, `Load`/`LoadAll`, `Delete`. |
 | `MemoryBasedPersistetDataIOStreamFactory` | In-memory streams — for tests. |
 | `EmptyPersistentDataWrapper`, `EmptyPersistetDataIOStreamFactory` | No-op stand-ins. |
 
@@ -67,7 +67,7 @@ using Arman.Foundation.Unity.PersistentDataManagement;
 using Arman.Utility.Core;
 using UnityEngine;
 
-var manager = new BasicPersistentDataManager(
+var manager = new PersistentDataManager(
     new FileBasedPersistetDataIOStreamFactory(Application.persistentDataPath),
     new JSONPersistentDataWrapper(),
     saveVersion: 1);
@@ -117,7 +117,7 @@ public void DeserializeFrom(IReadablePersistentDataWrapper data)
 Swap the stream factory; nothing else changes:
 
 ```csharp
-var manager = new BasicPersistentDataManager(
+var manager = new PersistentDataManager(
     new MemoryBasedPersistetDataIOStreamFactory(),
     new JSONPersistentDataWrapper(),
     saveVersion: 1);
