@@ -1,7 +1,7 @@
 {
   "name": "com.arman.component-system",
   "displayName": "Component System",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "license": "MIT",
   "unity": "2019.3",
   "description": "A lightweight composition framework for building entities out of interchangeable components. Provides entity/component abstractions, specialized single-component entities, and a caching entity that avoids repeated component lookups.",
