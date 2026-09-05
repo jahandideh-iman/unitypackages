@@ -11,7 +11,7 @@ using UnityEngine;
 // TODO: Refactor this.
 namespace Arman.UpdateManagement
 {
-    public class BasicUpdateManager : IUpdateManager
+    public class UpdateManager : IUpdateManager
     {
         public event ChannelStateChanged ChannelStateChangedEvent = delegate { };
 

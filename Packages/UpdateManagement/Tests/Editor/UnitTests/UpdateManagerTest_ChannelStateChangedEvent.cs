@@ -15,7 +15,7 @@ namespace Arman.UpdateManagement.Tests
         [SetUp]
         public void Setup()
         {
-            manager = new BasicUpdateManager();
+            manager = new UpdateManager();
             channel = new NamedChannel("Channel");
 
             raised = new List<(IChannel channel, bool isPaused)>();

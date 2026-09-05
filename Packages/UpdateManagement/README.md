@@ -16,7 +16,7 @@ Namespace `Arman.UpdateManagement.Foundation`:
 |---|---|
 | `IUpdatable` | `UpdateTime(float dt)` — named to avoid clashing with Unity's `Update`. |
 | `IUpdateManager` | Channel registration, updatable registration, pause/resume, and `ChannelStateChangedEvent`. |
-| `BasicUpdateManager` | The implementation, plus `AdvanceTime(float)`. |
+| `UpdateManager` | The implementation, plus `AdvanceTime(float)`. |
 
 Namespace `Arman.UpdateManagement.Foundation.Unity`:
 
@@ -82,7 +82,7 @@ Driving the manager yourself — in a test, a server build, or a fixed-step loop
 `AdvanceTime`:
 
 ```csharp
-var manager = new BasicUpdateManager();
+var manager = new UpdateManager();
 manager.RegisterUpdatable(enemy, gameplay);
 
 manager.AdvanceTime(0.016f);     // one deterministic step
@@ -93,7 +93,7 @@ manager.AdvanceTime(0.016f);     // one deterministic step
 - **`SetChannelTimeScale` throws `NotImplementedException`.** Per-channel time scaling is not
   supported yet — the interaction with parent channel scales is unresolved. Every channel runs at 1×.
   Do not call it.
-- **`AdvanceTime` is on `BasicUpdateManager`, not on `IUpdateManager`.** Code holding the interface can
+- **`AdvanceTime` is on `UpdateManager`, not on `IUpdateManager`.** Code holding the interface can
   register and pause but cannot tick; that is deliberate, so only the owner of the loop advances time.
 - **Channel parent cycles are not detected** and will hang the pause check. Keep the channel graph a
   tree.

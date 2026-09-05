@@ -8,19 +8,19 @@ using UnityEngine.TestTools;
 namespace Arman.UpdateManagement.Tests
 {
     [TestFixture]
-    public class BasicUpdateManagerTest_ThrowingUpdatables
+    public class UpdateManagerTest_ThrowingUpdatables
     {
         const string ThrownMessage = "updatable failed";
 
         static readonly Regex ExpectedLog = new Regex("InvalidOperationException: " + ThrownMessage);
 
-        BasicUpdateManager manager = null!;
+        UpdateManager manager = null!;
         IChannel channel = null!;
 
         [SetUp]
         public void Setup()
         {
-            manager = new BasicUpdateManager();
+            manager = new UpdateManager();
             channel = new NamedChannel("Channel");
         }
 
