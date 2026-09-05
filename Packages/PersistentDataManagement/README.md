@@ -17,7 +17,7 @@ Namespace `Arman.Foundation.Core.PersistentDataManagement`:
 | `IPersistentDataSerializer` | `Key()`, `SerializeTo(...)`, `DeserializeFrom(...)` — implemented by anything with state to save. |
 | `IPersistentDataWrapper` | The encoding. Splits into `IWritablePersistentDataWrapper` and `IReadablePersistentDataWrapper`. |
 | `IPersistentDataIOStreamFactory` | Supplies a `StreamReader`/`StreamWriter` per channel. |
-| `IPersistentDataManager` / `BasicPersistentDataManager` | Registration, `Save`/`SaveAll`, `Load`/`LoadAll`, `SetSaveVersion`. |
+| `IPersistentDataManager` / `BasicPersistentDataManager` | Registration, `Save`/`SaveAll`, `Load`/`LoadAll`, `Delete`. |
 | `MemoryBasedPersistetDataIOStreamFactory` | In-memory streams — for tests. |
 | `EmptyPersistentDataWrapper`, `EmptyPersistetDataIOStreamFactory` | No-op stand-ins. |
 
@@ -141,6 +141,7 @@ var manager = new BasicPersistentDataManager(
 - **A truncated or empty save file loads as "nothing saved yet".** `JSONPersistentDataWrapper` treats
   empty content, and a block key that is not present, as absent rather than an error — so a save
   interrupted mid-write costs you that channel's data, not every later load of it.
-- **The save version is written but never verified on load.** `SetSaveVersion` records a `Version` in
-  the metadata block for your own migration logic; the manager itself does not compare it.
+- **The save version is written but never verified on load.** The `saveVersion` passed to the
+  constructor records a `Version` in the metadata block for your own migration logic; the manager
+  itself does not compare it.
 - **`Register` with no channel uses an internal default channel**, whose file is named `_internal`.

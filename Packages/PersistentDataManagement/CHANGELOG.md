@@ -7,6 +7,14 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- `SetSaveVersion`, `SetPersistentDataWrapper` and `SetPersistentDataIOStreamFactory` on `IPersistentDataManager` and `BasicPersistentDataManager`, along with the parameterless `BasicPersistentDataManager()` constructor. A manager's collaborators are now supplied once through `BasicPersistentDataManager(IPersistentDataIOStreamFactory, IPersistentDataWrapper, int saveVersion)`, so it can no longer be left half-wired or have its wrapper swapped out between a save and the matching load. **Breaking** — construct the manager with its collaborators instead of setting them afterwards.
+
+### Changed
+
+- Renamed `PersistentDataManagerFactory.Create()` to `CreateDefault(int saveVersion = 0)`, which now also takes the save version. **Breaking** — rename the call.
+
 ### Fixed
 
 - `JSONPersistentDataWrapper.ReadFrom` no longer throws on empty or whitespace-only content. `JsonNode.ParseJsonString` answers it with `null`, and every later read then dereferenced that null root -- so one save interrupted mid-write (which leaves a zero-byte file) broke every subsequent load of that channel. Empty content now loads as "nothing saved yet".

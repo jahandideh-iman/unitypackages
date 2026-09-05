@@ -28,10 +28,6 @@ namespace Arman.PersistentDataManagement
 
         int saveVersion;
 
-        public BasicPersistentDataManager()
-        {
-        }
-
         public BasicPersistentDataManager(
             IPersistentDataIOStreamFactory persistentDataIOStreamFactory,
             IPersistentDataWrapper persistentDataWrapper, 
@@ -40,21 +36,6 @@ namespace Arman.PersistentDataManagement
             this.persistentDataIOStreamFactory = persistentDataIOStreamFactory;
             this.persistentDataWrapper = persistentDataWrapper;
             this.saveVersion = saveVersion;
-        }
-
-        public void SetSaveVersion(int version)
-        {
-            this.saveVersion = version;
-        }
-
-        public void SetPersistentDataWrapper(IPersistentDataWrapper wrapper)
-        {
-            this.persistentDataWrapper = wrapper;
-        }
-
-        public void SetPersistentDataIOStreamFactory(IPersistentDataIOStreamFactory factory)
-        {
-            this.persistentDataIOStreamFactory = factory;
         }
 
         public void Register(IPersistentDataSerializer serializer)

@@ -55,7 +55,7 @@ namespace Arman.PersistentDataManagement.Tests
             int clearCallCounts = 0;
             persistentDataWrapper.onClearAction = () => clearCallCounts++;
 
-            manager.SetPersistentDataWrapper(persistentDataWrapper);
+            manager = CreateManager(emptyStreamFactory, persistentDataWrapper);
             manager.Register(serializerA, channel1);
             manager.Register(serializerB, channel2);
 
@@ -72,7 +72,7 @@ namespace Arman.PersistentDataManagement.Tests
             int clearCallCounts = 0;
             persistentDataWrapper.onClearAction = () => clearCallCounts++;
 
-            manager.SetPersistentDataWrapper(persistentDataWrapper);
+            manager = CreateManager(emptyStreamFactory, persistentDataWrapper);
             manager.Register(serializerA, channel1);
 
 
@@ -90,7 +90,7 @@ namespace Arman.PersistentDataManagement.Tests
             serializerA.onSerializeAction = (w) => givenWrappers.Add(serializerA, w);
             serializerB.onSerializeAction = (w) => givenWrappers.Add(serializerB, w);
 
-            manager.SetPersistentDataWrapper(persistentDataWrapper);
+            manager = CreateManager(emptyStreamFactory, persistentDataWrapper);
             manager.Register(serializerA);
             manager.Register(serializerB);
 
@@ -112,7 +112,7 @@ namespace Arman.PersistentDataManagement.Tests
             serializerB.onSerializeAction = (d) => step++;
             dataWrapper.onWriteAction = (w) => writeStep = step;
 
-            manager.SetPersistentDataWrapper(dataWrapper);
+            manager = CreateManager(emptyStreamFactory, dataWrapper);
             manager.Register(serializerA);
             manager.Register(serializerB);
 
@@ -133,7 +133,7 @@ namespace Arman.PersistentDataManagement.Tests
             serializerA.onSerializeAction = (d) => step++;
             dataWrapper.onWriteAction = (w) => writeStep = step;
 
-            manager.SetPersistentDataWrapper(dataWrapper);
+            manager = CreateManager(emptyStreamFactory, dataWrapper);
             manager.Register(serializerA, channel1);
 
             manager.Save(channel1);
@@ -146,7 +146,7 @@ namespace Arman.PersistentDataManagement.Tests
         {
             var streamFactory = new PersistentDataIOStreamFactoryMock();
 
-            manager.SetPersistentDataIOStreamFactory(streamFactory);
+            manager = CreateManager(streamFactory, emptyDataWrapper);
             manager.Register(serializerA, channel1);
             manager.Register(serializerB, channel2);
 
@@ -161,7 +161,7 @@ namespace Arman.PersistentDataManagement.Tests
         {
             var streamFactory = new PersistentDataIOStreamFactoryMock();
 
-            manager.SetPersistentDataIOStreamFactory(streamFactory);
+            manager = CreateManager(streamFactory, emptyDataWrapper);
 
             manager.Register(serializerA, channel1);
             manager.Register(serializerB, channel2);

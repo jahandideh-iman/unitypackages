@@ -34,9 +34,6 @@ namespace Arman.PersistentDataManagement
         {
             var content = stream.ReadToEnd();
 
-            // ParseJsonString answers empty content with null, and every later read then
-            // dereferences that null root. A zero-byte file is what a process killed
-            // mid-write leaves behind, so treat it as "nothing saved yet" instead.
             root = string.IsNullOrWhiteSpace(content)
                 ? new JsonObject()
                 : (JsonObject) JsonNode.ParseJsonString(content);
@@ -109,9 +106,6 @@ namespace Arman.PersistentDataManagement
 
         public void BeginReadingBlock(string key)
         {
-            // Reading a block that was never written yields an empty one rather than
-            // throwing: a caller that opens a block it expected to find still gets
-            // defaults for everything inside it, and its EndReadingBlock still balances.
             var block = CurrentBlock().ContainsKey(key)
                 ? (JsonObject)CurrentBlock()[key]
                 : new JsonObject();
