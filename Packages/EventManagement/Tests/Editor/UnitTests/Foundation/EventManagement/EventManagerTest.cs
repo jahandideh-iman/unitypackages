@@ -31,7 +31,7 @@ namespace Arman.EventManagement.Tests
         [SetUp]
         public void Setup()
         {
-            manager = new BasicEventManager();
+            manager = new EventManager();
 
             listener1 = new ListenerMock();
             listener2 = new ListenerMock();

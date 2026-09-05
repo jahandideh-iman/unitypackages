@@ -3,7 +3,7 @@
 
 namespace Arman.EventManagement
 {
-    public class BasicEventManager : IEventManager
+    public class EventManager : IEventManager
     {
         private List<IEventListener> listeners = new List<IEventListener>();
         List<IEventListener> listenersCopy = new List<IEventListener>();

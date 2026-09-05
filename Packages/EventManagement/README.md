@@ -15,7 +15,7 @@ Everything lives in the `Arman.EventManagement` namespace.
 | `IGameEvent` | Marker interface for an event. Carry whatever payload you like. |
 | `IEventListener` | `OnEvent(IGameEvent evt, object sender)`. |
 | `IEventManager` | `Propagate`, `Register`, `UnRegister`, `Has`, `Clear`. |
-| `BasicEventManager` | The implementation. |
+| `EventManager` | The implementation. |
 
 ## Usage
 
@@ -47,7 +47,7 @@ public class ScoreBoard : IEventListener
 Wire it up and broadcast:
 
 ```csharp
-var events = new BasicEventManager();
+var events = new EventManager();
 
 var scoreBoard = new ScoreBoard();
 events.Register(scoreBoard);
