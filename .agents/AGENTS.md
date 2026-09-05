@@ -130,6 +130,33 @@ Unity tests run through the official [Unity CLI](https://unity.com/blog/meet-the
 
 **Fails with "another Unity instance is running with this project open" if you already have the Editor open** — Unity refuses to open the same project twice. Use the next option instead.
 
+### Test doubles — Moq for interactions, hand-written fakes for state
+
+The repo uses [`nuget.moq`](https://docs.unity3d.com/Packages/nuget.moq@2.0/manual/index.html) 2.0.1, declared in `Packages/manifest.json`. **Pick by what the test asserts, not by habit:**
+
+* **The assertion *is* the interaction** — call counts, captured arguments, ordering, "was this collaborator used at all" → use `Mock<T>` and `Verify`. A hand-written class that exists only to increment a counter is re-implementing `Times.Once`.
+* **The assertion is state or identity** — the object is compared, applied, returned, or dispatched on → write a small `Fake*` class. Name it `Fake<Thing>`, not `<Thing>Mock`.
+
+Two cases genuinely need a real type, and both are in the tree as examples:
+
+* `FakeShopPackage` / `FakeShopPackageA` / `FakeShopPackageB` — `ShopCenter.PackagesOfType<T>()` and `AssignPurchaseHandler<T>()` dispatch on the **concrete** type argument, and a Moq proxy's runtime type is generated, so it cannot express them.
+* `FakePoolable` — `ObjectPool<T>` constructs its own instances in `CreateObject()`, so there is nothing to hand a proxy to.
+
+**Wiring a test assembly for Moq.** Every test asmdef sets `"overrideReferences": true`, so Moq and the two support assemblies it ships have to be listed explicitly — adding the package alone is not enough:
+
+```json
+"precompiledReferences": [
+    "nunit.framework.dll",
+    "Moq.dll",
+    "System.Runtime.CompilerServices.Unsafe.dll",
+    "System.Threading.Tasks.Extensions.dll"
+],
+```
+
+Do **not** fix a duplicate-assembly error by turning `overrideReferences` off — that silently widens the assembly's reference set.
+
+**Moq is loose by default:** an unconfigured method returns `default`. Any collaborator with a fluent interface (`IPersistentDataWrapper.WriteInt` and friends return the wrapper) or a meaningful `bool` (`HasReadableStreamFor`, `HasKey`) needs an explicit `Setup`, or the code under test dereferences a null it never saw before. See `PersistentDataManagerTestContext` for the shared factory helpers this repo uses.
+
 ## CI
 
 `.github/workflows/tests.yml` runs the test suites on every same-repo pull request and on pushes to `dev` and `master`. `.github/workflows/release.yml` separately runs `validate` and `pack`, and `.github/workflows/changelog.yml` enforces [the changelog rules](#changelogs--four-rules-enforced-in-ci). Design notes: [`docs/specs/2026-08-30-pr-test-ci-design.md`](../docs/specs/2026-08-30-pr-test-ci-design.md).
@@ -401,6 +428,7 @@ The *source* of a release PR is enforced separately, by `promotion-guard` in `re
 * **Curly braces:** Allman (brace on its own line).
 * **PascalCase:** classes, interfaces, methods, properties, public/internal fields.
 * **Interfaces are `I`-prefixed.** All 35 were renamed on 2026-08-23 (`Service` → `IService`, `PersistentDataWrapper` → `IPersistentDataWrapper`, …), file names included, via `git mv` so the `.meta` GUIDs survived. Anything without the prefix is a class or struct — don't add an interface that breaks this.
+* **The sole implementation of an interface takes the interface's name without the `I`.** `IUpdateManager` is implemented by `UpdateManager`, `IShopCenter` by `ShopCenter`. Do **not** reach for a `Basic` prefix: the twelve types that carried one were renamed on 2026-09-05 (`BasicEntity` → `Entity`, `BasicObjectPool<T>` → `ObjectPool<T>`, …) because the prefix distinguished them from nothing. Introduce a qualifier only when a second implementation actually exists and the name has to say which one it is — the way `UnityUpdateManager` and `UnityConfigurationManager` (MonoBehaviour adapters over the plain types) already do.
 * **camelCase:** locals and parameters.
 * **`_camelCase`:** private/protected fields, including `[SerializeField]` ones.
 * **`[SerializeField]` on private fields** rather than making them public.
