@@ -1,7 +1,7 @@
 {
   "name": "com.arman.update-management",
   "displayName": "Update Management",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "license": "MIT",
   "unity": "2019.1",
   "description": "Channel-based update loop management. Register IUpdatable objects against named channels, nest channels inside one another, then pause, resume or time-scale a channel and everything below it. A MonoBehaviour adapter drives the whole thing from Unity’s update loop.",
@@ -10,6 +10,6 @@
     "email": "jahandidehk.iman@gmail.com"
   },
   "dependencies": {
-    "com.arman.package-basics": "0.2.0"
+    "com.arman.package-basics": "0.3.0"
   }
 }
