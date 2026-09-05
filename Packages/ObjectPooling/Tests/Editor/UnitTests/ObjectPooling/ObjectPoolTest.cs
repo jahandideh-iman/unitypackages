@@ -34,7 +34,7 @@ namespace Arman.ObjectPooling.Tests
         }
     }
 
-    public class TestableBasicObjectPool : BasicObjectPool<MockObject>
+    public class TestableObjectPool : ObjectPool<MockObject>
     {
 
         public bool createMethodIsCalled = false;
@@ -59,15 +59,15 @@ namespace Arman.ObjectPooling.Tests
     }
 
 
-    public class BasicObjectPoolTest 
+    public class ObjectPoolTest 
     {
-        TestableBasicObjectPool pool;
+        TestableObjectPool pool;
 
 
         [SetUp]
         public void Setup()
         {
-            pool = new TestableBasicObjectPool();
+            pool = new TestableObjectPool();
         }
 
         [Test]
