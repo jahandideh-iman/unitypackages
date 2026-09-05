@@ -1,33 +1,30 @@
-﻿using NUnit.Framework;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Moq;
+using NUnit.Framework;
 
 namespace Arman.ComponentSystem.Tests
 {
     public class CacheableEntityTest
     {
-        class CacheMock : ICache
-        {
-            public List<IComponent> components = new List<IComponent>();
-
-            public void TryCache(IComponent component)
-            {
-                components.Add(component);
-            }
-        }
-
         [Test]
         public void AddingComponentShouldCallTryCache()
         {
-            var entity = new CacheableEntity<CacheMock>(new CacheMock());
+            var cached = new List<IComponent>();
+
+            var cache = new Mock<ICache>();
+            cache.Setup(c => c.TryCache(It.IsAny<IComponent>()))
+                .Callback<IComponent>(cached.Add);
+
+            var entity = new CacheableEntity<ICache>(cache.Object);
 
             entity.AddComponents(
                 new ComponentA(),
                 new ComponentB(),
                 new ComponentC());
 
-            Assert.That(entity.Cache().components[0], Is.TypeOf<ComponentA>());
-            Assert.That(entity.Cache().components[1], Is.TypeOf<ComponentB>());
-            Assert.That(entity.Cache().components[2], Is.TypeOf<ComponentC>());
+            Assert.That(cached[0], Is.TypeOf<ComponentA>());
+            Assert.That(cached[1], Is.TypeOf<ComponentB>());
+            Assert.That(cached[2], Is.TypeOf<ComponentC>());
         }
     }
 }
