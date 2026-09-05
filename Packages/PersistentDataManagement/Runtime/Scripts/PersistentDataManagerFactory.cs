@@ -8,12 +8,12 @@ namespace Arman.PersistentDataManagement
     /// </summary>
     public static class PersistentDataManagerFactory
     {
-        public static IPersistentDataManager Create()
+        public static IPersistentDataManager CreateDefault(int saveVersion = 0)
         {
-            var manager = new BasicPersistentDataManager();
-            manager.SetPersistentDataIOStreamFactory(new FileBasedPersistetDataIOStreamFactory(Application.persistentDataPath));
-            manager.SetPersistentDataWrapper(new JSONPersistentDataWrapper());
-            return manager;
+            return new BasicPersistentDataManager(
+                new FileBasedPersistetDataIOStreamFactory(Application.persistentDataPath),
+                new JSONPersistentDataWrapper(),
+                saveVersion);
         }
     }
 }

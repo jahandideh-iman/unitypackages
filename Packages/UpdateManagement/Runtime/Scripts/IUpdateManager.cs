@@ -5,9 +5,12 @@ using Arman.PackageBasics;
 
 namespace Arman.UpdateManagement
 {
+    public delegate void ChannelStateChanged(IChannel channel, bool isPaused);
 
     public interface IUpdateManager
     {
+        event ChannelStateChanged ChannelStateChangedEvent;
+
         void RegisterChannel(IChannel channel);
         void RegisterChannelToParent(IChannel child, IChannel parent);
 

@@ -8,6 +8,11 @@ namespace Arman.UpdateManagement
     {
         BasicUpdateManager internalManager = new BasicUpdateManager();
 
+        public event ChannelStateChanged ChannelStateChangedEvent
+        {
+            add => internalManager.ChannelStateChangedEvent += value;
+            remove => internalManager.ChannelStateChangedEvent -= value;
+        }
 
         private void Update()
         {

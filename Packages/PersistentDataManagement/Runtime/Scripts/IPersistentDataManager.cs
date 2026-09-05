@@ -4,10 +4,6 @@ namespace Arman.PersistentDataManagement
 {
     public interface IPersistentDataManager
     {
-        void SetSaveVersion(int version);
-        void SetPersistentDataWrapper(IPersistentDataWrapper wrapper);
-        void SetPersistentDataIOStreamFactory(IPersistentDataIOStreamFactory factory);
-
         void Register(IPersistentDataSerializer serializer);
         void Register(IPersistentDataSerializer serializer, IChannel channel);
 

@@ -2,6 +2,7 @@
 using Arman.PackageBasics;
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 
 // WARNING: Cycles in channel relations are not check. Having cycles may cause infinite lopps.
@@ -10,7 +11,6 @@ using System.Collections.Generic;
 // TODO: Refactor this.
 namespace Arman.UpdateManagement
 {
-    public delegate void ChannelStateChanged(IChannel channel, bool isPaused);
     public class BasicUpdateManager : IUpdateManager
     {
         public event ChannelStateChanged ChannelStateChangedEvent = delegate { };
@@ -119,7 +119,16 @@ namespace Arman.UpdateManagement
 
             var count = updatablesTemp.Count;
             for (int i = count-1; i >= 0; --i)
-                updatablesTemp[i].UpdateTime(amount * data.timeScale);
+            {
+                try
+                {
+                    updatablesTemp[i].UpdateTime(amount * data.timeScale);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogException(e);
+                }
+            }
         }
 
         public bool IsChannelGloballyPaused(IChannel channel)

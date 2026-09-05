@@ -3,7 +3,6 @@ using NUnit.Framework;
 
 namespace Arman.PersistentDataManagement.Tests
 {
-    [TestFixture]
     public class BasicPersistentDataManagerTest_Deleting : BasicPersistentDataManagerTestContext
     {
         [Test]
@@ -11,7 +10,7 @@ namespace Arman.PersistentDataManagement.Tests
         {
             var streamFactory = new PersistentDataIOStreamFactoryMock();
 
-            manager.SetPersistentDataIOStreamFactory(streamFactory);
+            manager = CreateManager(streamFactory, emptyDataWrapper);
 
             manager.Delete(channel1);
 

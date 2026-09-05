@@ -15,8 +15,8 @@ Namespace `Arman.UpdateManagement.Foundation`:
 | Type | Purpose |
 |---|---|
 | `IUpdatable` | `UpdateTime(float dt)` — named to avoid clashing with Unity's `Update`. |
-| `IUpdateManager` | Channel registration, updatable registration, pause/resume. |
-| `BasicUpdateManager` | The implementation, plus `AdvanceTime(float)` and a `ChannelStateChangedEvent`. |
+| `IUpdateManager` | Channel registration, updatable registration, pause/resume, and `ChannelStateChangedEvent`. |
+| `BasicUpdateManager` | The implementation, plus `AdvanceTime(float)`. |
 
 Namespace `Arman.UpdateManagement.Foundation.Unity`:
 
@@ -107,3 +107,7 @@ manager.AdvanceTime(0.016f);     // one deterministic step
   `UpdateTime` is safe. Objects are ticked in reverse registration order.
 - **`ChannelStateChangedEvent` fires on every `Pause`/`Resume`** of a registered channel, reporting
   that channel's own flag — not the inherited state of its children.
+- **An updatable that throws is dropped.** If `UpdateTime` throws, the manager unregisters that
+  updatable and keeps ticking the rest of the channel. The alternative is worse than it looks: the
+  offender stays registered, so it throws again on the very next frame and its channel never
+  advances past it. The usual cause is a destroyed Unity object that was never unregistered.
