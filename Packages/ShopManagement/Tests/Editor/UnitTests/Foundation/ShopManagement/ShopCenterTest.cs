@@ -10,14 +10,14 @@ namespace Arman.ShopManagement.Tests
     public class ShopPackageMockB : ShopPackageMock {}
 
 
-    public class BasicShopCenterTest 
+    public class ShopCenterTest 
     {
         IShopCenter shopCenter;
 
         [SetUp]
         public void Setup()
         {
-            shopCenter = new BasicShopCenter();
+            shopCenter = new ShopCenter();
         }
 
         [Test]

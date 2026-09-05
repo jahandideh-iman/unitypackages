@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Arman.ShopManagement
 {
-    public class BasicShopCenter : IShopCenter
+    public class ShopCenter : IShopCenter
     {
         class PurchaseHandlingData
         {
