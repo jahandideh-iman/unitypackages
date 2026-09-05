@@ -53,9 +53,7 @@ namespace Arman.PersistentDataManagement.Samples
 
         private void Awake()
         {
-            persistentDataManager = new BasicPersistentDataManager();
-            persistentDataManager.SetPersistentDataIOStreamFactory(new FileBasedPersistetDataIOStreamFactory(Application.persistentDataPath));
-            persistentDataManager.SetPersistentDataWrapper(new JSONPersistentDataWrapper());
+            persistentDataManager = PersistentDataManagerFactory.CreateDefault();
 
             persistentDataManager.Register(new ExamplePersistentDataSerializer(this));
             UpdateGUI();

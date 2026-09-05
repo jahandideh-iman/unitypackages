@@ -18,7 +18,7 @@ Everything lives in the `Arman.ShopManagement` namespace.
 | `IPurchaseHandler` | `Purchase(package, onSuccess, onFailure)` — performs the transaction. |
 | `IPurchaseSuccessResult` / `IPurchaseFailureResult` | Marker interfaces for handler-specific result payloads. |
 | `IShopCenter` | The storefront contract. |
-| `BasicShopCenter` | The implementation. |
+| `ShopCenter` | The implementation. |
 
 `IShopCenter` offers `AddPackage`, `RemovePackage`, `Packages()`, `PackagesOfType<T>()`,
 `AssignPurchaseHandler<T>`, `Purchase`, `SetPurchaseSuccessCallback` and
@@ -57,7 +57,7 @@ public class CurrencyPurchaseHandler : IPurchaseHandler
 Wire up the shop:
 
 ```csharp
-var shop = new BasicShopCenter();
+var shop = new ShopCenter();
 
 shop.AddPackage(new CoinPackage(100));
 shop.AssignPurchaseHandler<CoinPackage>(new CurrencyPurchaseHandler());

@@ -10,7 +10,7 @@ namespace Arman.PersistentDataManagement
 
         public StreamReader CreateReadStreamFor(IChannel channel)
         {
-            MemoryStream memoryStream = null;
+            MemoryStream? memoryStream = null;
 
             memoryStreams.TryGetValue(channel, out memoryStream);
             if (memoryStream == null)

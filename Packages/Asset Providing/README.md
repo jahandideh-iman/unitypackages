@@ -22,7 +22,7 @@ Namespace `Arman.AssetProviding`:
 Namespace `Arman.AssetProviding` — `ScriptableObject` configuration assets so providers can be
 authored in the Editor: `AssetProviderConfig` (abstract, with `CreateSyncProvider()` /
 `CreateAsyncProvider()`), `ResourcesAssetProviderConfig`, `TableBasedAssetProviderConfig`, and
-`BasicAssetProviderServiceConfig` (`CreateAssetProviderService()`).
+`AssetProviderServiceConfig` (`CreateAssetProviderService()`).
 
 Namespace `Arman.AssetProviding` — `ChainedContainer<T>`, `UnityAssetUtilities`, `TaskUtilities`.
 
@@ -63,8 +63,8 @@ Or drive it from Editor-authored configuration:
 ```csharp
 using Arman.AssetProviding;
 
-// basicServiceConfig is a BasicAssetProviderServiceConfig asset.
-ChainedAssetProviderService service = basicServiceConfig.CreateAssetProviderService();
+// serviceConfig is an AssetProviderServiceConfig asset.
+ChainedAssetProviderService service = serviceConfig.CreateAssetProviderService();
 ```
 
 ## Things to know

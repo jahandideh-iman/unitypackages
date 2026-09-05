@@ -5,6 +5,12 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-09-05
+
+### Removed
+
+- `BasicConfigurationManager`, renamed to `ConfigurationManager`. It was the only plain implementation of `IConfigurationManager`, so the `Basic` prefix distinguished it from nothing. The `UnityConfigurationManager` MonoBehaviour adapter is unchanged. **Breaking** — update references to the new name.
+
 ## [0.2.0] - 2026-09-02
 
 ### Added

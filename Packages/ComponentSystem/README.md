@@ -15,10 +15,10 @@ Everything lives in the `Arman.ComponentSystem` namespace.
 |---|---|
 | `IComponent` | Marker interface. Any component type implements it. |
 | `IEntity` | `AddComponent`, `GetComponent<T>()`, `AllComponents()`. |
-| `BasicEntity` | The implementation, plus `AddComponents(params)`, `GetComponentFromEnd<T>()` and `GetComponent<T>(int)`. |
-| `ISpecializedEntity<T>` / `BasicSpecializedEntity<T>` | An entity constrained to one component family, with a typed `List<T> AllComponents()`. |
+| `Entity` | The implementation, plus `AddComponents(params)`, `GetComponentFromEnd<T>()` and `GetComponent<T>(int)`. |
+| `ISpecializedEntity<T>` / `SpecializedEntity<T>` | An entity constrained to one component family, with a typed `List<T> AllComponents()`. |
 | `ICache` | `TryCache(IComponent)` — a hook for caching frequently-read components. |
-| `CacheableBasicEntity<T>` | `BasicEntity` that offers every added component to an `ICache`. |
+| `CacheableEntity<T>` | `Entity` that offers every added component to an `ICache`. |
 
 ## Usage
 
@@ -34,7 +34,7 @@ public class Health : IComponent
 ```
 
 ```csharp
-var entity = new BasicEntity();
+var entity = new Entity();
 
 entity.AddComponent(new Health { Current = 100 });
 entity.AddComponents(new Position(), new Velocity());
@@ -63,7 +63,7 @@ public class MovementCache : ICache
     }
 }
 
-var entity = new CacheableBasicEntity<MovementCache>(new MovementCache());
+var entity = new CacheableEntity<MovementCache>(new MovementCache());
 entity.AddComponent(new Position());
 
 // Direct field access on the hot path, no scan.
@@ -73,7 +73,7 @@ entity.Cache().Position.Set(x, y);
 ### Constraining an entity to one family
 
 ```csharp
-var abilities = new BasicSpecializedEntity<IAbility>();
+var abilities = new SpecializedEntity<IAbility>();
 abilities.AddComponent(new Dash());
 
 List<IAbility> all = abilities.AllComponents();
@@ -91,5 +91,5 @@ Dash dash = abilities.GetComponent<Dash>();
   use `AddComponents(params)` to rebuild the array once.
 - **The scan cost is linear in component count.** At a handful of components per entity that beats a
   dictionary lookup; at dozens, add an `ICache`.
-- **`BasicSpecializedEntity<T>.AllComponents()` returns the live list**, so do not mutate the entity
+- **`SpecializedEntity<T>.AllComponents()` returns the live list**, so do not mutate the entity
   while iterating it.

@@ -32,7 +32,12 @@ namespace Arman.PersistentDataManagement
 
         public void ReadFrom(StreamReader stream)
         {
-            root = (JsonObject) JsonNode.ParseJsonString(stream.ReadToEnd());
+            var content = stream.ReadToEnd();
+
+            root = string.IsNullOrWhiteSpace(content)
+                ? new JsonObject()
+                : (JsonObject) JsonNode.ParseJsonString(content);
+
             blockStack.Push(root);
         }
 
@@ -101,7 +106,11 @@ namespace Arman.PersistentDataManagement
 
         public void BeginReadingBlock(string key)
         {
-            PushBlock((JsonObject)CurrentBlock()[key]);
+            var block = CurrentBlock().ContainsKey(key)
+                ? (JsonObject)CurrentBlock()[key]
+                : new JsonObject();
+
+            PushBlock(block);
         }
 
         public void EndReadingBlock()

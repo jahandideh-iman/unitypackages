@@ -6,8 +6,13 @@ namespace Arman.UpdateManagement
 {
     public class UnityUpdateManager : MonoBehaviour, IUpdateManager
     {
-        BasicUpdateManager internalManager = new BasicUpdateManager();
+        UpdateManager internalManager = new UpdateManager();
 
+        public event ChannelStateChanged ChannelStateChangedEvent
+        {
+            add => internalManager.ChannelStateChangedEvent += value;
+            remove => internalManager.ChannelStateChangedEvent -= value;
+        }
 
         private void Update()
         {
