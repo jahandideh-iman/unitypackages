@@ -1,12 +1,19 @@
 using System;
+using System.Text.RegularExpressions;
 using Arman.PackageBasics;
 using NUnit.Framework;
+using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace Arman.UpdateManagement.Tests
 {
     [TestFixture]
     public class BasicUpdateManagerTest_ThrowingUpdatables
     {
+        const string ThrownMessage = "updatable failed";
+
+        static readonly Regex ExpectedLog = new Regex("InvalidOperationException: " + ThrownMessage);
+
         BasicUpdateManager manager = null!;
         IChannel channel = null!;
 
@@ -17,30 +24,46 @@ namespace Arman.UpdateManagement.Tests
             channel = new NamedChannel("Channel");
         }
 
+        static UpdatableMock ThrowingUpdatable()
+        {
+            var throwing = new UpdatableMock();
+            throwing.onUpdateAction = _ => throw new InvalidOperationException(ThrownMessage);
+            return throwing;
+        }
+
         [Test]
         public void AdvancingTimeShouldNotPropagateAnExceptionFromAnUpdatable()
         {
-            var throwing = new UpdatableMock();
-            throwing.onUpdateAction = _ => throw new InvalidOperationException();
+            manager.RegisterUpdatable(ThrowingUpdatable(), channel);
 
-            manager.RegisterUpdatable(throwing, channel);
+            LogAssert.Expect(LogType.Exception, ExpectedLog);
 
             Assert.That(new TestDelegate(() => manager.AdvanceTime(1f)), Throws.Nothing);
         }
 
         [Test]
+        public void AnExceptionFromAnUpdatableShouldBeLogged()
+        {
+            manager.RegisterUpdatable(ThrowingUpdatable(), channel);
+
+            LogAssert.Expect(LogType.Exception, ExpectedLog);
+
+            manager.AdvanceTime(1f);
+        }
+
+        [Test]
         public void AThrowingUpdatableShouldNotStopTheRestOfTheChannelFromUpdating()
         {
-            var throwing = new UpdatableMock();
-            throwing.onUpdateAction = _ => throw new InvalidOperationException();
             var wellBehaved = new UpdatableMock();
 
             // Registered on both sides of the offender: the channel is walked back to
             // front, so one of these would be skipped whichever order it aborted in.
             var first = new UpdatableMock();
             manager.RegisterUpdatable(first, channel);
-            manager.RegisterUpdatable(throwing, channel);
+            manager.RegisterUpdatable(ThrowingUpdatable(), channel);
             manager.RegisterUpdatable(wellBehaved, channel);
+
+            LogAssert.Expect(LogType.Exception, ExpectedLog);
 
             manager.AdvanceTime(1f);
 
@@ -49,29 +72,35 @@ namespace Arman.UpdateManagement.Tests
         }
 
         [Test]
-        public void AThrowingUpdatableShouldBeUnregistered()
+        public void AThrowingUpdatableShouldStayRegistered()
         {
-            var throwing = new UpdatableMock();
-            throwing.onUpdateAction = _ => throw new InvalidOperationException();
+            var throwing = ThrowingUpdatable();
 
             manager.RegisterUpdatable(throwing, channel);
+
+            LogAssert.Expect(LogType.Exception, ExpectedLog);
+
             manager.AdvanceTime(1f);
 
-            Assert.That(manager.Has(throwing), Is.False);
+            Assert.That(manager.Has(throwing), Is.True);
         }
 
         [Test]
-        public void AThrowingUpdatableShouldNotBeUpdatedAgainOnALaterTick()
+        public void AThrowingUpdatableShouldBeUpdatedAgainOnEveryLaterTick()
         {
-            var throwing = new UpdatableMock();
-            throwing.onUpdateAction = _ => throw new InvalidOperationException();
+            var throwing = ThrowingUpdatable();
 
             manager.RegisterUpdatable(throwing, channel);
+
+            LogAssert.Expect(LogType.Exception, ExpectedLog);
+            LogAssert.Expect(LogType.Exception, ExpectedLog);
+            LogAssert.Expect(LogType.Exception, ExpectedLog);
+
             manager.AdvanceTime(1f);
             manager.AdvanceTime(1f);
             manager.AdvanceTime(1f);
 
-            Assert.That(throwing.UpdateCallCount(), Is.EqualTo(1));
+            Assert.That(throwing.UpdateCallCount(), Is.EqualTo(3));
         }
 
         [Test]

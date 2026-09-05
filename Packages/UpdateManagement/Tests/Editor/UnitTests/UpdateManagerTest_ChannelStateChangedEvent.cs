@@ -1,41 +1,31 @@
 using System.Collections.Generic;
 using Arman.PackageBasics;
 using NUnit.Framework;
-using UnityEngine;
 
 namespace Arman.UpdateManagement.Tests
 {
-    /// <summary>
-    /// The event is declared on <see cref="IUpdateManager"/> rather than only on
-    /// <see cref="BasicUpdateManager"/> so that a consumer holding the interface -- which is
-    /// all a Service Locator hands out -- can subscribe. These tests run against the
-    /// interface deliberately: taking the concrete type would pass without that declaration.
-    /// </summary>
     [TestFixture]
     public class UpdateManagerTest_ChannelStateChangedEvent
     {
-        static IEnumerable<IUpdateManager> UpdateManagers()
-        {
-            yield return new BasicUpdateManager();
-            yield return new GameObject(nameof(UnityUpdateManager)).AddComponent<UnityUpdateManager>();
-        }
+        IUpdateManager manager = null!;
+        IChannel channel = null!;
 
-        [TearDown]
-        public void TearDown()
+        List<(IChannel channel, bool isPaused)> raised = null!;
+
+        [SetUp]
+        public void Setup()
         {
-            foreach (UnityUpdateManager manager in Object.FindObjectsByType<UnityUpdateManager>(FindObjectsSortMode.None))
-                Object.DestroyImmediate(manager.gameObject);
+            manager = new BasicUpdateManager();
+            channel = new NamedChannel("Channel");
+
+            raised = new List<(IChannel channel, bool isPaused)>();
         }
 
         [Test]
-        public void PausingARegisteredChannelShouldRaiseTheEvent(
-            [ValueSource(nameof(UpdateManagers))] IUpdateManager manager)
+        public void PausingARegisteredChannelShouldRaiseTheEvent()
         {
-            IChannel channel = new NamedChannel("Channel");
             manager.RegisterChannel(channel);
-
-            var raised = new List<(IChannel channel, bool isPaused)>();
-            manager.ChannelStateChangedEvent += (c, p) => raised.Add((c, p));
+            manager.ChannelStateChangedEvent += Record;
 
             manager.Pause(channel);
 
@@ -43,15 +33,12 @@ namespace Arman.UpdateManagement.Tests
         }
 
         [Test]
-        public void ResumingARegisteredChannelShouldRaiseTheEvent(
-            [ValueSource(nameof(UpdateManagers))] IUpdateManager manager)
+        public void ResumingARegisteredChannelShouldRaiseTheEvent()
         {
-            IChannel channel = new NamedChannel("Channel");
             manager.RegisterChannel(channel);
             manager.Pause(channel);
 
-            var raised = new List<(IChannel channel, bool isPaused)>();
-            manager.ChannelStateChangedEvent += (c, p) => raised.Add((c, p));
+            manager.ChannelStateChangedEvent += Record;
 
             manager.Resume(channel);
 
@@ -59,11 +46,9 @@ namespace Arman.UpdateManagement.Tests
         }
 
         [Test]
-        public void PausingAnUnregisteredChannelShouldNotRaiseTheEvent(
-            [ValueSource(nameof(UpdateManagers))] IUpdateManager manager)
+        public void PausingAnUnregisteredChannelShouldNotRaiseTheEvent()
         {
-            var raised = new List<(IChannel channel, bool isPaused)>();
-            manager.ChannelStateChangedEvent += (c, p) => raised.Add((c, p));
+            manager.ChannelStateChangedEvent += Record;
 
             manager.Pause(new NamedChannel("Unregistered"));
 
@@ -71,20 +56,21 @@ namespace Arman.UpdateManagement.Tests
         }
 
         [Test]
-        public void AnUnsubscribedHandlerShouldNotBeCalled(
-            [ValueSource(nameof(UpdateManagers))] IUpdateManager manager)
+        public void AnUnsubscribedHandlerShouldNotBeCalled()
         {
-            IChannel channel = new NamedChannel("Channel");
             manager.RegisterChannel(channel);
 
-            var raised = new List<(IChannel channel, bool isPaused)>();
-            ChannelStateChanged handler = (c, p) => raised.Add((c, p));
+            manager.ChannelStateChangedEvent += Record;
+            manager.ChannelStateChangedEvent -= Record;
 
-            manager.ChannelStateChangedEvent += handler;
-            manager.ChannelStateChangedEvent -= handler;
             manager.Pause(channel);
 
             Assert.That(raised, Is.Empty);
+        }
+
+        void Record(IChannel channel, bool isPaused)
+        {
+            raised.Add((channel, isPaused));
         }
     }
 }

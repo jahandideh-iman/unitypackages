@@ -2,6 +2,7 @@
 using Arman.PackageBasics;
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 
 // WARNING: Cycles in channel relations are not check. Having cycles may cause infinite lopps.
@@ -10,7 +11,6 @@ using System.Collections.Generic;
 // TODO: Refactor this.
 namespace Arman.UpdateManagement
 {
-    public delegate void ChannelStateChanged(IChannel channel, bool isPaused);
     public class BasicUpdateManager : IUpdateManager
     {
         public event ChannelStateChanged ChannelStateChangedEvent = delegate { };
@@ -124,13 +124,9 @@ namespace Arman.UpdateManagement
                 {
                     updatablesTemp[i].UpdateTime(amount * data.timeScale);
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
-                    // A misbehaving or destroyed-but-still-registered IUpdatable must never
-                    // abort the rest of this channel's tick -- neither this frame nor any
-                    // future one, since it stays registered and would throw again every
-                    // frame. Evict it and let the channel carry on.
-                    data.RemoveUpdatable(updatablesTemp[i]);
+                    Debug.LogException(e);
                 }
             }
         }
