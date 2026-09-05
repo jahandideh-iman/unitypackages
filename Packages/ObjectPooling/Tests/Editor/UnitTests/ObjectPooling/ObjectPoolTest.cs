@@ -4,7 +4,7 @@ using NUnit.Framework;
 namespace Arman.ObjectPooling.Tests
 {
 
-    public class MockObject : IPoolable
+    public class FakePoolable : IPoolable
     {
         public int id;
 
@@ -13,7 +13,7 @@ namespace Arman.ObjectPooling.Tests
         public bool onAcquiredIsCalled = false;
         public bool onReleaseIsCalled = false;
 
-        public MockObject(int id)
+        public FakePoolable(int id)
         {
             this.id = id;
         }
@@ -34,25 +34,25 @@ namespace Arman.ObjectPooling.Tests
         }
     }
 
-    public class TestableObjectPool : ObjectPool<MockObject>
+    public class TestableObjectPool : ObjectPool<FakePoolable>
     {
 
         public bool createMethodIsCalled = false;
 
 
-        protected override MockObject CreateObject()
+        protected override FakePoolable CreateObject()
         {
             this.createMethodIsCalled = true;
-            return new MockObject(1);
+            return new FakePoolable(1);
         }
 
-        protected override void DeactivateObject(MockObject obj)
+        protected override void DeactivateObject(FakePoolable obj)
         {
             obj.SetActive(false);
         }
 
 
-        protected override void ActivateObject(MockObject obj)
+        protected override void ActivateObject(FakePoolable obj)
         {
             obj.SetActive(true);
         }
