@@ -1,36 +1,43 @@
 ﻿
 using Arman.PackageBasics;
+using Moq;
 using NUnit.Framework;
-using System.Collections.Generic;
+using System.IO;
 
 namespace Arman.PersistentDataManagement.Tests
 {
     [TestFixture]
     public class PersistentDataManagerTest_Saving : PersistentDataManagerTestContext
     {
+        static void VerifySerialized(Mock<IPersistentDataSerializer> serializer, Times times)
+        {
+            serializer.Verify(
+                s => s.SerializeTo(It.IsAny<IWritablePersistentDataWrapper>()),
+                times);
+        }
 
         [Test]
         public void SavingAllShouldCallSerializeOnAllSerializers()
         {
-            manager.Register(serializerA);
-            manager.Register(serializerB, channel2);
+            manager.Register(serializerA.Object);
+            manager.Register(serializerB.Object, channel2);
 
             manager.SaveAll();
 
-            Assert.That(serializerA.IsSerializedCalledOnce(), Is.True);
-            Assert.That(serializerB.IsSerializedCalledOnce(), Is.True);
+            VerifySerialized(serializerA, Times.Once());
+            VerifySerialized(serializerB, Times.Once());
         }
 
         [Test]
         public void SavingAChannelShoudCallSerializeOnAllTheRegisteredSerializersOnThatChannel()
         {
-            manager.Register(serializerA, channel1);
-            manager.Register(serializerB, channel2);
+            manager.Register(serializerA.Object, channel1);
+            manager.Register(serializerB.Object, channel2);
 
             manager.Save(channel1);
 
-            Assert.That(serializerA.IsSerializedCalledOnce(), Is.True);
-            Assert.That(serializerB.IsSerializedCalledOnce(), Is.False);
+            VerifySerialized(serializerA, Times.Once());
+            VerifySerialized(serializerB, Times.Never());
         }
 
         [Test]
@@ -43,78 +50,70 @@ namespace Arman.PersistentDataManagement.Tests
 
             Assert.That(action, Throws.Exception.InstanceOf<PersistentDataChannelNotFoundException>());
 
-            Assert.That(serializerA.IsSerialized(), Is.False);
-            Assert.That(serializerB.IsSerialized(), Is.False);
+            VerifySerialized(serializerA, Times.Never());
+            VerifySerialized(serializerB, Times.Never());
         }
 
         [Test]
         public void SavingAllShouldClearPersistentDataWrapperForEachChannel()
         {
-            var persistentDataWrapper = new PersistentDataWrapperMock();
+            var persistentDataWrapper = DataWrapper();
 
-            int clearCallCounts = 0;
-            persistentDataWrapper.onClearAction = () => clearCallCounts++;
-
-            manager = CreateManager(emptyStreamFactory, persistentDataWrapper);
-            manager.Register(serializerA, channel1);
-            manager.Register(serializerB, channel2);
+            manager = CreateManager(emptyStreamFactory, persistentDataWrapper.Object);
+            manager.Register(serializerA.Object, channel1);
+            manager.Register(serializerB.Object, channel2);
 
             manager.SaveAll();
 
-            Assert.That(clearCallCounts, Is.EqualTo(2));
+            persistentDataWrapper.Verify(w => w.Clear(), Times.Exactly(2));
         }
 
         [Test]
         public void SavingAChannelShouldClearPersistentDataWrapper()
         {
-            var persistentDataWrapper = new PersistentDataWrapperMock();
+            var persistentDataWrapper = DataWrapper();
 
-            int clearCallCounts = 0;
-            persistentDataWrapper.onClearAction = () => clearCallCounts++;
-
-            manager = CreateManager(emptyStreamFactory, persistentDataWrapper);
-            manager.Register(serializerA, channel1);
+            manager = CreateManager(emptyStreamFactory, persistentDataWrapper.Object);
+            manager.Register(serializerA.Object, channel1);
 
 
             manager.Save(channel1);
 
-            Assert.That(clearCallCounts, Is.EqualTo(1));
+            persistentDataWrapper.Verify(w => w.Clear(), Times.Once);
         }
 
         [Test]
         public void SavingShouldGivePersistentDataWrapperToTheSerializers()
         {
-            var persistentDataWrapper = new PersistentDataWrapperMock();
+            var persistentDataWrapper = DataWrapper();
 
-            var givenWrappers = new Dictionary<IPersistentDataSerializer, IWritablePersistentDataWrapper>();
-            serializerA.onSerializeAction = (w) => givenWrappers.Add(serializerA, w);
-            serializerB.onSerializeAction = (w) => givenWrappers.Add(serializerB, w);
-
-            manager = CreateManager(emptyStreamFactory, persistentDataWrapper);
-            manager.Register(serializerA);
-            manager.Register(serializerB);
+            manager = CreateManager(emptyStreamFactory, persistentDataWrapper.Object);
+            manager.Register(serializerA.Object);
+            manager.Register(serializerB.Object);
 
             manager.SaveAll();
-            
-            Assert.That(givenWrappers[serializerA], Is.SameAs(persistentDataWrapper));
-            Assert.That(givenWrappers[serializerB], Is.SameAs(persistentDataWrapper));
+
+            serializerA.Verify(s => s.SerializeTo(persistentDataWrapper.Object), Times.Once);
+            serializerB.Verify(s => s.SerializeTo(persistentDataWrapper.Object), Times.Once);
         }
 
-        // TODO: Try to refactor this.
         [Test]
         public void SavingAllShouldWriteDataToPersistentDataWrapperAfterCallingAllSerializers()
         {
-            var dataWrapper = new PersistentDataWrapperMock();
+            var dataWrapper = DataWrapper();
 
             int step = 0;
             int writeStep = -1;
-            serializerA.onSerializeAction = (d) => step++;
-            serializerB.onSerializeAction = (d) => step++;
-            dataWrapper.onWriteAction = (w) => writeStep = step;
+            serializerA.Setup(s => s.SerializeTo(It.IsAny<IWritablePersistentDataWrapper>()))
+                .Callback(() => step++);
+            serializerB.Setup(s => s.SerializeTo(It.IsAny<IWritablePersistentDataWrapper>()))
+                .Callback(() => step++);
+            dataWrapper.Setup(w => w.WriteTo(It.IsAny<StreamWriter>()))
+                .Callback(() => writeStep = step);
 
-            manager = CreateManager(emptyStreamFactory, dataWrapper);
-            manager.Register(serializerA);
-            manager.Register(serializerB);
+            manager = CreateManager(emptyStreamFactory, dataWrapper.Object);
+            manager.Register(serializerA.Object);
+            manager.Register(serializerB.Object);
 
             manager.SaveAll();
 
@@ -122,19 +121,20 @@ namespace Arman.PersistentDataManagement.Tests
         }
 
 
-        // TODO: Try to refactor this.
         [Test]
         public void SavingAChannelShouldWriteDataToPersistentDataWrapperAfterCallingChannelsSerializers()
         {
-            var dataWrapper = new PersistentDataWrapperMock();
+            var dataWrapper = DataWrapper();
 
             int step = 0;
             int writeStep = -1;
-            serializerA.onSerializeAction = (d) => step++;
-            dataWrapper.onWriteAction = (w) => writeStep = step;
+            serializerA.Setup(s => s.SerializeTo(It.IsAny<IWritablePersistentDataWrapper>()))
+                .Callback(() => step++);
+            dataWrapper.Setup(w => w.WriteTo(It.IsAny<StreamWriter>()))
+                .Callback(() => writeStep = step);
 
-            manager = CreateManager(emptyStreamFactory, dataWrapper);
-            manager.Register(serializerA, channel1);
+            manager = CreateManager(emptyStreamFactory, dataWrapper.Object);
+            manager.Register(serializerA.Object, channel1);
 
             manager.Save(channel1);
 
@@ -144,32 +144,32 @@ namespace Arman.PersistentDataManagement.Tests
         [Test]
         public void SavingAllShouldUsePersistentDataStreamFactoryToCreateANewWriteStreamForEachChannel()
         {
-            var streamFactory = new PersistentDataIOStreamFactoryMock();
+            var streamFactory = StreamFactory();
 
-            manager = CreateManager(streamFactory, emptyDataWrapper);
-            manager.Register(serializerA, channel1);
-            manager.Register(serializerB, channel2);
+            manager = CreateManager(streamFactory.Object, emptyDataWrapper);
+            manager.Register(serializerA.Object, channel1);
+            manager.Register(serializerB.Object, channel2);
 
             manager.SaveAll();
 
-            Assert.That(streamFactory.CreateWriteStreamIsCalledOnceFor(channel1));
-            Assert.That(streamFactory.CreateWriteStreamIsCalledOnceFor(channel2));
+            streamFactory.Verify(f => f.CreateWriteStreamFor(channel1), Times.Once);
+            streamFactory.Verify(f => f.CreateWriteStreamFor(channel2), Times.Once);
         }
 
         [Test]
         public void SavingAChannelShouldUsePersistentDataStreamFactoryToCreateANewWriteStreamForTheChannel()
         {
-            var streamFactory = new PersistentDataIOStreamFactoryMock();
+            var streamFactory = StreamFactory();
 
-            manager = CreateManager(streamFactory, emptyDataWrapper);
+            manager = CreateManager(streamFactory.Object, emptyDataWrapper);
 
-            manager.Register(serializerA, channel1);
-            manager.Register(serializerB, channel2);
+            manager.Register(serializerA.Object, channel1);
+            manager.Register(serializerB.Object, channel2);
 
             manager.Save(channel1);
 
-            Assert.That(streamFactory.CreateWriteStreamIsCalledOnceFor(channel1), Is.True);
-            Assert.That(streamFactory.CreateWriteStreamIsCalledOnceFor(channel2), Is.False);
+            streamFactory.Verify(f => f.CreateWriteStreamFor(channel1), Times.Once);
+            streamFactory.Verify(f => f.CreateWriteStreamFor(channel2), Times.Never);
         }
     }
 }

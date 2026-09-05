@@ -1,5 +1,6 @@
 ﻿
 using Arman.PackageBasics;
+using Moq;
 using NUnit.Framework;
 
 namespace Arman.PersistentDataManagement.Tests
@@ -13,8 +14,8 @@ namespace Arman.PersistentDataManagement.Tests
         protected IPersistentDataIOStreamFactory emptyStreamFactory;
         protected IPersistentDataWrapper emptyDataWrapper;
 
-        protected PersistentDataSerializerMock serializerA;
-        protected PersistentDataSerializerMock serializerB;
+        protected Mock<IPersistentDataSerializer> serializerA;
+        protected Mock<IPersistentDataSerializer> serializerB;
 
         protected IChannel channel1;
         protected IChannel channel2;
@@ -22,8 +23,8 @@ namespace Arman.PersistentDataManagement.Tests
         [SetUp]
         public void Setup()
         {
-            serializerA = new PersistentDataSerializerMock("A");
-            serializerB = new PersistentDataSerializerMock("B");
+            serializerA = Serializer("A");
+            serializerB = Serializer("B");
 
             channel1 = new NamedChannel("ChannelA");
             channel2 = new NamedChannel("ChannelB");
@@ -34,6 +35,41 @@ namespace Arman.PersistentDataManagement.Tests
             manager = CreateManager(emptyStreamFactory, emptyDataWrapper);
 
             InternalSetup();
+        }
+
+        // The manager reads a serializer's key to name its block, so a loose mock
+        // answering null is not enough.
+        protected static Mock<IPersistentDataSerializer> Serializer(string key)
+        {
+            var serializer = new Mock<IPersistentDataSerializer>();
+            serializer.Setup(s => s.Key()).Returns(key);
+            return serializer;
+        }
+
+        // The manager chains its writes and asks the wrapper for keys, so the
+        // fluent methods have to answer with the wrapper itself rather than null.
+        protected static Mock<IPersistentDataWrapper> DataWrapper()
+        {
+            var wrapper = new Mock<IPersistentDataWrapper>();
+
+            wrapper.Setup(w => w.HasKey(It.IsAny<string>())).Returns(true);
+            wrapper.Setup(w => w.WriteInt(It.IsAny<string>(), It.IsAny<int>()))
+                .Returns(() => wrapper.Object);
+            wrapper.Setup(w => w.BeginWritingBlock(It.IsAny<string>()))
+                .Returns(() => wrapper.Object);
+            wrapper.Setup(w => w.EndWritingBlock())
+                .Returns(() => wrapper.Object);
+
+            return wrapper;
+        }
+
+        // Reports every channel as readable; the streams themselves stay null,
+        // which is what the empty factory hands back too.
+        protected static Mock<IPersistentDataIOStreamFactory> StreamFactory()
+        {
+            var streamFactory = new Mock<IPersistentDataIOStreamFactory>();
+            streamFactory.Setup(f => f.HasReadableStreamFor(It.IsAny<IChannel>())).Returns(true);
+            return streamFactory;
         }
 
         protected static PersistentDataManager CreateManager(

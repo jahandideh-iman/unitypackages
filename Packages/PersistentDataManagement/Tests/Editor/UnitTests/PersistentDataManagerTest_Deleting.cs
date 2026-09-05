@@ -1,4 +1,5 @@
 using Arman.PackageBasics;
+using Moq;
 using NUnit.Framework;
 
 namespace Arman.PersistentDataManagement.Tests
@@ -8,13 +9,13 @@ namespace Arman.PersistentDataManagement.Tests
         [Test]
         public void DeletingAChannelShouldUsePersistentDataStreamFactoryToDeleteTheChannel()
         {
-            var streamFactory = new PersistentDataIOStreamFactoryMock();
+            var streamFactory = StreamFactory();
 
-            manager = CreateManager(streamFactory, emptyDataWrapper);
+            manager = CreateManager(streamFactory.Object, emptyDataWrapper);
 
             manager.Delete(channel1);
 
-            Assert.That(streamFactory.DeleteIsCalledOnceFor(channel1), Is.True);
+            streamFactory.Verify(f => f.Delete(channel1), Times.Once);
         }
 
         [Test]

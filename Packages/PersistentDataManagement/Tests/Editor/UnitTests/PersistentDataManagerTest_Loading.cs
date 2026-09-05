@@ -1,19 +1,26 @@
 ﻿
 using Arman.PackageBasics;
+using Moq;
 using NUnit.Framework;
-using System.Collections.Generic;
+using System.IO;
 
 namespace Arman.PersistentDataManagement.Tests
 {
     [TestFixture]
     public class PersistentDataManagerTest_Loading : PersistentDataManagerTestContext
     {
-        protected PersistentDataSerializerMock serializerC;
+        protected Mock<IPersistentDataSerializer> serializerC;
 
+        static void VerifyDeserialized(Mock<IPersistentDataSerializer> serializer, Times times)
+        {
+            serializer.Verify(
+                s => s.DeserializeFrom(It.IsAny<IReadablePersistentDataWrapper>()),
+                times);
+        }
 
         protected override void InternalSetup()
         {
-            serializerC = new PersistentDataSerializerMock("C");
+            serializerC = Serializer("C");
 
             emptyStreamFactory = new MemoryBasedPersistetDataIOStreamFactory();
             emptyDataWrapper = new JSONPersistentDataWrapper();
@@ -24,40 +31,40 @@ namespace Arman.PersistentDataManagement.Tests
         [Test]
         public void LoadingAllShouldCallDeserializerOnAllSerializersThatAreSaved()
         {
-            manager.Register(serializerA);
-            manager.Register(serializerB, channel2);
+            manager.Register(serializerA.Object);
+            manager.Register(serializerB.Object, channel2);
             manager.SaveAll();
-            manager.Register(serializerC);
+            manager.Register(serializerC.Object);
 
             manager.LoadAll();
 
-            Assert.That(serializerA.IsDeserializedCalledOnce(), Is.True);
-            Assert.That(serializerB.IsDeserializedCalledOnce(), Is.True);
-            Assert.That(serializerC.IsDeserialized(), Is.False);
+            VerifyDeserialized(serializerA, Times.Once());
+            VerifyDeserialized(serializerB, Times.Once());
+            VerifyDeserialized(serializerC, Times.Never());
         }
 
         [Test]
         public void LoadingAChannelShoudCallDeserializeOnAllTheRegisteredSerializersOnThatChannelThatAreSaved()
         {
-            manager.Register(serializerA, channel1);
-            manager.Register(serializerB, channel2);
+            manager.Register(serializerA.Object, channel1);
+            manager.Register(serializerB.Object, channel2);
             manager.SaveAll();
-            manager.Register(serializerC, channel1);
+            manager.Register(serializerC.Object, channel1);
 
             manager.Load(channel1);
 
-            Assert.That(serializerA.IsDeserializedCalledOnce(), Is.True);
-            Assert.That(serializerB.IsDeserialized(), Is.False);
-            Assert.That(serializerC.IsDeserialized(), Is.False);
+            VerifyDeserialized(serializerA, Times.Once());
+            VerifyDeserialized(serializerB, Times.Never());
+            VerifyDeserialized(serializerC, Times.Never());
         }
 
         [Test]
         public void LoadingAChannelThatWasNeverSavedShouldNotThrow()
         {
-            manager.Register(serializerA, channel1);
+            manager.Register(serializerA.Object, channel1);
 
             Assert.DoesNotThrow(() => manager.Load(channel1));
-            Assert.That(serializerA.IsDeserialized(), Is.False);
+            VerifyDeserialized(serializerA, Times.Never());
         }
 
         [Test]
@@ -67,10 +74,10 @@ namespace Arman.PersistentDataManagement.Tests
             streamFactory.CreateWriteStreamFor(channel1).Dispose();
 
             manager = CreateManager(streamFactory, emptyDataWrapper);
-            manager.Register(serializerA, channel1);
+            manager.Register(serializerA.Object, channel1);
 
             Assert.DoesNotThrow(() => manager.Load(channel1));
-            Assert.That(serializerA.IsDeserialized(), Is.False);
+            VerifyDeserialized(serializerA, Times.Never());
         }
 
         [Test]
@@ -83,80 +90,72 @@ namespace Arman.PersistentDataManagement.Tests
 
             Assert.That(action, Throws.Exception.InstanceOf<PersistentDataChannelNotFoundException>());
 
-            Assert.That(serializerA.IsDeserialized(), Is.False);
-            Assert.That(serializerB.IsDeserialized(), Is.False);
+            VerifyDeserialized(serializerA, Times.Never());
+            VerifyDeserialized(serializerB, Times.Never());
         }
 
         [Test]
         public void LoadingShouldGivePersistentDataWrapperToTheSerializers()
         {
-            var persistentDataWrapper = new PersistentDataWrapperMock();
+            var persistentDataWrapper = DataWrapper();
 
-            var givenWrappers = new Dictionary<IPersistentDataSerializer, IReadablePersistentDataWrapper>();
-            serializerA.onDeserializeAction = (w) => givenWrappers.Add(serializerA, w);
-            serializerB.onDeserializeAction = (w) => givenWrappers.Add(serializerB, w);
-
-            manager = CreateManager(emptyStreamFactory, persistentDataWrapper);
-            manager.Register(serializerA);
-            manager.Register(serializerB);
+            manager = CreateManager(emptyStreamFactory, persistentDataWrapper.Object);
+            manager.Register(serializerA.Object);
+            manager.Register(serializerB.Object);
 
 
             manager.LoadAll();
 
-            Assert.That(givenWrappers[serializerA], Is.SameAs(persistentDataWrapper));
-            Assert.That(givenWrappers[serializerB], Is.SameAs(persistentDataWrapper));
+            serializerA.Verify(s => s.DeserializeFrom(persistentDataWrapper.Object), Times.Once);
+            serializerB.Verify(s => s.DeserializeFrom(persistentDataWrapper.Object), Times.Once);
         }
 
         [Test]
         public void LoadingAllShouldClearPersistentDataWrapperForEachChannel()
         {
-            var persistentDataWrapper = new PersistentDataWrapperMock();
+            var persistentDataWrapper = DataWrapper();
 
-            int clearCallCounts = 0;
-            persistentDataWrapper.onClearAction = () => clearCallCounts++;
-
-            manager = CreateManager(emptyStreamFactory, persistentDataWrapper);
-            manager.Register(serializerA, channel1);
-            manager.Register(serializerB, channel2);
+            manager = CreateManager(emptyStreamFactory, persistentDataWrapper.Object);
+            manager.Register(serializerA.Object, channel1);
+            manager.Register(serializerB.Object, channel2);
 
 
             manager.LoadAll();
 
-            Assert.That(clearCallCounts, Is.EqualTo(2));
+            persistentDataWrapper.Verify(w => w.Clear(), Times.Exactly(2));
         }
 
         [Test]
         public void LoadingAChannelShouldClearPersistentDataWrapper()
         {
-            var persistentDataWrapper = new PersistentDataWrapperMock();
+            var persistentDataWrapper = DataWrapper();
 
-            int clearCallCounts = 0;
-            persistentDataWrapper.onClearAction = () => clearCallCounts++;
-
-            manager = CreateManager(emptyStreamFactory, persistentDataWrapper);
-            manager.Register(serializerA, channel1);
+            manager = CreateManager(emptyStreamFactory, persistentDataWrapper.Object);
+            manager.Register(serializerA.Object, channel1);
 
 
             manager.Load(channel1);
 
-            Assert.That(clearCallCounts, Is.EqualTo(1));
+            persistentDataWrapper.Verify(w => w.Clear(), Times.Once);
         }
 
-        // TODO: Try to refactor this.
         [Test]
         public void LoadingAllShouldGiveDataToPersistentDataWrapperBeforeCallingAllSerializers()
         {
-            var dataWrapper = new PersistentDataWrapperMock();
+            var dataWrapper = DataWrapper();
 
             int step = 0;
             int readStep = -1;
-            serializerA.onDeserializeAction = (d) => step++;
-            serializerB.onDeserializeAction = (d) => step++;
-            dataWrapper.onReadAction = (s) => readStep = step;
+            serializerA.Setup(s => s.DeserializeFrom(It.IsAny<IReadablePersistentDataWrapper>()))
+                .Callback(() => step++);
+            serializerB.Setup(s => s.DeserializeFrom(It.IsAny<IReadablePersistentDataWrapper>()))
+                .Callback(() => step++);
+            dataWrapper.Setup(w => w.ReadFrom(It.IsAny<StreamReader>()))
+                .Callback(() => readStep = step);
 
-            manager = CreateManager(emptyStreamFactory, dataWrapper);
-            manager.Register(serializerA);
-            manager.Register(serializerB);
+            manager = CreateManager(emptyStreamFactory, dataWrapper.Object);
+            manager.Register(serializerA.Object);
+            manager.Register(serializerB.Object);
 
             manager.LoadAll();
 
@@ -164,19 +163,20 @@ namespace Arman.PersistentDataManagement.Tests
         }
 
 
-        // TODO: Try to refactor this.
         [Test]
         public void LoadingAChannelShouldGiveDataToPersistentDataWrapperBeforeCallingChannelsSerializers()
         {
-            var dataWrapper = new PersistentDataWrapperMock();
+            var dataWrapper = DataWrapper();
 
             int step = 0;
             int readStep = -1;
-            serializerA.onDeserializeAction = (d) => step++;
-            dataWrapper.onReadAction = (s) => readStep = step;
+            serializerA.Setup(s => s.DeserializeFrom(It.IsAny<IReadablePersistentDataWrapper>()))
+                .Callback(() => step++);
+            dataWrapper.Setup(w => w.ReadFrom(It.IsAny<StreamReader>()))
+                .Callback(() => readStep = step);
 
-            manager = CreateManager(emptyStreamFactory, dataWrapper);
-            manager.Register(serializerA, channel1);
+            manager = CreateManager(emptyStreamFactory, dataWrapper.Object);
+            manager.Register(serializerA.Object, channel1);
 
             manager.Load(channel1);
 
@@ -186,31 +186,31 @@ namespace Arman.PersistentDataManagement.Tests
         [Test]
         public void LoadingAllShouldUsePersistentDataStreamFactoryToLoadReadStreamForEachChannel()
         {
-            var streamFactory = new PersistentDataIOStreamFactoryMock();
+            var streamFactory = StreamFactory();
 
-            manager = CreateManager(streamFactory, new PersistentDataWrapperMock());
-            manager.Register(serializerA, channel1);
-            manager.Register(serializerB, channel2);
+            manager = CreateManager(streamFactory.Object, DataWrapper().Object);
+            manager.Register(serializerA.Object, channel1);
+            manager.Register(serializerB.Object, channel2);
 
             manager.LoadAll();
 
-            Assert.That(streamFactory.CreateReadStreamIsCalledOnceFor(channel1));
-            Assert.That(streamFactory.CreateReadStreamIsCalledOnceFor(channel2));
+            streamFactory.Verify(f => f.CreateReadStreamFor(channel1), Times.Once);
+            streamFactory.Verify(f => f.CreateReadStreamFor(channel2), Times.Once);
         }
 
         [Test]
         public void LoadingAChannelShouldUsePersistentDataStreamFactoryToLoadReadStreamForTheChannel()
         {
-            var streamFactory = new PersistentDataIOStreamFactoryMock();
+            var streamFactory = StreamFactory();
 
-            manager = CreateManager(streamFactory, new PersistentDataWrapperMock());
-            manager.Register(serializerA, channel1);
-            manager.Register(serializerB, channel2);
+            manager = CreateManager(streamFactory.Object, DataWrapper().Object);
+            manager.Register(serializerA.Object, channel1);
+            manager.Register(serializerB.Object, channel2);
 
             manager.Load(channel1);
 
-            Assert.That(streamFactory.CreateReadStreamIsCalledOnceFor(channel1), Is.True);
-            Assert.That(streamFactory.CreateReadStreamIsCalledOnceFor(channel2), Is.False);
+            streamFactory.Verify(f => f.CreateReadStreamFor(channel1), Times.Once);
+            streamFactory.Verify(f => f.CreateReadStreamFor(channel2), Times.Never);
         }
     }
 }
