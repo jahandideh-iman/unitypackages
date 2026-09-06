@@ -1,6 +1,7 @@
 name: tests
 
-# Runs the repo's 9 test assemblies on a self-hosted Windows runner.
+# Runs the repo's own tooling tests on ubuntu, then its 9 Unity test assemblies
+# on a self-hosted Windows runner.
 # See docs/specs/2026-08-30-pr-test-ci-design.md.
 #
 # Separate from release.yml on purpose: different runner, different trigger
@@ -27,21 +28,42 @@ permissions:
   contents: read
 
 jobs:
+  # One job for every test the repo's own tooling has: the PowerShell CI
+  # helpers, plus the Node scripts behind the changelog check and the release
+  # flow. These were three separate jobs in three workflows, which put three
+  # near-identical rows in every PR's check list and forced the awkward
+  # `release-script-tests` name on one of them to dodge a name collision.
+  #
   # Runs everywhere, including on forks: it needs no Unity and no self-hosted
   # runner, so the logic gating CI is itself tested on every PR.
-  script-tests:
+  tooling-tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          # One source of truth for the version, shared with a local nvm/fnm.
+          node-version-file: .nvmrc
+
       - name: Test the CI helper scripts
         shell: pwsh
         run: ./Tools/ci/Tests/Test-CiScripts.ps1
 
-  # Not `test`: changelog.yml already has a job by that name, and two identical
-  # entries in a PR's check list cannot be told apart -- which one is required
-  # by branch protection becomes a coin flip.
+      # always() on the two below for the reason PlayMode carries it: a red
+      # suite should not hide an independent failure in the one after it.
+      - name: Test the changelog check
+        if: always()
+        run: node --test Tools/changelog-check.test.mjs
+
+      - name: Test the release tooling
+        if: always()
+        run: node --test Tools/upm-release.test.mjs Tools/upm-release.prepare.test.mjs Tools/promotion-check.test.mjs Tools/release-flow.test.mjs
+
+  # Job names are unique across every workflow on purpose: two rows sharing a
+  # name in a PR's check list cannot be told apart, and which one branch
+  # protection requires becomes a coin flip. Hence `unity-tests`, not `test`.
   unity-tests:
-    needs: script-tests
+    needs: tooling-tests
     # THE SECURITY BOUNDARY. This repo is public and this runner is a physical
     # machine with a real Unity licence and a real filesystem. A pull_request
     # event from a fork checks out the contributor's code; running that here

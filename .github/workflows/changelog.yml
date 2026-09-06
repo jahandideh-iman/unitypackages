@@ -42,7 +42,7 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version-file: .nvmrc
 
       # Every value below comes from the pull request and is passed through the
       # environment, never interpolated into the shell body — a ${{ }} expansion
@@ -54,14 +54,3 @@ jobs:
           BASE_REF: ${{ github.event.pull_request.base.ref }}
           PR_LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
         run: node Tools/changelog-check.mjs --base "$BASE_SHA" --head "$HEAD_SHA" --base-branch "$BASE_REF"
-
-  # The check's own tests. They build throwaway git repos and run the real
-  # script inside them, so a change to the matching rules cannot land silently.
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 22
-      - run: node --test Tools/changelog-check.test.mjs

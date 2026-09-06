@@ -159,15 +159,15 @@ Do **not** fix a duplicate-assembly error by turning `overrideReferences` off �
 
 ## CI
 
-`.github/workflows/tests.yml` runs the test suites on every same-repo pull request and on pushes to `dev` and `master`. `.github/workflows/release.yml` separately runs `validate` and `pack`, and `.github/workflows/changelog.yml` enforces [the changelog rules](#changelogs--four-rules-enforced-in-ci). Design notes: [`docs/specs/2026-08-30-pr-test-ci-design.md`](../docs/specs/2026-08-30-pr-test-ci-design.md).
+`.github/workflows/tests.yml` runs the test suites on every same-repo pull request and on pushes to `dev` and `master` — both the Unity suites and, in a single `tooling-tests` job, the tests for the repo's own scripts. Every job that needs Node reads the version from `.nvmrc` via `node-version-file`, so a bump is one edit rather than six. `.github/workflows/release.yml` separately runs `validate` and `pack`, and `.github/workflows/changelog.yml` enforces [the changelog rules](#changelogs--four-rules-enforced-in-ci). Design notes: [`docs/specs/2026-08-30-pr-test-ci-design.md`](../docs/specs/2026-08-30-pr-test-ci-design.md).
 
 | Job | Runner | Notes |
 |--|--|--|
-| `script-tests` | `ubuntu-latest` | Tests the CI helper scripts. Runs on forks too. |
+| `tooling-tests` | `ubuntu-latest` | The repo's own tooling tests — the `Tools/ci/` PowerShell helpers, the changelog check, and the release flow. Runs on forks too. |
 | `unity-tests` | self-hosted Windows | EditMode + PlayMode. **Never runs on fork PRs** — see below. |
 | `report` | `ubuntu-latest` | Turns the JUnit XML into PR annotations. |
 
-Named `unity-tests`, not `test`, because `changelog.yml` already has a job called `test` and two identically named entries in a PR's check list cannot be told apart — which matters the moment either becomes a required check. For the same reason the report step runs with `annotate_only: true`: creating a check run gives GitHub no way to say which check suite it belongs to, and it filed the result under the *changelog* workflow, so a red Unity suite pointed the reader at the wrong place.
+Job names are unique across all three workflows on purpose: two identically named entries in a PR's check list cannot be told apart, which matters the moment either becomes a required check. Hence `unity-tests` rather than `test`. It is also why the three tooling-test jobs were merged — one of them had to be called `release-script-tests` purely to dodge a collision with `changelog.yml`'s `test`. For the same reason the report step runs with `annotate_only: true`: creating a check run gives GitHub no way to say which check suite it belongs to, and it filed the result under the *changelog* workflow, so a red Unity suite pointed the reader at the wrong place.
 
 Three rules that are load-bearing rather than stylistic:
 
@@ -182,7 +182,7 @@ powershell -NoProfile -File Tools/ci/Tests/Test-CiScripts.ps1   # locally (Windo
 pwsh -File Tools/ci/Tests/Test-CiScripts.ps1                    # in CI (PowerShell Core)
 ```
 
-The `script-tests` job runs `pwsh`, because it is on `ubuntu-latest`. The self-hosted `unity-tests` job runs **Windows PowerShell 5.1**, via an explicit shell string set as a job default — PowerShell Core is not installed on the runner, so `shell: pwsh` there fails with `pwsh: command not found` before any step does work.
+The `tooling-tests` job runs `pwsh`, because it is on `ubuntu-latest`. The self-hosted `unity-tests` job runs **Windows PowerShell 5.1**, via an explicit shell string set as a job default — PowerShell Core is not installed on the runner, so `shell: pwsh` there fails with `pwsh: command not found` before any step does work.
 
 That shell string spells out three things the built-in `shell: powershell` would not give it: `-NoProfile`, an execution-policy override (the runner account's policy is Restricted and otherwise refuses the `.ps1` GitHub generates per `run:` block), and a trailing `exit $LASTEXITCODE`. The last is load-bearing — GitHub appends that epilogue to its *built-in* shells only, and without it a step whose final act is a failing script reports success. Both were found the hard way, on the first two live runs.
 
@@ -311,7 +311,7 @@ Six steps, stopping at the first failure: preflight (`git` and `gh` present and 
 
 **It stops there deliberately.** Merging that pull request is the publish, and an OpenUPM tag is permanent, so the irreversible step stays a human click on a green PR. If no package has a populated `## [Unreleased]` section it says so and exits 0, having changed nothing. Re-running while a release PR is already open updates that PR rather than failing.
 
-Passing it any argument is an error (exit 2) that points back at `upm-release.mjs` — that script is where single steps, `--dry-run`, `--only` and `--bump` live. There is no longer a wrapper that forwards sub-commands; spell those `node Tools/upm-release.mjs <command>`. The flow's own tests are `Tools/release-flow.test.mjs`, run by `release-script-tests` in `release.yml`.
+Passing it any argument is an error (exit 2) that points back at `upm-release.mjs` — that script is where single steps, `--dry-run`, `--only` and `--bump` live. There is no longer a wrapper that forwards sub-commands; spell those `node Tools/upm-release.mjs <command>`. The flow's own tests are `Tools/release-flow.test.mjs`, run by `tooling-tests` in `tests.yml`.
 
 > `release.bat` has twice been committed with the backslashes eaten out of its `Tools\release.bat` usage comments — once harmlessly, once into bare `release.bat` command lines, which cmd executes and which recurse forever when the working directory is `Tools/`. The file now contains **no backslash at all**, and three tests pin that. Keep it that way.
 
@@ -412,7 +412,24 @@ This split is enforced in two places, and both are deliberate belt-and-braces: `
 
 The *source* of a release PR is enforced separately, by `promotion-guard` in `release.yml` (`Tools/promotion-check.mjs`): a pull request into `master` from anything other than `dev` fails. A GitHub ruleset cannot express this — rulesets target a destination ref and say nothing about a pull request's source — so the ruleset's job is to make `promotion-guard` a **required** check. Run it by hand with `node Tools/promotion-check.mjs --event pull_request --base master --head my-branch`.
 
-`master` carries a ruleset — [`.github/rulesets/master.json`](../.github/rulesets/master.json), applied with `gh api repos/:owner/:repo/rulesets --input .github/rulesets/master.json` — that requires a pull request, requires `promotion-guard`, `validate`, and `pack` to pass, and blocks force pushes and branch deletion. **It has no bypass actors, repository owner included.** Merging into `master` publishes permanently; a bypass is the door this flow exists to close.
+Both branches carry a ruleset, checked in under [`.github/rulesets/`](../.github/rulesets/): `master.json` and `dev.json`. Each requires a pull request and blocks force pushes and branch deletion. **Neither has bypass actors, repository owner included.** Merging into `master` publishes permanently; a bypass is the door this flow exists to close.
+
+| Required check | `dev` | `master` |
+|--|:--:|:--:|
+| `check` (changelog) | yes | yes |
+| `promotion-guard` | yes | yes |
+| `validate` | yes | yes |
+| `pack` | yes | yes |
+| `tooling-tests` | yes | yes |
+| `unity-tests` | **no** | yes |
+
+`unity-tests` is required on `master` but not on `dev`, and that asymmetry is load-bearing. A skipped required check blocks the merge, and `unity-tests` is deliberately skipped on fork pull requests — requiring it on `dev`, which is where fork pull requests land, would block every outside contributor permanently. A release pull request comes from this repo's `dev`, where the job always runs, so requiring it on `master` costs nothing. Net effect: a red Unity suite can reach `dev`, but can never publish. `report` and `tag` are required on neither, for the same skip reason.
+
+`master` restricts the merge method to a true merge. Squashing a release pull request would create a commit on `master` that is not on `dev`, which is exactly the invariant `promotion-guard` exists to protect.
+
+Each entry pins `integration_id: 15368` (GitHub Actions), so only a check run from Actions can satisfy it — a bare context name would be satisfiable by any app or token that can post a commit status with a matching name.
+
+The GitHub web UI is not the source of truth here, and is a poor way to edit these: its required-checks picker suggests only check names it has recently observed, so a renamed job or a `pull_request`-only check like `check` may not appear at all. The field accepts free text, but prefer applying the JSON.
 
 ## Unity `.meta` files
 
