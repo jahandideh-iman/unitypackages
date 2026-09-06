@@ -412,7 +412,24 @@ This split is enforced in two places, and both are deliberate belt-and-braces: `
 
 The *source* of a release PR is enforced separately, by `promotion-guard` in `release.yml` (`Tools/promotion-check.mjs`): a pull request into `master` from anything other than `dev` fails. A GitHub ruleset cannot express this — rulesets target a destination ref and say nothing about a pull request's source — so the ruleset's job is to make `promotion-guard` a **required** check. Run it by hand with `node Tools/promotion-check.mjs --event pull_request --base master --head my-branch`.
 
-`master` carries a ruleset — [`.github/rulesets/master.json`](../.github/rulesets/master.json), applied with `gh api repos/:owner/:repo/rulesets --input .github/rulesets/master.json` — that requires a pull request, requires `promotion-guard`, `validate`, and `pack` to pass, and blocks force pushes and branch deletion. **It has no bypass actors, repository owner included.** Merging into `master` publishes permanently; a bypass is the door this flow exists to close.
+Both branches carry a ruleset, checked in under [`.github/rulesets/`](../.github/rulesets/): `master.json` and `dev.json`. Each requires a pull request and blocks force pushes and branch deletion. **Neither has bypass actors, repository owner included.** Merging into `master` publishes permanently; a bypass is the door this flow exists to close.
+
+| Required check | `dev` | `master` |
+|--|:--:|:--:|
+| `check` (changelog) | yes | yes |
+| `promotion-guard` | yes | yes |
+| `validate` | yes | yes |
+| `pack` | yes | yes |
+| `tooling-tests` | yes | yes |
+| `unity-tests` | **no** | yes |
+
+`unity-tests` is required on `master` but not on `dev`, and that asymmetry is load-bearing. A skipped required check blocks the merge, and `unity-tests` is deliberately skipped on fork pull requests — requiring it on `dev`, which is where fork pull requests land, would block every outside contributor permanently. A release pull request comes from this repo's `dev`, where the job always runs, so requiring it on `master` costs nothing. Net effect: a red Unity suite can reach `dev`, but can never publish. `report` and `tag` are required on neither, for the same skip reason.
+
+`master` restricts the merge method to a true merge. Squashing a release pull request would create a commit on `master` that is not on `dev`, which is exactly the invariant `promotion-guard` exists to protect.
+
+Each entry pins `integration_id: 15368` (GitHub Actions), so only a check run from Actions can satisfy it — a bare context name would be satisfiable by any app or token that can post a commit status with a matching name.
+
+The GitHub web UI is not the source of truth here, and is a poor way to edit these: its required-checks picker suggests only check names it has recently observed, so a renamed job or a `pull_request`-only check like `check` may not appear at all. The field accepts free text, but prefer applying the JSON.
 
 ## Unity `.meta` files
 

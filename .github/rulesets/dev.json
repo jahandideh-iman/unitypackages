@@ -1,12 +1,12 @@
 {
-  "name": "Master",
+  "name": "default",
   "target": "branch",
   "enforcement": "active",
   "bypass_actors": [],
   "conditions": {
     "ref_name": {
       "include": [
-        "refs/heads/master"
+        "~DEFAULT_BRANCH"
       ],
       "exclude": []
     }
@@ -26,9 +26,11 @@
         "require_code_owner_review": false,
         "require_last_push_approval": false,
         "required_review_thread_resolution": false,
-        "require_extra_approval_for_unattributed_changes": true,
+        "require_extra_approval_for_unattributed_changes": false,
         "allowed_merge_methods": [
-          "merge"
+          "merge",
+          "squash",
+          "rebase"
         ]
       }
     },
@@ -39,11 +41,11 @@
         "do_not_enforce_on_create": false,
         "required_status_checks": [
           {
-            "context": "promotion-guard",
+            "context": "check",
             "integration_id": 15368
           },
           {
-            "context": "check",
+            "context": "promotion-guard",
             "integration_id": 15368
           },
           {
@@ -56,10 +58,6 @@
           },
           {
             "context": "tooling-tests",
-            "integration_id": 15368
-          },
-          {
-            "context": "unity-tests",
             "integration_id": 15368
           }
         ]
