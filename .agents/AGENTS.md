@@ -159,15 +159,15 @@ Do **not** fix a duplicate-assembly error by turning `overrideReferences` off �
 
 ## CI
 
-`.github/workflows/tests.yml` runs the test suites on every same-repo pull request and on pushes to `dev` and `master`. `.github/workflows/release.yml` separately runs `validate` and `pack`, and `.github/workflows/changelog.yml` enforces [the changelog rules](#changelogs--four-rules-enforced-in-ci). Design notes: [`docs/specs/2026-08-30-pr-test-ci-design.md`](../docs/specs/2026-08-30-pr-test-ci-design.md).
+`.github/workflows/tests.yml` runs the test suites on every same-repo pull request and on pushes to `dev` and `master` — both the Unity suites and, in a single `tooling-tests` job, the tests for the repo's own scripts. Every job that needs Node reads the version from `.nvmrc` via `node-version-file`, so a bump is one edit rather than six. `.github/workflows/release.yml` separately runs `validate` and `pack`, and `.github/workflows/changelog.yml` enforces [the changelog rules](#changelogs--four-rules-enforced-in-ci). Design notes: [`docs/specs/2026-08-30-pr-test-ci-design.md`](../docs/specs/2026-08-30-pr-test-ci-design.md).
 
 | Job | Runner | Notes |
 |--|--|--|
-| `script-tests` | `ubuntu-latest` | Tests the CI helper scripts. Runs on forks too. |
+| `tooling-tests` | `ubuntu-latest` | The repo's own tooling tests — the `Tools/ci/` PowerShell helpers, the changelog check, and the release flow. Runs on forks too. |
 | `unity-tests` | self-hosted Windows | EditMode + PlayMode. **Never runs on fork PRs** — see below. |
 | `report` | `ubuntu-latest` | Turns the JUnit XML into PR annotations. |
 
-Named `unity-tests`, not `test`, because `changelog.yml` already has a job called `test` and two identically named entries in a PR's check list cannot be told apart — which matters the moment either becomes a required check. For the same reason the report step runs with `annotate_only: true`: creating a check run gives GitHub no way to say which check suite it belongs to, and it filed the result under the *changelog* workflow, so a red Unity suite pointed the reader at the wrong place.
+Job names are unique across all three workflows on purpose: two identically named entries in a PR's check list cannot be told apart, which matters the moment either becomes a required check. Hence `unity-tests` rather than `test`. It is also why the three tooling-test jobs were merged — one of them had to be called `release-script-tests` purely to dodge a collision with `changelog.yml`'s `test`. For the same reason the report step runs with `annotate_only: true`: creating a check run gives GitHub no way to say which check suite it belongs to, and it filed the result under the *changelog* workflow, so a red Unity suite pointed the reader at the wrong place.
 
 Three rules that are load-bearing rather than stylistic:
 
@@ -182,7 +182,7 @@ powershell -NoProfile -File Tools/ci/Tests/Test-CiScripts.ps1   # locally (Windo
 pwsh -File Tools/ci/Tests/Test-CiScripts.ps1                    # in CI (PowerShell Core)
 ```
 
-The `script-tests` job runs `pwsh`, because it is on `ubuntu-latest`. The self-hosted `unity-tests` job runs **Windows PowerShell 5.1**, via an explicit shell string set as a job default — PowerShell Core is not installed on the runner, so `shell: pwsh` there fails with `pwsh: command not found` before any step does work.
+The `tooling-tests` job runs `pwsh`, because it is on `ubuntu-latest`. The self-hosted `unity-tests` job runs **Windows PowerShell 5.1**, via an explicit shell string set as a job default — PowerShell Core is not installed on the runner, so `shell: pwsh` there fails with `pwsh: command not found` before any step does work.
 
 That shell string spells out three things the built-in `shell: powershell` would not give it: `-NoProfile`, an execution-policy override (the runner account's policy is Restricted and otherwise refuses the `.ps1` GitHub generates per `run:` block), and a trailing `exit $LASTEXITCODE`. The last is load-bearing — GitHub appends that epilogue to its *built-in* shells only, and without it a step whose final act is a failing script reports success. Both were found the hard way, on the first two live runs.
 
@@ -311,7 +311,7 @@ Six steps, stopping at the first failure: preflight (`git` and `gh` present and 
 
 **It stops there deliberately.** Merging that pull request is the publish, and an OpenUPM tag is permanent, so the irreversible step stays a human click on a green PR. If no package has a populated `## [Unreleased]` section it says so and exits 0, having changed nothing. Re-running while a release PR is already open updates that PR rather than failing.
 
-Passing it any argument is an error (exit 2) that points back at `upm-release.mjs` — that script is where single steps, `--dry-run`, `--only` and `--bump` live. There is no longer a wrapper that forwards sub-commands; spell those `node Tools/upm-release.mjs <command>`. The flow's own tests are `Tools/release-flow.test.mjs`, run by `release-script-tests` in `release.yml`.
+Passing it any argument is an error (exit 2) that points back at `upm-release.mjs` — that script is where single steps, `--dry-run`, `--only` and `--bump` live. There is no longer a wrapper that forwards sub-commands; spell those `node Tools/upm-release.mjs <command>`. The flow's own tests are `Tools/release-flow.test.mjs`, run by `tooling-tests` in `tests.yml`.
 
 > `release.bat` has twice been committed with the backslashes eaten out of its `Tools\release.bat` usage comments — once harmlessly, once into bare `release.bat` command lines, which cmd executes and which recurse forever when the working directory is `Tools/`. The file now contains **no backslash at all**, and three tests pin that. Keep it that way.
 

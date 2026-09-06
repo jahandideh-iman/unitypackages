@@ -39,7 +39,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version-file: .nvmrc
       # From the event, through the environment — never interpolated into the
       # shell body, where a branch name would be an injection seam.
       - name: Check the pull request's source branch
@@ -57,7 +57,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version-file: .nvmrc
       - run: node Tools/upm-release.mjs validate
 
   pack:
@@ -67,7 +67,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version-file: .nvmrc
       - run: node Tools/upm-release.mjs pack --out PackageExports
       - uses: actions/upload-artifact@v7
         with:
@@ -93,7 +93,7 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version-file: .nvmrc
       # `git tag -a` needs an identity.
       - name: Configure git identity
         run: |
@@ -104,15 +104,3 @@ jobs:
       # skipped, so a push to `master` that changes no version tags nothing.
       - name: Create and push tags
         run: node Tools/upm-release.mjs tag --push
-
-  # The release tooling's own tests. `prepare` rewrites CHANGELOGs and version
-  # fields, and a release is permanent, so its arithmetic is not something to
-  # find out about afterwards. Named for uniqueness: changelog.yml owns `test`.
-  release-script-tests:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 22
-      - run: node --test Tools/upm-release.test.mjs Tools/upm-release.prepare.test.mjs Tools/promotion-check.test.mjs Tools/release-flow.test.mjs
