@@ -67,10 +67,10 @@ Required at the package root: `package.json`, `LICENSE.md`, and a `.meta` file f
 
 Assemblies are named `Arman.<PackageName>[.<Layer>]`. Be aware the existing naming is **not consistent** and should not be "tidied" opportunistically — assembly renames break consumer asmdef references:
 
-* Some runtime assemblies carry the layer suffix (`Arman.ServiceLocating.Runtime`, `Arman.PackageBasics.Runtime`), others do not (`Arman.EventManagement`, `Arman.UIManagement`).
+* Runtime assemblies carry **no** layer suffix — `Arman.ServiceLocating`, `Arman.EventManagement`, `Arman.UIManagement`. Every package, `PackageTemplate` included, follows this.
 * Test assemblies use **both** orderings: `Arman.X.Tests.Editor` and `Arman.X.Editor.Tests`.
 
-**For new packages, use `Arman.<PackageName>.Runtime` / `.Editor` / `.Tests.Editor`.** Leave existing names alone unless deliberately migrating one.
+**For new packages, use `Arman.<PackageName>` / `Arman.<PackageName>.Editor` / `Arman.<PackageName>.Tests.Editor`.** Leave existing names alone unless deliberately migrating one.
 
 ## Package catalogue
 
@@ -458,7 +458,7 @@ The GitHub web UI is not the source of truth here, and is a poor way to edit the
 1. Copy `Packages/PackageTemplate/` to `Packages/<NewName>/`.
 2. In its `package.json`: set `name` (kebab-case), `displayName`, a **real** `description`, `version`, and **remove `"private": true`** — the template carries it so the scaffold can never publish, and a copy inherits it.
 3. Add `"license": "MIT"` plus a `LICENSE.md` and its `.meta`.
-4. Rename the asmdefs to `Arman.<NewName>.Runtime` etc. and update their `name` fields.
+4. Rename the asmdefs to `Arman.<NewName>` (runtime, no suffix), `Arman.<NewName>.Editor` and `Arman.<NewName>.Tests.Editor`, and update their `name` fields.
 5. Declare any `com.arman.*` dependencies with exact versions.
 6. Write a `README.md` and a `CHANGELOG.md` with **no `## [Unreleased]` heading** — add one when you have an entry to put under it. See [the changelog rules](#changelogs--four-rules-enforced-in-ci).
 7. Verify with `npm pack --dry-run` from the package folder.

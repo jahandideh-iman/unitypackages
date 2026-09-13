@@ -1,5 +1,5 @@
 {
-    "name": "Arman.DependencyResolution.Runtime",
+    "name": "Arman.DependencyResolution",
     "rootNamespace": "",
     "references": [],
     "includePlatforms": [],
