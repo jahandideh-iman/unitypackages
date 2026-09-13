@@ -1,0 +1,13 @@
+# Unity output and generated project files. Also covered by .gitignore, but
+# listed so the exclusion does not depend on CSharpier reading it.
+Library/
+Temp/
+Logs/
+obj/
+*.csproj
+
+# Vendored. Reformatting third-party code makes it harder to compare with upstream.
+.agents/Skills/
+.claude/
+.qwen/
+Packages/PackageBasics/Runtime/ThirdParties/

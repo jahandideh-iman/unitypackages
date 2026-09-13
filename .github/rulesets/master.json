@@ -61,6 +61,10 @@
           {
             "context": "unity-tests",
             "integration_id": 15368
+          },
+          {
+            "context": "format",
+            "integration_id": 15368
           }
         ]
       }

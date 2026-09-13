@@ -87,3 +87,6 @@ crashlytics-build.properties
 
 # Subagent-driven-development scratch (ledgers, briefs, review packages)
 /.superpowers/
+
+# Root tooling (Prettier). See package.json.
+node_modules/

@@ -1,0 +1,12 @@
+{
+  "name": "unitypackages-tooling",
+  "private": true,
+  "description": "Repo tooling only (the formatters). Not a UPM package: Unity reads Packages/manifest.json, and the release tooling globs Packages/*/package.json.",
+  "scripts": {
+    "format": "dotnet csharpier format . && prettier --write .",
+    "format:check": "dotnet csharpier check . && prettier --check ."
+  },
+  "devDependencies": {
+    "prettier": "3.9.6"
+  }
+}

@@ -23,7 +23,10 @@ unitypackages/
 ├── .claude/
 │   └── skills/              # mirror of .agents/Skills/ — the copy Claude Code discovers
 ├── .github/
-│   └── workflows/release.yml # validate → pack → tag; a tag is the release
+│   ├── rulesets/            # dev.json, master.json — applied with gh api
+│   └── workflows/           # tests, release, changelog, format
+├── .config/
+│   └── dotnet-tools.json    # pins CSharpier
 ├── Assets/                  # scratch sandbox only — Scenes/, StreamingAssets/
 ├── Tools/
 │   └── upm-release.mjs      # release tooling, dependency-free Node
@@ -37,6 +40,8 @@ unitypackages/
 │   └── <PackageName>/
 ├── ProjectSettings/
 ├── UserSettings/
+├── .editorconfig            # editor defaults + C# naming warnings
+├── package.json             # root tooling only (Prettier) — not a UPM package
 └── LICENSE                  # MIT, repo-level
 ```
 
@@ -160,15 +165,16 @@ Do **not** fix a duplicate-assembly error by turning `overrideReferences` off �
 
 ## CI
 
-`.github/workflows/tests.yml` runs the test suites on every same-repo pull request and on pushes to `dev` and `master` — both the Unity suites and, in a single `tooling-tests` job, the tests for the repo's own scripts. Every job that needs Node reads the version from `.nvmrc` via `node-version-file`, so a bump is one edit rather than six. `.github/workflows/release.yml` separately runs `validate` and `pack`, and `.github/workflows/changelog.yml` enforces [the changelog rules](#changelogs--four-rules-enforced-in-ci). Design notes: [`docs/specs/2026-08-30-pr-test-ci-design.md`](../docs/specs/2026-08-30-pr-test-ci-design.md).
+`.github/workflows/tests.yml` runs the test suites on every same-repo pull request and on pushes to `dev` and `master` — both the Unity suites and, in a single `tooling-tests` job, the tests for the repo's own scripts. Every job that needs Node reads the version from `.nvmrc` via `node-version-file`, so a bump is one edit rather than seven. `.github/workflows/release.yml` separately runs `validate` and `pack`, and `.github/workflows/changelog.yml` enforces [the changelog rules](#changelogs--four-rules-enforced-in-ci). `.github/workflows/format.yml` runs the [formatters](#formatting) in check mode. Design notes: [`docs/specs/2026-08-30-pr-test-ci-design.md`](../docs/specs/2026-08-30-pr-test-ci-design.md).
 
 | Job | Runner | Notes |
 |--|--|--|
 | `tooling-tests` | `ubuntu-latest` | The repo's own tooling tests — the `Tools/ci/` PowerShell helpers, the changelog check, and the release flow. Runs on forks too. |
 | `unity-tests` | self-hosted Windows | EditMode + PlayMode. **Never runs on fork PRs** — see below. |
 | `report` | `ubuntu-latest` | Turns the JUnit XML into PR annotations. |
+| `format` | `ubuntu-latest` | `npm run format:check`: CSharpier and Prettier. Runs on forks too. |
 
-Job names are unique across all three workflows on purpose: two identically named entries in a PR's check list cannot be told apart, which matters the moment either becomes a required check. Hence `unity-tests` rather than `test`. It is also why the three tooling-test jobs were merged — one of them had to be called `release-script-tests` purely to dodge a collision with `changelog.yml`'s `test`. For the same reason the report step runs with `annotate_only: true`: creating a check run gives GitHub no way to say which check suite it belongs to, and it filed the result under the *changelog* workflow, so a red Unity suite pointed the reader at the wrong place.
+Job names are unique across all four workflows on purpose: two identically named entries in a PR's check list cannot be told apart, which matters the moment either becomes a required check. Hence `unity-tests` rather than `test`. It is also why the three tooling-test jobs were merged — one of them had to be called `release-script-tests` purely to dodge a collision with `changelog.yml`'s `test`. For the same reason the report step runs with `annotate_only: true`: creating a check run gives GitHub no way to say which check suite it belongs to, and it filed the result under the *changelog* workflow, so a red Unity suite pointed the reader at the wrong place.
 
 Three rules that are load-bearing rather than stylistic:
 
@@ -422,6 +428,7 @@ Both branches carry a ruleset, checked in under [`.github/rulesets/`](../.github
 | `validate` | yes | yes |
 | `pack` | yes | yes |
 | `tooling-tests` | yes | yes |
+| `format` | yes | yes |
 | `unity-tests` | **no** | yes |
 
 `unity-tests` is required on `master` but not on `dev`, and that asymmetry is load-bearing. A skipped required check blocks the merge, and `unity-tests` is deliberately skipped on fork pull requests — requiring it on `dev`, which is where fork pull requests land, would block every outside contributor permanently. A release pull request comes from this repo's `dev`, where the job always runs, so requiring it on `master` costs nothing. Net effect: a red Unity suite can reach `dev`, but can never publish. `report` and `tag` are required on neither, for the same skip reason.
@@ -441,7 +448,48 @@ The GitHub web UI is not the source of truth here, and is a poor way to edit the
 * Always commit an asset and its `.meta` together.
 * `npm pack` includes `.meta` files automatically — verify with `npm pack --dry-run` when adding root-level files.
 
+## Formatting
+
+Layout is owned by two formatters, run through one pair of npm scripts from the repo root:
+
+```powershell
+dotnet tool restore     # once: installs the pinned CSharpier from .config/dotnet-tools.json
+npm ci                  # once: installs the pinned Prettier from package-lock.json
+npm run format          # rewrite every in-scope file
+npm run format:check    # what the required `format` check runs
+```
+
+| Tool            | Formats                                        | Config                                  |
+| --------------- | ---------------------------------------------- | --------------------------------------- |
+| CSharpier 1.3.0 | `*.cs`                                         | `.csharpierrc.json`, `.csharpierignore` |
+| Prettier 3.9.6  | JSON, YAML, JS, Markdown — changelogs included | `.prettierrc.json`, `.prettierignore`   |
+
+`.editorconfig` covers the rest: editor defaults, and the naming rules from [C# coding style](#c-coding-style) as IDE1006 warnings. Those show in Rider, Visual Studio and VS Code only; neither Unity nor CI reports them. Code blocks inside Markdown are left as written (`embeddedLanguageFormatting: "off"`): docs quote exact file contents and fragments, and reformatting them would change what they show.
+
+The root `package.json` exists only to pin Prettier. It is `private`, Unity ignores it (Unity reads `Packages/manifest.json`), and the release tooling globs `Packages/*/package.json`, which does not match it. The `Tools/` scripts stay dependency-free.
+
+**Excluded, and why.** Each exclusion has a reason; don't remove one without replacing the reason:
+
+- **Unity-written files** — `.meta`, `.asset`, `.prefab`, `.unity`, `.anim`, `.asmdef`, `ProjectSettings/`, `Packages/manifest.json`, `Packages/packages-lock.json`. Unity's next save would undo the formatting. `.asmdef` in particular is written with no final newline, and Prettier always adds one.
+- **Vendored code** — `.agents/Skills/`, `.claude/`, `.qwen/`, `Packages/PackageBasics/Runtime/ThirdParties/`. Reformatting makes it harder to compare with upstream.
+- **`Tools/ci/Tests/fixtures/`** — read byte for byte by the tests.
+- **Line endings and BOMs are left alone.** Both formatters use `endOfLine: auto`, and `.editorconfig` sets neither `end_of_line` nor `charset`. Git stores LF, and most C# files carry a BOM.
+
+**Release tooling must emit formatted text.** A release PR is the output of `upm-release.mjs prepare`, and it has to pass `format` like any other PR. `Tools/upm-release.prepare.test.mjs` runs `prepare` on formatted input and asserts that `prettier --check` still passes. This is why `tooling-tests` runs `npm ci`. If you change how `prepare` writes a heading or a bullet, that test is the one that tells you.
+
+**`git blame`.** The repo-wide reformat is listed in `.git-blame-ignore-revs`. GitHub honours it automatically; locally, run once:
+
+```powershell
+git config blame.ignoreRevsFile .git-blame-ignore-revs
+```
+
+**The first release PR after the reformat merges** — `dev` → `master`, carrying the reformat commit across — needs both waiver labels, `no-changelog` and `changelog-rewrite`. Prettier turned `*Name*` into `_Name_` inside every tagged section, so `Tools/changelog-check.mjs` reports `frozen-section` for every tagged package; it also reports `missing-section`/`missing-entry` for packages the release doesn't otherwise touch.
+
+**Upgrading a formatter** is its own pull request: bump the pin, run `npm run format`, commit the result, and add that commit to `.git-blame-ignore-revs`. Merge it with a merge commit, not a squash, or the listed SHA will not exist on `dev`. The same reformat problem applies to a formatter upgrade whenever it changes changelog text: that pull request, and the next release PR after it, both need `no-changelog` and `changelog-rewrite`.
+
 ## C# coding style
+
+Layout — indentation, wrapping, brace placement — is CSharpier's; see [Formatting](#formatting). The rules below are the ones a formatter cannot apply.
 
 * **Curly braces:** Allman (brace on its own line).
 * **PascalCase:** classes, interfaces, methods, properties, public/internal fields.

@@ -45,6 +45,10 @@ jobs:
           # One source of truth for the version, shared with a local nvm/fnm.
           node-version-file: .nvmrc
 
+      # Prettier, for the release tooling's formatting test. The tooling
+      # itself stays dependency-free; see the root package.json.
+      - run: npm ci
+
       - name: Test the CI helper scripts
         shell: pwsh
         run: ./Tools/ci/Tests/Test-CiScripts.ps1

@@ -1,0 +1,83 @@
+# Editor defaults. The formatters (CSharpier, Prettier) own layout; this file
+# covers what they do not, and what an editor does as you type.
+#
+# Deliberately no end_of_line and no charset: git normalises line endings, and
+# most but not all C# files carry a UTF-8 BOM. Pinning either would flag or
+# rewrite files that are correct.
+root = true
+
+[*]
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{yml,yaml,md}]
+indent_size = 2
+
+[package.json]
+indent_size = 2
+
+[*.md]
+# Two trailing spaces are a hard line break.
+trim_trailing_whitespace = false
+
+[*.asmdef]
+# Unity writes these without a final newline.
+insert_final_newline = false
+
+[*.{meta,unity,prefab,asset,anim,controller,mat,physicMaterial,mixer,overrideController,playable,signal,lighting,terrainlayer,inputactions}]
+# Unity writes these; an IDE save must not re-lay them out.
+trim_trailing_whitespace = false
+insert_final_newline = false
+
+[*.cs]
+# Naming, from "C# coding style" in .agents/AGENTS.md. These are IDE1006
+# warnings in Rider, Visual Studio and VS Code only; neither Unity's compiler
+# nor CI reports them.
+dotnet_diagnostic.IDE1006.severity = warning
+
+dotnet_naming_style.pascal.capitalization = pascal_case
+
+dotnet_naming_style.i_prefixed_pascal.capitalization = pascal_case
+dotnet_naming_style.i_prefixed_pascal.required_prefix = I
+
+dotnet_naming_style.underscored_camel.capitalization = camel_case
+dotnet_naming_style.underscored_camel.required_prefix = _
+
+dotnet_naming_style.camel.capitalization = camel_case
+
+dotnet_naming_symbols.interfaces.applicable_kinds = interface
+dotnet_naming_symbols.interfaces.applicable_accessibilities = *
+
+dotnet_naming_symbols.hidden_fields.applicable_kinds = field
+dotnet_naming_symbols.hidden_fields.applicable_accessibilities = private, protected, private_protected
+
+dotnet_naming_symbols.visible_fields.applicable_kinds = field
+dotnet_naming_symbols.visible_fields.applicable_accessibilities = public, internal, protected_internal
+
+dotnet_naming_symbols.types_and_members.applicable_kinds = namespace, class, struct, enum, delegate, method, property, event
+dotnet_naming_symbols.types_and_members.applicable_accessibilities = *
+
+dotnet_naming_symbols.locals_and_parameters.applicable_kinds = parameter, local
+dotnet_naming_symbols.locals_and_parameters.applicable_accessibilities = *
+
+dotnet_naming_rule.interfaces_are_i_prefixed.symbols = interfaces
+dotnet_naming_rule.interfaces_are_i_prefixed.style = i_prefixed_pascal
+dotnet_naming_rule.interfaces_are_i_prefixed.severity = warning
+
+dotnet_naming_rule.hidden_fields_are_underscored.symbols = hidden_fields
+dotnet_naming_rule.hidden_fields_are_underscored.style = underscored_camel
+dotnet_naming_rule.hidden_fields_are_underscored.severity = warning
+
+dotnet_naming_rule.visible_fields_are_pascal.symbols = visible_fields
+dotnet_naming_rule.visible_fields_are_pascal.style = pascal
+dotnet_naming_rule.visible_fields_are_pascal.severity = warning
+
+dotnet_naming_rule.types_and_members_are_pascal.symbols = types_and_members
+dotnet_naming_rule.types_and_members_are_pascal.style = pascal
+dotnet_naming_rule.types_and_members_are_pascal.severity = warning
+
+dotnet_naming_rule.locals_and_parameters_are_camel.symbols = locals_and_parameters
+dotnet_naming_rule.locals_and_parameters_are_camel.style = camel
+dotnet_naming_rule.locals_and_parameters_are_camel.severity = warning

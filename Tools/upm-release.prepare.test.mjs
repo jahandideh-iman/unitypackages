@@ -509,3 +509,35 @@ test("--only reports a cascaded dependent whose own entries cannot be planned", 
     // Atomic as ever: the error stopped every write, not just Beta's.
     assert.match(read(repo, "Alpha", "package.json"), /"version": "0\.1\.0"/);
 });
+
+// ---------------------------------------------------------- formatting
+
+// A release PR is `prepare`'s output, and it has to pass the required `format`
+// check like any other PR. Prettier is the repo's one npm dependency. It runs as
+// a subprocess, so this file still imports nothing but node builtins.
+const PRETTIER = path.join(HERE, "..", "node_modules", "prettier", "bin", "prettier.cjs");
+const PRETTIER_CONFIG = path.join(HERE, "..", ".prettierrc.json");
+
+function prettier(repo, mode) {
+    // Fail, don't skip: a skipped test is how this rule would quietly stop being enforced.
+    assert.ok(fs.existsSync(PRETTIER), `Prettier is not installed at ${PRETTIER}. Run \`npm ci\` at the repo root.`);
+    return spawnSync(
+        process.execPath,
+        [PRETTIER, mode, "--config", PRETTIER_CONFIG, "Packages/**/CHANGELOG.md", "Packages/**/package.json"],
+        { cwd: repo, encoding: "utf8" },
+    );
+}
+
+test("prepare's output is already formatted, so a release PR passes the format check", (t) => {
+    // chain() covers both write paths: Alpha's heading is renamed, and Beta and
+    // Gamma get a generated `### Changed` section and a manifest range rewrite.
+    const repo = makeRepo(t, chain());
+    const formatted = prettier(repo, "--write");
+    assert.equal(formatted.status, 0, formatted.stdout + formatted.stderr);
+    git(repo, "commit", "--allow-empty", "-am", "format");
+
+    assert.equal(json(repo).status, 0);
+
+    const checked = prettier(repo, "--check");
+    assert.equal(checked.status, 0, checked.stdout + checked.stderr);
+});
