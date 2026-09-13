@@ -43,18 +43,18 @@ namespace Arman.DependencyResolution.Tests
             private NoPublicConstructor() { }
         }
 
-        ReflectionBasedDependecyResolver _dependecyResolver = null!;
+        ReflectionBasedDependencyResolver _dependencyResolver = null!;
 
         [SetUp]
         public void Setup()
         {
-            _dependecyResolver = new ReflectionBasedDependecyResolver();
+            _dependencyResolver = new ReflectionBasedDependencyResolver();
         }
 
         [Test]
         public void As_Throws_WhenTypeIsNotAssignableToTarget()
         {
-            var entry = _dependecyResolver.RegisterType<SharedImplementation1>();
+            var entry = _dependencyResolver.RegisterType<SharedImplementation1>();
 
             Assert.That(() => entry.As<IUnrelated>(), Throws.Exception);
         }
@@ -64,7 +64,7 @@ namespace Arman.DependencyResolution.Tests
         {
             Func<SharedImplementation1> factory = () => new SharedImplementation1();
 
-            Assert.That(() => _dependecyResolver.RegisterFactory<Missing>(factory), Throws.Exception);
+            Assert.That(() => _dependencyResolver.RegisterFactory<Missing>(factory), Throws.Exception);
         }
 
         [Test]
@@ -72,70 +72,70 @@ namespace Arman.DependencyResolution.Tests
         {
             Action factory = () => { };
 
-            Assert.That(() => _dependecyResolver.RegisterFactory<Missing>(factory), Throws.Exception);
+            Assert.That(() => _dependencyResolver.RegisterFactory<Missing>(factory), Throws.Exception);
         }
 
         [Test]
         public void RegisterType_Throws_WhenTypeHasNoPublicConstructor()
         {
-            Assert.That(() => _dependecyResolver.RegisterType<NoPublicConstructor>(), Throws.Exception);
+            Assert.That(() => _dependencyResolver.RegisterType<NoPublicConstructor>(), Throws.Exception);
         }
 
         [Test]
         public void Build_Throws_WhenADependencyIsNotRegistered()
         {
-            _dependecyResolver.RegisterType<RequiresMissing>();
+            _dependencyResolver.RegisterType<RequiresMissing>();
 
-            Assert.That(() => _dependecyResolver.Build(), Throws.Exception);
+            Assert.That(() => _dependencyResolver.Build(), Throws.Exception);
         }
 
         [Test]
         public void Build_Throws_WhenMoreThanOneEntryProvidesTheSameType()
         {
-            _dependecyResolver.RegisterType<SharedImplementation1>().As<IShared>();
-            _dependecyResolver.RegisterType<SharedImplementation2>().As<IShared>();
+            _dependencyResolver.RegisterType<SharedImplementation1>().As<IShared>();
+            _dependencyResolver.RegisterType<SharedImplementation2>().As<IShared>();
 
-            Assert.That(() => _dependecyResolver.Build(), Throws.Exception);
+            Assert.That(() => _dependencyResolver.Build(), Throws.Exception);
         }
 
         [Test]
         public void Build_Throws_WhenRegistrationsDependOnEachOther()
         {
-            _dependecyResolver.RegisterType<CycleA>();
-            _dependecyResolver.RegisterType<CycleB>();
+            _dependencyResolver.RegisterType<CycleA>();
+            _dependencyResolver.RegisterType<CycleB>();
 
-            Assert.That(() => _dependecyResolver.Build(), Throws.Exception);
+            Assert.That(() => _dependencyResolver.Build(), Throws.Exception);
         }
 
         [Test]
         public void Build_Throws_WhenARegistrationDependsOnItself()
         {
-            _dependecyResolver.RegisterType<SelfDependent>();
+            _dependencyResolver.RegisterType<SelfDependent>();
 
-            Assert.That(() => _dependecyResolver.Build(), Throws.Exception);
+            Assert.That(() => _dependencyResolver.Build(), Throws.Exception);
         }
 
         [Test]
         public void Build_ThrowsTheFactoryException_WhenAFactoryThrows()
         {
             Func<Missing> factory = ThrowingFactory;
-            _dependecyResolver.RegisterFactory<Missing>(factory);
+            _dependencyResolver.RegisterFactory<Missing>(factory);
 
-            Assert.That(() => _dependecyResolver.Build(), Throws.TypeOf<FactoryException>());
+            Assert.That(() => _dependencyResolver.Build(), Throws.TypeOf<FactoryException>());
         }
 
         [Test]
         public void Build_ThrowsTheConstructorException_WhenAConstructorThrows()
         {
-            _dependecyResolver.RegisterType<ThrowingConstructor>();
+            _dependencyResolver.RegisterType<ThrowingConstructor>();
 
-            Assert.That(() => _dependecyResolver.Build(), Throws.TypeOf<FactoryException>());
+            Assert.That(() => _dependencyResolver.Build(), Throws.TypeOf<FactoryException>());
         }
 
         [Test]
         public void Get_Throws_WhenTypeIsNotRegistered()
         {
-            var result = _dependecyResolver.Build();
+            var result = _dependencyResolver.Build();
 
             Assert.That(() => result.Get<Missing>(), Throws.Exception);
         }
@@ -143,7 +143,7 @@ namespace Arman.DependencyResolution.Tests
         [Test]
         public void TryGet_ReturnsFalse_WhenTypeIsNotRegistered()
         {
-            var result = _dependecyResolver.Build();
+            var result = _dependencyResolver.Build();
 
             Assert.That(result.TryGet<Missing>(out _), Is.False);
         }

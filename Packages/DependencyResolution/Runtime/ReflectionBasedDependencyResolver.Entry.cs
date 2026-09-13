@@ -7,7 +7,7 @@ using System.Runtime.ExceptionServices;
 
 namespace Arman.DependencyResolution
 {
-    public partial class ReflectionBasedDependecyResolver
+    public partial class ReflectionBasedDependencyResolver
     {
         private interface IInternalEntry
         {
@@ -22,14 +22,14 @@ namespace Arman.DependencyResolution
             private static readonly HashSet<Type> _emptyHashset = new();
 
             private Func<IReadOnlyDictionary<Type, object>, T> _factory;
-            private HashSet<Type> _depedencies;
+            private HashSet<Type> _dependencies;
             private HashSet<Type> _targets = new();
 
-            private Entry(Func<IReadOnlyDictionary<Type, object>, T> factory, HashSet<Type> depedencies)
+            private Entry(Func<IReadOnlyDictionary<Type, object>, T> factory, HashSet<Type> dependencies)
             {
 
                 _factory = factory;
-                _depedencies = depedencies;
+                _dependencies = dependencies;
                 _targets.Add(typeof(T));
             }
 
@@ -41,7 +41,7 @@ namespace Arman.DependencyResolution
 
             public HashSet<Type> Dependencies()
             {
-                return _depedencies;
+                return _dependencies;
             }
 
             public HashSet<Type> Targets()
@@ -60,13 +60,13 @@ namespace Arman.DependencyResolution
                 return this;
             }
 
-            internal static Entry<T> FromInstance(T instnace)
+            internal static Entry<T> FromInstance(T instance)
             {
-                return new Entry<T>(Factory, depedencies: _emptyHashset);
+                return new Entry<T>(Factory, dependencies: _emptyHashset);
 
                 T Factory(IReadOnlyDictionary<Type, object> resolved)
                 {
-                    return instnace;
+                    return instance;
                 }
             }
 
@@ -80,7 +80,7 @@ namespace Arman.DependencyResolution
 
                 var parameterTypes = method.GetParameters().Select(parameterInfo => parameterInfo.ParameterType).ToArray();
 
-                return new Entry<T>(Factory, depedencies: new HashSet<Type>(parameterTypes));
+                return new Entry<T>(Factory, dependencies: new HashSet<Type>(parameterTypes));
 
                 T Factory(IReadOnlyDictionary<Type, object> resolved)
                 {
@@ -105,7 +105,7 @@ namespace Arman.DependencyResolution
 
                 var parameterTypes = constructor.GetParameters().Select(parameterInfo => parameterInfo.ParameterType).ToArray();
 
-                return new Entry<T>(Factory, depedencies: new HashSet<Type>(parameterTypes));
+                return new Entry<T>(Factory, dependencies: new HashSet<Type>(parameterTypes));
 
                 T Factory(IReadOnlyDictionary<Type, object> resolved)
                 {

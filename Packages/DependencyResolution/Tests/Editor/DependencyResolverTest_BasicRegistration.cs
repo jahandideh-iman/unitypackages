@@ -22,12 +22,12 @@ namespace Arman.DependencyResolution.Tests
             public static C Create(A a, B b) => new C(a, b);
         }
 
-        ReflectionBasedDependecyResolver _dependecyResolver = null!;
+        ReflectionBasedDependencyResolver _dependencyResolver = null!;
 
         [SetUp]
         public void Setup()
         {
-            _dependecyResolver = new ReflectionBasedDependecyResolver();
+            _dependencyResolver = new ReflectionBasedDependencyResolver();
         }
 
         [Test]
@@ -37,11 +37,11 @@ namespace Arman.DependencyResolution.Tests
             var b = new B(a);
             var c = new C(a, b);
 
-            _dependecyResolver.RegisterInstance(a);
-            _dependecyResolver.RegisterInstance(b);
-            _dependecyResolver.RegisterInstance(c);
+            _dependencyResolver.RegisterInstance(a);
+            _dependencyResolver.RegisterInstance(b);
+            _dependencyResolver.RegisterInstance(c);
 
-            var result = _dependecyResolver.Build();
+            var result = _dependencyResolver.Build();
 
             Assert.That(result.Get<A>(), Is.SameAs(a));
             Assert.That(result.Get<B>(), Is.SameAs(b));
@@ -51,11 +51,11 @@ namespace Arman.DependencyResolution.Tests
         [Test]
         public void Build_ResolvesRegistrations_WhenRegisteredByType()
         {
-            _dependecyResolver.RegisterType<C>();
-            _dependecyResolver.RegisterType<B>();
-            _dependecyResolver.RegisterType<A>();
+            _dependencyResolver.RegisterType<C>();
+            _dependencyResolver.RegisterType<B>();
+            _dependencyResolver.RegisterType<A>();
 
-            var result = _dependecyResolver.Build();
+            var result = _dependencyResolver.Build();
 
             Assert.That(result.Get<A>(), Is.Not.Null);
             Assert.That(result.Get<B>(), Is.Not.Null);
@@ -65,11 +65,11 @@ namespace Arman.DependencyResolution.Tests
         [Test]
         public void Build_ResolvesRegistrations_WhenRegisteredByFactory()
         {
-            _dependecyResolver.RegisterFactory<C, A, B>(C.Create);
-            _dependecyResolver.RegisterFactory<B, A>(B.Create);
-            _dependecyResolver.RegisterFactory<A>(A.Create);
+            _dependencyResolver.RegisterFactory<C, A, B>(C.Create);
+            _dependencyResolver.RegisterFactory<B, A>(B.Create);
+            _dependencyResolver.RegisterFactory<A>(A.Create);
 
-            var result = _dependecyResolver.Build();
+            var result = _dependencyResolver.Build();
 
             Assert.That(result.Get<A>(), Is.Not.Null);
             Assert.That(result.Get<B>(), Is.Not.Null);

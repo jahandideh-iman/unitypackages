@@ -11,9 +11,9 @@ Everything lives in the `Arman.DependencyResolution` namespace.
 | Type | Role |
 |---|---|
 | `IDependencyResolver` | The registration surface: `RegisterType<T>()`, `RegisterFactory<T>(Delegate)`, `RegisterInstance<T>(T)`, and `Build()`. |
-| `ReflectionBasedDependecyResolver` | The implementation. Reads constructor and factory parameters through reflection to discover dependencies. |
+| `ReflectionBasedDependencyResolver` | The implementation. Reads constructor and factory parameters through reflection to discover dependencies. |
 | `IResolutionEntry<T>` | Returned by every `Register*` call. `As<U>()` also exposes the registration under `U`, and chains. |
-| `DepedencyResolverExtentsions` | Typed `RegisterFactory` overloads for `Func<TResult>` through `Func<T1, …, T9, TResult>`, so a method group can be passed directly. |
+| `DependencyResolverExtensions` | Typed `RegisterFactory` overloads for `Func<TResult>` through `Func<T1, …, T9, TResult>`, so a method group can be passed directly. |
 | `IRepository` | The result of `Build()`: `Get<T>()` and `TryGet<T>(out T)`. |
 
 | Registration | Dependencies are | Instance comes from |
@@ -27,7 +27,7 @@ Everything lives in the `Arman.DependencyResolution` namespace.
 ```csharp
 using Arman.DependencyResolution;
 
-IDependencyResolver resolver = new ReflectionBasedDependecyResolver();
+IDependencyResolver resolver = new ReflectionBasedDependencyResolver();
 
 resolver.RegisterInstance(settings);
 resolver.RegisterType<ScoreService>().As<IScoreService>();

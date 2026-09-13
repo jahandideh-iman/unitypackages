@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Arman.DependencyResolution
 {
-    public partial class ReflectionBasedDependecyResolver : IDependencyResolver
+    public partial class ReflectionBasedDependencyResolver : IDependencyResolver
     {
         private Dictionary<Type, IInternalEntry> _entries = new();
 
