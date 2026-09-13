@@ -18,6 +18,12 @@
       "source": "embedded",
       "dependencies": {}
     },
+    "com.arman.dependency-resolution": {
+      "version": "file:DependencyResolution",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.arman.development-console": {
       "version": "file:DevelopmentConsole",
       "depth": 0,
@@ -73,7 +79,7 @@
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "com.arman.package-basics": "0.2.0"
+        "com.arman.package-basics": "0.3.0"
       }
     },
     "com.arman.scene-management": {
@@ -111,7 +117,7 @@
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "com.arman.package-basics": "0.2.0"
+        "com.arman.package-basics": "0.3.0"
       }
     },
     "com.unity.2d.animation": {
