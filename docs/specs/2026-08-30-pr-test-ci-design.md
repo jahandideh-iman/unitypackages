@@ -19,13 +19,13 @@ This spec adds a Unity test job to the pull request path.
 
 ## 2. What runs where, before and after
 
-| Check | Runner | Trigger | Status |
-|---|---|---|---|
-| `validate` | `ubuntu-latest` | every PR, push to `dev`/`master` | exists |
-| `pack` | `ubuntu-latest` | every PR, push to `dev`/`master` | exists |
-| **`test`** | **self-hosted Windows** | **same-repo PRs, push to `dev`/`master`, manual** | **new** |
-| **`report`** | **`ubuntu-latest`** | **after `test`, always** | **new** |
-| `tag` | `ubuntu-latest` | manual, from `master` only | exists, untouched |
+| Check        | Runner                  | Trigger                                           | Status            |
+| ------------ | ----------------------- | ------------------------------------------------- | ----------------- |
+| `validate`   | `ubuntu-latest`         | every PR, push to `dev`/`master`                  | exists            |
+| `pack`       | `ubuntu-latest`         | every PR, push to `dev`/`master`                  | exists            |
+| **`test`**   | **self-hosted Windows** | **same-repo PRs, push to `dev`/`master`, manual** | **new**           |
+| **`report`** | **`ubuntu-latest`**     | **after `test`, always**                          | **new**           |
+| `tag`        | `ubuntu-latest`         | manual, from `master` only                        | exists, untouched |
 
 The new workflow's triggers are `pull_request`, `push` to `dev` and `master`, and
 `workflow_dispatch` — the manual trigger exists to carry the `clean_library` escape hatch in §4.
@@ -68,8 +68,8 @@ else. This is a correctness requirement, not a hardening nicety — without it t
 
 Two repository settings back it up, and both should be set when the runner is registered:
 
-* Settings → Actions → General → **Require approval for all external contributors**.
-* Register the runner **scoped to this repository**, not to the account or an organisation.
+- Settings → Actions → General → **Require approval for all external contributors**.
+- Register the runner **scoped to this repository**, not to the account or an organisation.
 
 ### Registration is a manual step
 
@@ -97,9 +97,9 @@ So the checkout is done without cleaning and the clean is performed explicitly, 
     git reset --hard
 ```
 
-**Only `Library/`.** Not `TestResults/`, not `Logs/`. Those are job *outputs*, not caches, and
+**Only `Library/`.** Not `TestResults/`, not `Logs/`. Those are job _outputs_, not caches, and
 preserving them creates a specific failure: a job that dies before writing its results would upload
-the *previous* run's XML as this run's, reporting a stale pass. Everything this pipeline publishes
+the _previous_ run's XML as this run's, reporting a stale pass. Everything this pipeline publishes
 must have been produced by this pipeline. They stay wiped.
 
 The cost of preserving `Library/` is that a corrupt cache can now outlive the job that created it.
@@ -115,9 +115,9 @@ on the runner. It does not pin, override, or substitute a different editor.
 `unity test` already defaults to the version in `ProjectSettings/ProjectVersion.txt`, so the correct
 behaviour is the default. Two things make it strict:
 
-* **`--allow-install` is never passed.** With it, a missing editor triggers a silent multi-gigabyte
+- **`--allow-install` is never passed.** With it, a missing editor triggers a silent multi-gigabyte
   download in the middle of a job. Without it, a missing editor is an error.
-* **A preflight step names the problem.** Rather than letting the CLI fail in its own words, the job
+- **A preflight step names the problem.** Rather than letting the CLI fail in its own words, the job
   checks first and emits a single clear line.
 
 ```powershell
@@ -164,7 +164,7 @@ tests today**. The step is included anyway so that the first PlayMode test writt
 automatically, rather than silently unrun until someone notices.
 
 This had an unresolved edge: whether an empty PlayMode run exits `0` or `6`. The step was drafted
-defensively, treating *ran, produced a results file, zero tests* as a pass and failing only on a
+defensively, treating _ran, produced a results file, zero tests_ as a pass and failing only on a
 genuine `6` with no results file.
 
 **Resolved on the first green run.** An empty PlayMode suite exits `0` and writes a well-formed
@@ -181,11 +181,11 @@ a suite silently not running, so it is worth flipping to `true` once PlayMode as
 
 Per `.agents/AGENTS.md`, observed on CLI 1.0.0-beta.3:
 
-| Code | Meaning | Reported as |
-|---|---|---|
-| `0` | success | pass |
-| `8` | **tests ran and failed** | red suite — read the test report |
-| `6` | **the run never produced results** | build/environment failure — read the editor log |
+| Code | Meaning                            | Reported as                                     |
+| ---- | ---------------------------------- | ----------------------------------------------- |
+| `0`  | success                            | pass                                            |
+| `8`  | **tests ran and failed**           | red suite — read the test report                |
+| `6`  | **the run never produced results** | build/environment failure — read the editor log |
 
 Collapsing `6` and `8` into "nonzero" is what sends someone debugging a test that never ran. The job
 reports them differently and says which artefact to open.
@@ -229,9 +229,9 @@ repo and a self-hosted runner. The cost is roughly twenty seconds.
 
 Two constraints on that job:
 
-* **Pin the action by commit SHA, not by tag.** A tag can be moved; in a public repo with write
+- **Pin the action by commit SHA, not by tag.** A tag can be moved; in a public repo with write
   permissions that is a supply-chain seam.
-* **Narrow `permissions:`** to `contents: read`, `checks: write`, `pull-requests: write`. Nothing
+- **Narrow `permissions:`** to `contents: read`, `checks: write`, `pull-requests: write`. Nothing
   else.
 
 Both jobs' upload and report steps run `if: always()`, so a red suite still reports rather than
@@ -280,12 +280,12 @@ testing something else.
 
 ## 9. Out of scope
 
-* **No build job.** This repo produces packages, not players. `pack` in `release.yml` already covers
+- **No build job.** This repo produces packages, not players. `pack` in `release.yml` already covers
   the artefact that matters.
-* **No changes to `release.yml`,** in particular not to the staged `tag` gate.
-* **No per-package test jobs.** One Editor launch covers all 9 test assemblies; nine launches would
+- **No changes to `release.yml`,** in particular not to the staged `tag` gate.
+- **No per-package test jobs.** One Editor launch covers all 9 test assemblies; nine launches would
   multiply the dominant cost by nine to gain isolation nobody has asked for.
-* **No code coverage.** Worth revisiting once the suite runs green in CI at all.
+- **No code coverage.** Worth revisiting once the suite runs green in CI at all.
 
 ## 10. Verification
 

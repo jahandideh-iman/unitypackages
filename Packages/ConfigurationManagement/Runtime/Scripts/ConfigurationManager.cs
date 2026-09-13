@@ -16,7 +16,7 @@ namespace Arman.ConfigurationManagement
         {
             FindConfigurer<T>().Configure(target);
         }
-        
+
         public bool Contains<T>(IConfigurer<T> configurer)
         {
             return configurers.ContainsKey(typeof(T));
@@ -29,7 +29,6 @@ namespace Arman.ConfigurationManagement
 
             return configurers[typeof(T)] as IConfigurer<T>;
         }
-
 
         public IConfigurer<T> RemoveConfigurer<T>()
         {

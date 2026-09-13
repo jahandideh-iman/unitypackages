@@ -7,7 +7,6 @@ using UnityEngine.UI;
 
 namespace Arman.DevelopmentConsole
 {
-
     public class DevelopmentCommand : MonoBehaviour
     {
         public Text commandNameText;
@@ -27,7 +26,9 @@ namespace Arman.DevelopmentConsole
             if (commandInfo.HasNoInput())
                 commandInfo.Invoke();
             else
-                GameObject.FindObjectOfType<DevelopmentConsolePanel>().OpenCommandInputPromtFor(commandInfo);
+                GameObject
+                    .FindObjectOfType<DevelopmentConsolePanel>()
+                    .OpenCommandInputPromtFor(commandInfo);
         }
     }
 }

@@ -1,17 +1,12 @@
-﻿
-using Arman.InventorySystem;
+﻿using Arman.InventorySystem;
 using Moq;
 using NUnit.Framework;
 
-
 namespace Arman.InventorySystem.Tests
 {
-
     public class InventoryTest
     {
-        public class TestItemType : IInventoryItem
-        { }
-
+        public class TestItemType : IInventoryItem { }
 
         Inventory<TestItemType> inventory;
         TestItemType itemA;
@@ -89,7 +84,13 @@ namespace Arman.InventorySystem.Tests
             TestItemType item = null;
             int value = 0;
 
-            inventory.SetGlobalOnValueChangeCallback((i, nv) => { item = i; value = nv;});
+            inventory.SetGlobalOnValueChangeCallback(
+                (i, nv) =>
+                {
+                    item = i;
+                    value = nv;
+                }
+            );
 
             inventory.SetNumberOf(itemA, 5);
             Assert.That(item, Is.SameAs(itemA));
@@ -103,7 +104,6 @@ namespace Arman.InventorySystem.Tests
             Assert.That(item, Is.SameAs(itemA));
             Assert.That(value, Is.EqualTo(5 + 2));
 
-
             inventory.Decrease(itemA, 3);
             Assert.That(item, Is.SameAs(itemA));
             Assert.That(value, Is.EqualTo(5 + 2 - 3));
@@ -115,7 +115,14 @@ namespace Arman.InventorySystem.Tests
             TestItemType item = null;
             int value = 0;
 
-            inventory.SetSpecificOnValueChangeCallback(itemA, (i, nv) => { item = i; value = nv; });
+            inventory.SetSpecificOnValueChangeCallback(
+                itemA,
+                (i, nv) =>
+                {
+                    item = i;
+                    value = nv;
+                }
+            );
 
             inventory.SetNumberOf(itemA, 5);
             Assert.That(item, Is.SameAs(itemA));
@@ -130,7 +137,6 @@ namespace Arman.InventorySystem.Tests
             Assert.That(item, Is.SameAs(itemA));
             Assert.That(value, Is.EqualTo(5 + 2));
 
-
             inventory.Decrease(itemA, 3);
             Assert.That(item, Is.SameAs(itemA));
             Assert.That(value, Is.EqualTo(5 + 2 - 3));
@@ -142,7 +148,7 @@ namespace Arman.InventorySystem.Tests
             inventory.SetNumberOf(itemA, 1);
             inventory.SetNumberOf(itemB, 1);
 
-            foreach(var item in inventory.Items())
+            foreach (var item in inventory.Items())
             {
                 inventory.Increase(item, 1);
                 Assert.That(inventory.NumberOf(item), Is.EqualTo(2));

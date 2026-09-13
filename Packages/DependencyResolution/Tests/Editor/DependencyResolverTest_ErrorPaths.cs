@@ -1,5 +1,5 @@
-using NUnit.Framework;
 using System;
+using NUnit.Framework;
 
 namespace Arman.DependencyResolution.Tests
 {
@@ -8,11 +8,15 @@ namespace Arman.DependencyResolution.Tests
         public class FactoryException : Exception { }
 
         public interface IShared { }
+
         public interface IUnrelated { }
+
         public class SharedImplementation1 : IShared { }
+
         public class SharedImplementation2 : IShared { }
 
         public class Missing { }
+
         public class RequiresMissing
         {
             public RequiresMissing(Missing missing) { }
@@ -64,7 +68,10 @@ namespace Arman.DependencyResolution.Tests
         {
             Func<SharedImplementation1> factory = () => new SharedImplementation1();
 
-            Assert.That(() => _dependencyResolver.RegisterFactory<Missing>(factory), Throws.Exception);
+            Assert.That(
+                () => _dependencyResolver.RegisterFactory<Missing>(factory),
+                Throws.Exception
+            );
         }
 
         [Test]
@@ -72,13 +79,19 @@ namespace Arman.DependencyResolution.Tests
         {
             Action factory = () => { };
 
-            Assert.That(() => _dependencyResolver.RegisterFactory<Missing>(factory), Throws.Exception);
+            Assert.That(
+                () => _dependencyResolver.RegisterFactory<Missing>(factory),
+                Throws.Exception
+            );
         }
 
         [Test]
         public void RegisterType_Throws_WhenTypeHasNoPublicConstructor()
         {
-            Assert.That(() => _dependencyResolver.RegisterType<NoPublicConstructor>(), Throws.Exception);
+            Assert.That(
+                () => _dependencyResolver.RegisterType<NoPublicConstructor>(),
+                Throws.Exception
+            );
         }
 
         [Test]

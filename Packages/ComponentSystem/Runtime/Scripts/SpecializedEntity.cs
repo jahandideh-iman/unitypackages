@@ -3,7 +3,8 @@ using System.Linq;
 
 namespace Arman.ComponentSystem
 {
-    public class SpecializedEntity<T> : ISpecializedEntity<T> where T :IComponent
+    public class SpecializedEntity<T> : ISpecializedEntity<T>
+        where T : IComponent
     {
         Entity basicEntity = new Entity();
 
@@ -20,10 +21,10 @@ namespace Arman.ComponentSystem
             return compList;
         }
 
-        public U GetComponent<U>() where U : T
+        public U GetComponent<U>()
+            where U : T
         {
             return basicEntity.GetComponent<U>();
         }
     }
-
 }

@@ -1,6 +1,4 @@
-﻿
-
-namespace Arman.ShopManagement
+﻿namespace Arman.ShopManagement
 {
     public interface IShopPackage
     {

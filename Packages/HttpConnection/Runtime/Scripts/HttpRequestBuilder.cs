@@ -35,7 +35,6 @@ namespace Arman.HttpConnection
             return this;
         }
 
-
         public HttpRequestBuilder AddParameter(string key, string value)
         {
             parameters[key] = value;
@@ -52,7 +51,5 @@ namespace Arman.HttpConnection
         {
             return new HttpRequest(requestType, url, body, headers, parameters, timeout);
         }
-
-
     }
 }

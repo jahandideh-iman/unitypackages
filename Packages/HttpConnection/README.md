@@ -8,13 +8,13 @@ which reports the result through separate success and failure callbacks.
 
 Namespace `Arman.HttpConnection`:
 
-| Type | Purpose |
-|---|---|
-| `HttpRequest` | Immutable request struct: `requestType`, `url`, `body`, `headers`, `parameters`, `timeOut`. |
-| `HttpRequestType` | The HTTP method — `GET` or `POST`. |
-| `HttpRequestBuilder` | `SetType`, `SetURL`, `SetBody`, `AddHeader`, `AddParameter`, `SetTimeout`, `Build`. |
-| `IHttpConnectionService` | `Request(request, onSuccess, onFailure)` and `IsTimeOut(msg)`. |
-| `UnityWebRequestBasedHttpConnectionService` | The `MonoBehaviour` implementation, plus `SetDefaultTimeOut`. |
+| Type                                        | Purpose                                                                                     |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `HttpRequest`                               | Immutable request struct: `requestType`, `url`, `body`, `headers`, `parameters`, `timeOut`. |
+| `HttpRequestType`                           | The HTTP method — `GET` or `POST`.                                                          |
+| `HttpRequestBuilder`                        | `SetType`, `SetURL`, `SetBody`, `AddHeader`, `AddParameter`, `SetTimeout`, `Build`.         |
+| `IHttpConnectionService`                    | `Request(request, onSuccess, onFailure)` and `IsTimeOut(msg)`.                              |
+| `UnityWebRequestBasedHttpConnectionService` | The `MonoBehaviour` implementation, plus `SetDefaultTimeOut`.                               |
 
 ## Usage
 

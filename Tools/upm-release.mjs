@@ -93,7 +93,9 @@ function discoverPackages() {
         fail(`No Packages/ directory at ${PACKAGES_DIR}`);
     }
     const packages = [];
-    for (const entry of fs.readdirSync(PACKAGES_DIR, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+    for (const entry of fs
+        .readdirSync(PACKAGES_DIR, { withFileTypes: true })
+        .sort((a, b) => a.name.localeCompare(b.name))) {
         if (!entry.isDirectory()) continue;
         const dir = path.join(PACKAGES_DIR, entry.name);
         const manifestPath = path.join(dir, "package.json");
@@ -123,9 +125,7 @@ function applyOnly(packages, only) {
     if (!only) return packages;
     const wanted = (Array.isArray(only) ? only : [only]).map((s) => s.trim());
     const selected = packages.filter((p) => wanted.includes(p.name) || wanted.includes(p.folder));
-    const unmatched = wanted.filter(
-        (w) => !packages.some((p) => p.name === w || p.folder === w)
-    );
+    const unmatched = wanted.filter((w) => !packages.some((p) => p.name === w || p.folder === w));
     if (unmatched.length) {
         fail(`--only matched no package: ${unmatched.join(", ")}`);
         process.exit(1);
@@ -141,7 +141,10 @@ export function parseBumps(raw, packages) {
         const at = item.lastIndexOf("=");
         if (at === -1) throw new Error(`--bump \`${item}\` is not <package>=<major|minor|patch>`);
         const target = item.slice(0, at).trim();
-        const part = item.slice(at + 1).trim().toLowerCase();
+        const part = item
+            .slice(at + 1)
+            .trim()
+            .toLowerCase();
         if (!["major", "minor", "patch"].includes(part)) {
             throw new Error(`--bump \`${item}\`: \`${part}\` is not major, minor, or patch`);
         }
@@ -180,7 +183,8 @@ function validatePackage(pkg, byName, existingTags) {
     const m = pkg.manifest;
 
     if (!m.name) add("missing `name`");
-    else if (!NAME_PATTERN.test(m.name)) add(`name \`${m.name}\` is not com.arman.<kebab-case-name>`);
+    else if (!NAME_PATTERN.test(m.name))
+        add(`name \`${m.name}\` is not com.arman.<kebab-case-name>`);
 
     if (!m.version) add("missing `version`");
     else if (!SEMVER_PATTERN.test(m.version)) add(`version \`${m.version}\` is not valid semver`);
@@ -219,7 +223,9 @@ function validatePackage(pkg, byName, existingTags) {
         }
         const satisfied = range === target.version || existingTags.has(`${dep}/${range}`);
         if (!satisfied) {
-            add(`depends on \`${dep}\`@${range}, but that package is at ${target.version} and no \`${dep}/${range}\` tag exists`);
+            add(
+                `depends on \`${dep}\`@${range}, but that package is at ${target.version} and no \`${dep}/${range}\` tag exists`,
+            );
         }
     }
 
@@ -239,7 +245,12 @@ function cmdValidate(packages, flags) {
 
     for (const pkg of applyOnly(packages, flags.only)) {
         if (pkg.private) {
-            results.push({ folder: pkg.folder, name: pkg.name, status: "skipped", reason: "private" });
+            results.push({
+                folder: pkg.folder,
+                name: pkg.name,
+                status: "skipped",
+                reason: "private",
+            });
             continue;
         }
         const errors = validatePackage(pkg, byName, existingTags);
@@ -267,7 +278,10 @@ function cmdValidate(packages, flags) {
             }
         }
         const checked = results.filter((r) => r.status !== "skipped").length;
-        console.log(`\n${checked - failed}/${checked} packages valid` + (failed ? `, ${failed} failed` : ""));
+        console.log(
+            `\n${checked - failed}/${checked} packages valid` +
+                (failed ? `, ${failed} failed` : ""),
+        );
     }
     return failed === 0 ? 0 : 1;
 }
@@ -296,7 +310,9 @@ const LEVEL_RANK = { fix: 1, feature: 2, breaking: 3 };
 
 /** The `## [Unreleased]` heading's line index and the index past its body. */
 export function unreleasedRange(lines) {
-    const start = lines.findIndex((line) => H2_VERSION.test(line) && UNRELEASED.test(line.match(H2_VERSION)[1]));
+    const start = lines.findIndex(
+        (line) => H2_VERSION.test(line) && UNRELEASED.test(line.match(H2_VERSION)[1]),
+    );
     if (start === -1) return null;
     const rest = lines.slice(start + 1);
     const offset = rest.findIndex((line) => H2.test(line));
@@ -309,7 +325,9 @@ export function unreleasedRange(lines) {
  * pull request can pass the check and then be skipped by the release.
  */
 export function unreleasedEntries(lines) {
-    return lines.map((line) => line.trim()).filter((line) => line !== "" && !SUB_HEADING.test(line));
+    return lines
+        .map((line) => line.trim())
+        .filter((line) => line !== "" && !SUB_HEADING.test(line));
 }
 
 /** The `###` sub-headings with at least one line under them, in file order. */
@@ -387,7 +405,9 @@ export function replaceManifestVersion(text, version) {
     const pattern = /^([ \t]*"version"[ \t]*:[ \t]*)"[^"]*"/gm;
     const matches = text.match(pattern) ?? [];
     if (matches.length !== 1) {
-        throw new Error(`package.json must contain exactly one \`"version"\` line, found ${matches.length}`);
+        throw new Error(
+            `package.json must contain exactly one \`"version"\` line, found ${matches.length}`,
+        );
     }
     return text.replace(pattern, `$1"${version}"`);
 }
@@ -415,7 +435,9 @@ export function replaceManifestDependency(text, name, version) {
     const pattern = new RegExp(`^([ \\t]*"${escaped}"[ \\t]*:[ \\t]*)"[^"]*"`, "gm");
     const matches = text.match(pattern) ?? [];
     if (matches.length !== 1) {
-        throw new Error(`package.json must contain exactly one \`"${name}"\` dependency line, found ${matches.length}`);
+        throw new Error(
+            `package.json must contain exactly one \`"${name}"\` dependency line, found ${matches.length}`,
+        );
     }
     return text.replace(pattern, `$1"${version}"`);
 }
@@ -447,7 +469,9 @@ export function addChangedEntries(text, bullets) {
     const body = lines.slice(range.start + 1, range.end);
     const rank = (name) => SECTION_ORDER.indexOf(name.trim().toLowerCase());
     const headings = body.map((line) => line.match(SUB_HEADING));
-    const existing = headings.findIndex((match) => match !== null && rank(match[1]) === rank(CHANGED));
+    const existing = headings.findIndex(
+        (match) => match !== null && rank(match[1]) === rank(CHANGED),
+    );
 
     if (existing !== -1) {
         // Append to the end of that sub-section, before its trailing blanks.
@@ -482,17 +506,24 @@ export function addChangedEntries(text, bullets) {
  * *asked* for, and must never quietly release a dependent's own features
  * under a patch bump it did not earn.
  */
-export function cascadeDependents(packages, plan, { bumps = new Map(), own = new Map(), unplannable = new Set() } = {}) {
+export function cascadeDependents(
+    packages,
+    plan,
+    { bumps = new Map(), own = new Map(), unplannable = new Set() } = {},
+) {
     const planned = new Map(plan.map((entry) => [entry.name, entry]));
     const errors = [];
     const failed = new Set();
 
     const moved = (pkg) =>
-        internalDependencies(pkg.manifest).some(([name, range]) => planned.get(name)?.to !== undefined && planned.get(name).to !== range);
+        internalDependencies(pkg.manifest).some(
+            ([name, range]) =>
+                planned.get(name)?.to !== undefined && planned.get(name).to !== range,
+        );
 
     // A fixpoint sweep rather than a topological sort: the graph has three
     // edges, and this stays correct even if it ever grows a cycle.
-    for (let growing = true; growing; ) {
+    for (let growing = true; growing;) {
         growing = false;
         for (const pkg of packages) {
             if (!pkg.name || planned.has(pkg.name) || failed.has(pkg.name) || !moved(pkg)) continue;
@@ -516,7 +547,9 @@ export function cascadeDependents(packages, plan, { bumps = new Map(), own = new
             const requested = bumps.get(pkg.name) ?? bumps.get(pkg.folder);
             let to;
             try {
-                to = requested ? explicitBump(pkg.version, requested) : nextVersion(pkg.version, "fix");
+                to = requested
+                    ? explicitBump(pkg.version, requested)
+                    : nextVersion(pkg.version, "fix");
             } catch (error) {
                 errors.push(`${pkg.name}: ${error.message}`);
                 failed.add(pkg.name);
@@ -528,7 +561,9 @@ export function cascadeDependents(packages, plan, { bumps = new Map(), own = new
                 from: pkg.version,
                 to,
                 level: requested ?? "fix",
-                reason: requested ? `${requested}: requested with --bump` : "fix: dependency update",
+                reason: requested
+                    ? `${requested}: requested with --bump`
+                    : "fix: dependency update",
                 cascaded: true,
             });
             growing = true;
@@ -608,7 +643,9 @@ export function planPrepare(packages, { bumps = new Map() } = {}) {
             from: pkg.version,
             to,
             level: requested ?? level,
-            reason: requested ? `${requested}: requested with --bump` : `${level}: ${sections.join(", ")}`,
+            reason: requested
+                ? `${requested}: requested with --bump`
+                : `${level}: ${sections.join(", ")}`,
         });
     }
 
@@ -630,7 +667,9 @@ function cmdPack(packages, flags) {
         const tarball = ok ? (packed.stdout || "").trim().split(/\r?\n/).pop() : null;
         results.push({ folder: pkg.folder, name: pkg.name, version: pkg.version, ok, tarball });
         if (!flags.json) {
-            console.log(ok ? `  ok  ${tarball}` : `FAIL  ${pkg.folder}: ${describeFailure(packed)}`);
+            console.log(
+                ok ? `  ok  ${tarball}` : `FAIL  ${pkg.folder}: ${describeFailure(packed)}`,
+            );
         }
     }
 
@@ -643,13 +682,22 @@ function cmdPack(packages, flags) {
 
 function listTags() {
     const r = git("tag", "--list");
-    return new Set(r.out ? r.out.split(/\r?\n/).map((t) => t.trim()).filter(Boolean) : []);
+    return new Set(
+        r.out
+            ? r.out
+                  .split(/\r?\n/)
+                  .map((t) => t.trim())
+                  .filter(Boolean)
+            : [],
+    );
 }
 
 function cmdTag(packages, flags) {
     const branch = git("rev-parse", "--abbrev-ref", "HEAD").out;
     if (branch !== RELEASE_BRANCH && !flags["allow-branch"]) {
-        return fail(`on branch \`${branch}\`, expected \`${RELEASE_BRANCH}\`. Pass --allow-branch to override.`);
+        return fail(
+            `on branch \`${branch}\`, expected \`${RELEASE_BRANCH}\`. Pass --allow-branch to override.`,
+        );
     }
     if (git("status", "--porcelain").out && !flags["allow-dirty"]) {
         return fail("working tree is dirty. Tag a clean tree, or pass --allow-dirty.");
@@ -673,8 +721,14 @@ function cmdTag(packages, flags) {
     }
 
     if (flags["dry-run"]) {
-        if (flags.json) console.log(JSON.stringify({ command: "tag", dryRun: true, planned, skipped }, null, 2));
-        else console.log(`\n${planned.length} tag(s) would be created, ${skipped.length} already exist.`);
+        if (flags.json)
+            console.log(
+                JSON.stringify({ command: "tag", dryRun: true, planned, skipped }, null, 2),
+            );
+        else
+            console.log(
+                `\n${planned.length} tag(s) would be created, ${skipped.length} already exist.`,
+            );
         return 0;
     }
 
@@ -691,10 +745,12 @@ function cmdTag(packages, flags) {
         pushed = true;
     }
 
-    if (flags.json) console.log(JSON.stringify({ command: "tag", planned, skipped, pushed }, null, 2));
+    if (flags.json)
+        console.log(JSON.stringify({ command: "tag", planned, skipped, pushed }, null, 2));
     else {
         console.log(`\n${planned.length} tag(s) created, ${skipped.length} already existed.`);
-        if (planned.length && !pushed) console.log("Not pushed. Re-run with --push to publish, or `git push origin <tag>`.");
+        if (planned.length && !pushed)
+            console.log("Not pushed. Re-run with --push to publish, or `git push origin <tag>`.");
         if (pushed) console.log("Pushed. OpenUPM builds these within 15-30 minutes.");
     }
     return 0;
@@ -703,10 +759,14 @@ function cmdTag(packages, flags) {
 function cmdPrepare(packages, flags) {
     const branch = git("rev-parse", "--abbrev-ref", "HEAD").out;
     if (branch === RELEASE_BRANCH && !flags["allow-branch"]) {
-        return fail(`on branch \`${branch}\`. Prepare a release on a branch off \`dev\`, not on \`${RELEASE_BRANCH}\`. Pass --allow-branch to override.`);
+        return fail(
+            `on branch \`${branch}\`. Prepare a release on a branch off \`dev\`, not on \`${RELEASE_BRANCH}\`. Pass --allow-branch to override.`,
+        );
     }
     if (git("status", "--porcelain").out && !flags["allow-dirty"] && !flags["dry-run"]) {
-        return fail("working tree is dirty. Prepare a clean tree so the release diff is reviewable, or pass --allow-dirty.");
+        return fail(
+            "working tree is dirty. Prepare a clean tree so the release diff is reviewable, or pass --allow-dirty.",
+        );
     }
 
     // Validate --bump against the packages that will actually be prepared,
@@ -762,7 +822,9 @@ function cmdPrepare(packages, flags) {
             if (entry.dependencyUpdates.length > 0) {
                 changelogText = addChangedEntries(
                     changelogText,
-                    entry.dependencyUpdates.map((update) => dependencyBullet(update.name, update.to)),
+                    entry.dependencyUpdates.map((update) =>
+                        dependencyBullet(update.name, update.to),
+                    ),
                 );
                 for (const update of entry.dependencyUpdates) {
                     manifestText = replaceManifestDependency(manifestText, update.name, update.to);
@@ -770,7 +832,10 @@ function cmdPrepare(packages, flags) {
             }
             changelogText = releaseChangelog(changelogText, entry.to, date);
             manifestText = replaceManifestVersion(manifestText, entry.to);
-            writes.push({ path: changelogPath, contents: changelogText }, { path: manifestPath, contents: manifestText });
+            writes.push(
+                { path: changelogPath, contents: changelogText },
+                { path: manifestPath, contents: manifestText },
+            );
         } catch (error) {
             errors.push(`${entry.name ?? entry.folder}: ${error.message}`);
         }
@@ -805,7 +870,9 @@ function cmdPrepare(packages, flags) {
             console.log = originalLog;
         }
         if (code !== 0) {
-            errors.push("the prepared packages do not validate. Inspect the diff before committing:");
+            errors.push(
+                "the prepared packages do not validate. Inspect the diff before committing:",
+            );
             for (const line of captured) if (line.trim() !== "") errors.push(line);
         }
     }
@@ -820,7 +887,9 @@ function cmdPrepare(packages, flags) {
             console.log("nothing to prepare — no package has entries under `## [Unreleased]`.");
         } else {
             for (const entry of plan) {
-                console.log(`  ${entry.name ?? entry.folder}  ${entry.from} → ${entry.to}   (${entry.reason})`);
+                console.log(
+                    `  ${entry.name ?? entry.folder}  ${entry.from} → ${entry.to}   (${entry.reason})`,
+                );
             }
             if (errors.length === 0) {
                 console.log(
@@ -833,7 +902,9 @@ function cmdPrepare(packages, flags) {
                 // Phase 1 collected errors, so the write loop above never ran —
                 // nothing on disk changed. Say so plainly; on a terminal stdout
                 // and stderr interleave, and this is the line the user sees last.
-                console.log(`\nnothing written — ${plan.length} package(s) would have been prepared for ${date}.`);
+                console.log(
+                    `\nnothing written — ${plan.length} package(s) would have been prepared for ${date}.`,
+                );
             }
         }
     }
@@ -886,15 +957,18 @@ function parseArgs(argv) {
         const key = arg.slice(2);
         if (key === "out" || key === "date") {
             const value = argv[++i];
-            if (value === undefined || value.startsWith("--")) throw new Error(`--${key} requires a value`);
+            if (value === undefined || value.startsWith("--"))
+                throw new Error(`--${key} requires a value`);
             flags[key] = value;
         } else if (key === "only") {
             const value = argv[++i];
-            if (value === undefined || value.startsWith("--")) throw new Error("--only requires a value");
+            if (value === undefined || value.startsWith("--"))
+                throw new Error("--only requires a value");
             (flags.only ??= []).push(value);
         } else if (key === "bump") {
             const value = argv[++i];
-            if (value === undefined || value.startsWith("--")) throw new Error("--bump requires a value");
+            if (value === undefined || value.startsWith("--"))
+                throw new Error("--bump requires a value");
             (flags.bump ??= []).push(value);
         } else flags[key] = true;
     }
@@ -903,8 +977,9 @@ function parseArgs(argv) {
 
 // Importable for tests: the dispatch runs only when this file is the entry
 // point, not when Tools/upm-release.test.mjs imports the helpers above.
-const invokedDirectly = process.argv[1] !== undefined
-    && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+const invokedDirectly =
+    process.argv[1] !== undefined &&
+    path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 
 if (invokedDirectly) main();
 

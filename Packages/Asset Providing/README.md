@@ -1,7 +1,7 @@
 # Asset Providing
 
-An abstraction for loading Unity assets (prefabs, audio clips, sprites, …) through pluggable *asset
-providers*. A provider resolves an asset either **by id** or **by type**, synchronously or
+An abstraction for loading Unity assets (prefabs, audio clips, sprites, …) through pluggable _asset
+providers_. A provider resolves an asset either **by id** or **by type**, synchronously or
 asynchronously. Providers can be chained, so a lookup falls through to the next provider until one
 returns a result.
 
@@ -9,15 +9,15 @@ returns a result.
 
 Namespace `Arman.AssetProviding`:
 
-| Type | Purpose |
-|---|---|
-| `ISyncUnityAssetProvider` | `LoadAssetById<T>(id)` and `LoadAssetByType<T>()`. |
-| `IAsyncUnityAssetProvider` | `LoadAssetByIdAsync<T>(id)` and `LoadAssetByTypeAsync<T>()`, both returning `Task<T>`. |
-| `ResourcesAssetProvider` | Resolves through `Resources`, under a constructor-supplied path prefix. |
-| `TableBasedAssetProvider` | Resolves from an `id → Object` dictionary. |
-| `ChainedSyncUnityAssetProvider` / `ChainedAsyncUnityAssetProvider` | Try each added provider in order, return the first hit. |
-| `IAssetProviderService` / `ChainedAssetProviderService` | Holds one chained sync provider and one chained async provider. |
-| `AssetProviderExtensions` | `InstantiateById<T>`, `InstantiateByType<T>` and their async variants. |
+| Type                                                               | Purpose                                                                                |
+| ------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| `ISyncUnityAssetProvider`                                          | `LoadAssetById<T>(id)` and `LoadAssetByType<T>()`.                                     |
+| `IAsyncUnityAssetProvider`                                         | `LoadAssetByIdAsync<T>(id)` and `LoadAssetByTypeAsync<T>()`, both returning `Task<T>`. |
+| `ResourcesAssetProvider`                                           | Resolves through `Resources`, under a constructor-supplied path prefix.                |
+| `TableBasedAssetProvider`                                          | Resolves from an `id → Object` dictionary.                                             |
+| `ChainedSyncUnityAssetProvider` / `ChainedAsyncUnityAssetProvider` | Try each added provider in order, return the first hit.                                |
+| `IAssetProviderService` / `ChainedAssetProviderService`            | Holds one chained sync provider and one chained async provider.                        |
+| `AssetProviderExtensions`                                          | `InstantiateById<T>`, `InstantiateByType<T>` and their async variants.                 |
 
 Namespace `Arman.AssetProviding` — `ScriptableObject` configuration assets so providers can be
 authored in the Editor: `AssetProviderConfig` (abstract, with `CreateSyncProvider()` /

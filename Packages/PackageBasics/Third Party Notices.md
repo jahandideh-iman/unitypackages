@@ -1,6 +1,6 @@
 This package contains third-party software components governed by the license(s) indicated below:
 
----------
+---
 
 Component Name: NiceJson 1.3.2
 

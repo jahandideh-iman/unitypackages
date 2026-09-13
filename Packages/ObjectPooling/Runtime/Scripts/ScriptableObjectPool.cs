@@ -1,15 +1,17 @@
-﻿
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Arman.ObjectPooling
 {
-    public class ScriptableObjectPool<T> : ScriptableObject, IObjectPool<T> where T : Component, IPoolable
+    public class ScriptableObjectPool<T> : ScriptableObject, IObjectPool<T>
+        where T : Component, IPoolable
     {
-        [SerializeField] T componentPrefab = default;
-        [SerializeField] int initialReserve = default;
+        [SerializeField]
+        T componentPrefab = default;
+
+        [SerializeField]
+        int initialReserve = default;
 
         protected UnityComponentObjectPool<T> internalPool = new UnityComponentObjectPool<T>();
-
 
         public void Setup(Transform poolingContainer)
         {
@@ -18,7 +20,6 @@ namespace Arman.ObjectPooling
 
             internalPool.Reserve(initialReserve);
         }
-
 
         public T Acquire()
         {

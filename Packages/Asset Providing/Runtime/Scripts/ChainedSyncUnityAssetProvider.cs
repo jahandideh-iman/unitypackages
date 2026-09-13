@@ -2,11 +2,14 @@
 
 namespace Arman.AssetProviding
 {
-    public class ChainedSyncUnityAssetProvider : ChainedContainer<ISyncUnityAssetProvider>, ISyncUnityAssetProvider
+    public class ChainedSyncUnityAssetProvider
+        : ChainedContainer<ISyncUnityAssetProvider>,
+            ISyncUnityAssetProvider
     {
-        public T LoadAssetById<T>(string id) where T : Object
+        public T LoadAssetById<T>(string id)
+            where T : Object
         {
-            foreach(var obj in ChainedObjects())
+            foreach (var obj in ChainedObjects())
             {
                 var asset = obj.LoadAssetById<T>(id);
                 if (asset != null)
@@ -16,7 +19,8 @@ namespace Arman.AssetProviding
             return default;
         }
 
-        public T LoadAssetByType<T>() where T : Object
+        public T LoadAssetByType<T>()
+            where T : Object
         {
             foreach (var obj in ChainedObjects())
             {

@@ -3,15 +3,17 @@
 namespace Arman.ComponentSystem.Tests
 {
     class ComponentA : IComponent { };
+
     class ComponentB : IComponent { };
+
     class ComponentC : IComponent { };
 
     class ComponentParent : IComponent { };
+
     class ComponentChild : ComponentParent { };
 
-    public class EntityTest 
+    public class EntityTest
     {
-
         [Test]
         public void HasTheAddedComponents()
         {

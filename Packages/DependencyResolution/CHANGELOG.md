@@ -7,7 +7,7 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.0] - 2026-09-13
 
-First release of *Dependency Resolution*.
+First release of _Dependency Resolution_.
 
 ### Added
 

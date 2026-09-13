@@ -1,11 +1,4 @@
-﻿
-
-namespace Arman.DevelopmentConsole
+﻿namespace Arman.DevelopmentConsole
 {
-    public abstract class DevelopmentOptionsDefinition 
-    {
-
-
-    }
-
+    public abstract class DevelopmentOptionsDefinition { }
 }

@@ -19,17 +19,11 @@ namespace Arman.UIManagement
             InternalInit(manager);
         }
 
-        protected virtual void InternalInit(UIManager manager)
-        {
-        }
+        protected virtual void InternalInit(UIManager manager) { }
 
-        virtual public void OnBackButtonPressed()
-        {
-        }
+        public virtual void OnBackButtonPressed() { }
 
-        virtual public void OnFocused()
-        {
-        }
+        public virtual void OnFocused() { }
 
         public void SetSorting(int order, int layer)
         {
@@ -42,6 +36,5 @@ namespace Arman.UIManagement
         {
             return canvas.sortingOrder;
         }
-
     }
 }

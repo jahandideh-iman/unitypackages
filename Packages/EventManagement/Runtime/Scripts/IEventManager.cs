@@ -1,5 +1,4 @@
-﻿
-namespace Arman.EventManagement
+﻿namespace Arman.EventManagement
 {
     public interface IEventManager
     {

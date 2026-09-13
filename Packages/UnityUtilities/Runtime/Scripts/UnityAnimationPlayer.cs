@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 
-
 namespace Arman.UnityUtilities
 {
     [RequireComponent(typeof(Animation))]

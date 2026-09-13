@@ -92,7 +92,9 @@ function fail(message) {
 export function readVersions(packagesDir = PACKAGES_DIR) {
     const versions = new Map();
     if (!fs.existsSync(packagesDir)) return versions;
-    for (const entry of fs.readdirSync(packagesDir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+    for (const entry of fs
+        .readdirSync(packagesDir, { withFileTypes: true })
+        .sort((a, b) => a.name.localeCompare(b.name))) {
         if (!entry.isDirectory()) continue;
         const manifestPath = path.join(packagesDir, entry.name, "package.json");
         if (!fs.existsSync(manifestPath)) continue;
@@ -160,7 +162,9 @@ function preflight() {
     ]) {
         const r = run(tool, args, { cwd: ROOT });
         if (r.error || r.status !== 0) {
-            return fail(`\`${tool}\` is not available on PATH. It is required to open the release pull request.`);
+            return fail(
+                `\`${tool}\` is not available on PATH. It is required to open the release pull request.`,
+            );
         }
     }
 
@@ -178,11 +182,14 @@ function preflight() {
     }
 
     if (git("status", "--porcelain").out) {
-        return fail("working tree is dirty. Commit or stash first, so the release diff is exactly what this script writes.");
+        return fail(
+            "working tree is dirty. Commit or stash first, so the release diff is exactly what this script writes.",
+        );
     }
 
     const fetched = git("fetch", REMOTE, DEV_BRANCH);
-    if (fetched.code !== 0) return fail(`\`git fetch ${REMOTE} ${DEV_BRANCH}\` failed: ${fetched.err || fetched.out}`);
+    if (fetched.code !== 0)
+        return fail(`\`git fetch ${REMOTE} ${DEV_BRANCH}\` failed: ${fetched.err || fetched.out}`);
 
     // Behind is fatal — releasing a stale `dev` would silently drop whatever
     // landed on the remote. Ahead is only a warning: those commits are about to
@@ -197,7 +204,9 @@ function preflight() {
         );
     }
     if (ahead > 0) {
-        console.log(`  note: ${ahead} unpushed commit(s) on \`${DEV_BRANCH}\` will be included in this release.`);
+        console.log(
+            `  note: ${ahead} unpushed commit(s) on \`${DEV_BRANCH}\` will be included in this release.`,
+        );
     }
 
     console.log(`  on \`${branch}\`, clean, up to date with \`${REMOTE}/${DEV_BRANCH}\`.`);
@@ -220,41 +229,60 @@ function main() {
     if (failed) return failed;
 
     step("Validating packages");
-    if (node([RELEASE_TOOL, "validate"]) !== 0) return fail("validate failed. Nothing has been changed.");
+    if (node([RELEASE_TOOL, "validate"]) !== 0)
+        return fail("validate failed. Nothing has been changed.");
 
     const before = readVersions();
 
     step("Preparing the release (CHANGELOGs and versions)");
-    if (node([RELEASE_TOOL, "prepare"]) !== 0) return fail("prepare failed. Check the working tree before re-running.");
+    if (node([RELEASE_TOOL, "prepare"]) !== 0)
+        return fail("prepare failed. Check the working tree before re-running.");
 
     const changes = versionChanges(before, readVersions());
     if (!git("status", "--porcelain").out) {
-        console.log("\nNothing to release: no package has an `## [Unreleased]` section with entries.");
+        console.log(
+            "\nNothing to release: no package has an `## [Unreleased]` section with entries.",
+        );
         return 0;
     }
     if (changes.length === 0) {
-        return fail("prepare changed files but moved no package version. Inspect `git diff` before continuing.");
+        return fail(
+            "prepare changed files but moved no package version. Inspect `git diff` before continuing.",
+        );
     }
 
     step(`Committing ${changes.length} version bump(s)`);
     const added = git("add", "-A");
     if (added.code !== 0) return fail(`\`git add\` failed: ${added.err}`);
     const committed = git("commit", "-m", commitMessage(changes));
-    if (committed.code !== 0) return fail(`\`git commit\` failed: ${committed.err || committed.out}`);
+    if (committed.code !== 0)
+        return fail(`\`git commit\` failed: ${committed.err || committed.out}`);
     console.log(`  ${git("log", "--oneline", "-1").out}`);
 
     step(`Pushing to ${REMOTE}/${DEV_BRANCH}`);
     const pushed = git("push", REMOTE, `HEAD:${DEV_BRANCH}`);
     if (pushed.code !== 0) {
-        return fail(`\`git push\` failed: ${pushed.err || pushed.out}\nThe release commit is made locally; push it and open the pull request by hand.`);
+        return fail(
+            `\`git push\` failed: ${pushed.err || pushed.out}\nThe release commit is made locally; push it and open the pull request by hand.`,
+        );
     }
 
     step("Opening the release pull request");
     // An open dev -> master pull request already exists on a re-run (the push
     // above updated it), so adopt it rather than failing.
     const existing = gh(
-        "pr", "list", "--base", RELEASE_BRANCH, "--head", DEV_BRANCH,
-        "--state", "open", "--json", "url", "--jq", ".[0].url",
+        "pr",
+        "list",
+        "--base",
+        RELEASE_BRANCH,
+        "--head",
+        DEV_BRANCH,
+        "--state",
+        "open",
+        "--json",
+        "url",
+        "--jq",
+        ".[0].url",
     );
     let url = existing.code === 0 ? existing.out : "";
     if (url) {
@@ -265,8 +293,16 @@ function main() {
                 ? `Release: ${changes[0].name}@${changes[0].to}`
                 : `Release: ${changes.length} packages`;
         const created = gh(
-            "pr", "create", "--base", RELEASE_BRANCH, "--head", DEV_BRANCH,
-            "--title", title, "--body", pullRequestBody(changes),
+            "pr",
+            "create",
+            "--base",
+            RELEASE_BRANCH,
+            "--head",
+            DEV_BRANCH,
+            "--title",
+            title,
+            "--body",
+            pullRequestBody(changes),
         );
         if (created.code !== 0) {
             return fail(
@@ -280,10 +316,14 @@ function main() {
 
     console.log(`\nRelease pull request ready: ${url}`);
     console.log("\nNothing has been published yet. Merging that pull request is the publish:");
-    console.log(`  the \`tag\` job tags every package whose version moved, and an OpenUPM tag is permanent.`);
+    console.log(
+        `  the \`tag\` job tags every package whose version moved, and an OpenUPM tag is permanent.`,
+    );
     console.log("  Wait for green checks, then merge.");
     return 0;
 }
 
-const invokedDirectly = process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
+const invokedDirectly =
+    process.argv[1] &&
+    path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
 if (invokedDirectly) process.exit(main());

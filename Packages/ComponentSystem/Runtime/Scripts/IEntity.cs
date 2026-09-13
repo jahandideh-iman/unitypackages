@@ -1,12 +1,12 @@
-﻿
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Arman.ComponentSystem
 {
-    public interface IEntity 
+    public interface IEntity
     {
         void AddComponent(IComponent component);
-        T GetComponent<T>() where T : IComponent;
+        T GetComponent<T>()
+            where T : IComponent;
 
         IEnumerable<IComponent> AllComponents();
     }

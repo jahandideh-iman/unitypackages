@@ -4,10 +4,12 @@ namespace Arman.DependencyResolution.Tests
 {
     public class DependencyResolverTest_MultiTypeTargetRegistration
     {
-
         public interface IInterface1 { }
+
         public interface IInterface2 { }
+
         public class MultiInterfaceClass : IInterface1, IInterface2 { }
+
         public class ClassWithInterfaceArgument
         {
             public ClassWithInterfaceArgument(IInterface1 interface1, IInterface2 interface2) { }
@@ -21,11 +23,13 @@ namespace Arman.DependencyResolution.Tests
             _dependencyResolver = new ReflectionBasedDependencyResolver();
         }
 
-
         [Test]
         public void Build_ResolvesRegistrationAsOneInstance_WhenARegistrationTargetsMultipleTypes()
         {
-            _dependencyResolver.RegisterType<MultiInterfaceClass>().As<IInterface1>().As<IInterface2>();
+            _dependencyResolver
+                .RegisterType<MultiInterfaceClass>()
+                .As<IInterface1>()
+                .As<IInterface2>();
 
             var result = _dependencyResolver.Build();
 
@@ -38,7 +42,10 @@ namespace Arman.DependencyResolution.Tests
         [Test]
         public void Build_ResolvesRegistrations_WhenARegistrationRequiresOtherTargetTypes()
         {
-            _dependencyResolver.RegisterType<MultiInterfaceClass>().As<IInterface1>().As<IInterface2>();
+            _dependencyResolver
+                .RegisterType<MultiInterfaceClass>()
+                .As<IInterface1>()
+                .As<IInterface2>();
             _dependencyResolver.RegisterType<ClassWithInterfaceArgument>();
 
             var result = _dependencyResolver.Build();

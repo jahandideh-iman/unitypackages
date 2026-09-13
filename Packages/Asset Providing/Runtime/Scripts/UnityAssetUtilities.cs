@@ -1,13 +1,12 @@
-﻿
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Arman.AssetProviding
 {
     public static class UnityAssetUtilities
     {
-
         // TODO: Refactor this.
-        public static bool IsOfAssetType<T>(Object obj, out T castedObj) where T : Object
+        public static bool IsOfAssetType<T>(Object obj, out T castedObj)
+            where T : Object
         {
             if (obj is GameObject gObj)
             {
@@ -28,13 +27,13 @@ namespace Arman.AssetProviding
             return false;
         }
 
-        public static T CastToAsset<T>(Object obj) where T : Object
+        public static T CastToAsset<T>(Object obj)
+            where T : Object
         {
             if (obj is GameObject gObj)
                 return gObj.GetComponent<T>();
             else
                 return obj as T;
         }
-
     }
 }

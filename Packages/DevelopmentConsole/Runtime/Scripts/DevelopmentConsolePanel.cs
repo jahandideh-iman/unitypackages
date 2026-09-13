@@ -9,7 +9,6 @@ using UnityEngine.UI;
 // TODO: Refactor this whole shit.
 namespace Arman.DevelopmentConsole
 {
-
     public class DevelopmentConsolePanel : MonoBehaviour
     {
         public DevelopmentGroup groupPrefab;
@@ -31,11 +30,15 @@ namespace Arman.DevelopmentConsole
             //reporter.gameObject.SetActive(false);
             Init();
         }
+
         public void Init()
         {
             //ServiceLocator.Find<ConfigurationManager>().Configure(this);
 
-            var definitionTypes = ReflectionUtilities.FindTypesOf(typeof(DevelopmentOptionsDefinition), false);
+            var definitionTypes = ReflectionUtilities.FindTypesOf(
+                typeof(DevelopmentOptionsDefinition),
+                false
+            );
 
             foreach (var type in definitionTypes)
             {
@@ -44,15 +47,14 @@ namespace Arman.DevelopmentConsole
             }
 
             Application.logMessageReceived += CheckForErros;
-
         }
 
         void CheckForErros(string condition, string stackTrace, LogType type)
         {
             if (type == LogType.Error || type == LogType.Exception)
                 onErrorDetected.Invoke();
-
         }
+
         // TODO: Refactor this shit.
         public void InitShortCuts(Type type)
         {
@@ -61,14 +63,21 @@ namespace Arman.DevelopmentConsole
             {
                 if (method.IsStatic == false)
                 {
-                    Debug.LogErrorFormat("Method {0} in {1} is not static.", method, method.DeclaringType);
+                    Debug.LogErrorFormat(
+                        "Method {0} in {1} is not static.",
+                        method,
+                        method.DeclaringType
+                    );
                     continue;
                 }
 
                 var attributes = method.GetCustomAttributes(typeof(ShortCutAttribute), false);
                 var attribute = (attributes[0] as ShortCutAttribute);
 
-                var shortCutInfo = new ShortCutInfo(attribute.keyCodes, () => method.Invoke(null, null));
+                var shortCutInfo = new ShortCutInfo(
+                    attribute.keyCodes,
+                    () => method.Invoke(null, null)
+                );
 
                 shortCutInfos.Add(shortCutInfo);
             }
@@ -99,7 +108,6 @@ namespace Arman.DevelopmentConsole
             return atleastOneIsDown;
         }
 
-
         // TODO: Refactor this shit.
         public void InitCommands(Type type)
         {
@@ -110,9 +118,13 @@ namespace Arman.DevelopmentConsole
 
             foreach (var method in methods)
             {
-                if(method.IsStatic == false)
+                if (method.IsStatic == false)
                 {
-                    Debug.LogErrorFormat("Method {0} in {1} is not static.", method, method.DeclaringType);
+                    Debug.LogErrorFormat(
+                        "Method {0} in {1} is not static.",
+                        method,
+                        method.DeclaringType
+                    );
                     continue;
                 }
                 var attributes = method.GetCustomAttributes(typeof(DevOptionAttribute), false);
@@ -126,7 +138,7 @@ namespace Arman.DevelopmentConsole
                 var commandInfo = new CommandInfo(attribute.commandName, method);
 
                 var shortcuts = method.GetCustomAttributes(typeof(ShortCutAttribute), false);
-                if(shortcuts.Length > 0)
+                if (shortcuts.Length > 0)
                 {
                     commandInfo.SetShortcut((shortcuts[0] as ShortCutAttribute).keyCodes);
                 }
@@ -142,21 +154,32 @@ namespace Arman.DevelopmentConsole
 
                 foreach (var commandName in group.Value)
                     groupObject.AddCommand(commands[commandName]);
-
             }
         }
 
-
-        public static IEnumerable<MethodInfo> GetMethodsWithAttribute(Type classType, Type attributeType)
+        public static IEnumerable<MethodInfo> GetMethodsWithAttribute(
+            Type classType,
+            Type attributeType
+        )
         {
-            return classType.GetMethods().Where(methodInfo => methodInfo.GetCustomAttributes(attributeType, true).Length > 0);
+            return classType
+                .GetMethods()
+                .Where(methodInfo =>
+                    methodInfo.GetCustomAttributes(attributeType, true).Length > 0
+                );
         }
 
-        public static IEnumerable<MemberInfo> GetMembersWithAttribute(Type classType, Type attributeType)
+        public static IEnumerable<MemberInfo> GetMembersWithAttribute(
+            Type classType,
+            Type attributeType
+        )
         {
-            return classType.GetMembers().Where(memberInfo => memberInfo.GetCustomAttributes(attributeType, true).Length > 0);
+            return classType
+                .GetMembers()
+                .Where(memberInfo =>
+                    memberInfo.GetCustomAttributes(attributeType, true).Length > 0
+                );
         }
-
 
         [ShortCut(KeyCode.LeftShift, KeyCode.D)]
         public void Toggle()
@@ -185,9 +208,7 @@ namespace Arman.DevelopmentConsole
             }
 
             devButton.image.color = color;
-
         }
-
 
         public void OpenCommandInputPromtFor(CommandInfo commandInfo)
         {

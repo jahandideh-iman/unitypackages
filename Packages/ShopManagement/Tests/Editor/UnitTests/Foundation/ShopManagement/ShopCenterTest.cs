@@ -1,15 +1,14 @@
 ﻿using System;
-using Arman.ShopManagement;
 using Arman.Mocks.Foundation.ShopManagement.Core;
+using Arman.ShopManagement;
 using Moq;
 using NUnit.Framework;
 
 namespace Arman.ShopManagement.Tests
 {
-    public class FakeShopPackageA : FakeShopPackage {}
+    public class FakeShopPackageA : FakeShopPackage { }
 
-    public class FakeShopPackageB : FakeShopPackage {}
-
+    public class FakeShopPackageB : FakeShopPackage { }
 
     public class ShopCenterTest
     {
@@ -28,18 +27,26 @@ namespace Arman.ShopManagement.Tests
             var handler = new Mock<IPurchaseHandler>();
 
             handler
-                .Setup(h => h.Purchase(
-                    It.IsAny<IShopPackage>(),
-                    It.IsAny<Action<IPurchaseSuccessResult>>(),
-                    It.IsAny<Action<IPurchaseFailureResult>>()))
-                .Callback<IShopPackage, Action<IPurchaseSuccessResult>, Action<IPurchaseFailureResult>>(
+                .Setup(h =>
+                    h.Purchase(
+                        It.IsAny<IShopPackage>(),
+                        It.IsAny<Action<IPurchaseSuccessResult>>(),
+                        It.IsAny<Action<IPurchaseFailureResult>>()
+                    )
+                )
+                .Callback<
+                    IShopPackage,
+                    Action<IPurchaseSuccessResult>,
+                    Action<IPurchaseFailureResult>
+                >(
                     (package, onSuccess, onFailure) =>
                     {
                         if (shouldSucceed)
                             onSuccess(null);
                         else
                             onFailure(null);
-                    });
+                    }
+                );
 
             return handler;
         }
@@ -111,29 +118,38 @@ namespace Arman.ShopManagement.Tests
             shopCenter.Purchase(packageA, delegate { }, delegate { });
 
             packageAPurchaseHandler.Verify(
-                h => h.Purchase(
-                    packageA,
-                    It.IsAny<Action<IPurchaseSuccessResult>>(),
-                    It.IsAny<Action<IPurchaseFailureResult>>()),
-                Times.Once);
+                h =>
+                    h.Purchase(
+                        packageA,
+                        It.IsAny<Action<IPurchaseSuccessResult>>(),
+                        It.IsAny<Action<IPurchaseFailureResult>>()
+                    ),
+                Times.Once
+            );
             packageBPurchaseHandler.VerifyNoOtherCalls();
 
             shopCenter.Purchase(packageB, delegate { }, delegate { });
 
             packageBPurchaseHandler.Verify(
-                h => h.Purchase(
-                    packageB,
-                    It.IsAny<Action<IPurchaseSuccessResult>>(),
-                    It.IsAny<Action<IPurchaseFailureResult>>()),
-                Times.Once);
+                h =>
+                    h.Purchase(
+                        packageB,
+                        It.IsAny<Action<IPurchaseSuccessResult>>(),
+                        It.IsAny<Action<IPurchaseFailureResult>>()
+                    ),
+                Times.Once
+            );
 
             // Still exactly the one call it took above: packageB did not reach it.
             packageAPurchaseHandler.Verify(
-                h => h.Purchase(
-                    It.IsAny<IShopPackage>(),
-                    It.IsAny<Action<IPurchaseSuccessResult>>(),
-                    It.IsAny<Action<IPurchaseFailureResult>>()),
-                Times.Once);
+                h =>
+                    h.Purchase(
+                        It.IsAny<IShopPackage>(),
+                        It.IsAny<Action<IPurchaseSuccessResult>>(),
+                        It.IsAny<Action<IPurchaseFailureResult>>()
+                    ),
+                Times.Once
+            );
         }
 
         [Test]
@@ -143,13 +159,14 @@ namespace Arman.ShopManagement.Tests
             bool isPurchaseSuccessful = false;
 
             shopCenter.AssignPurchaseHandler<FakeShopPackageA>(
-                PurchaseHandler(shouldSucceed: true).Object);
+                PurchaseHandler(shouldSucceed: true).Object
+            );
 
             shopCenter.Purchase(
                 package,
                 onSuccess: (r) => isPurchaseSuccessful = true,
-                onFailure: delegate { });
-
+                onFailure: delegate { }
+            );
 
             Assert.That(isPurchaseSuccessful, Is.True);
             Assert.That(package.IsApplied(), Is.True);
@@ -162,13 +179,14 @@ namespace Arman.ShopManagement.Tests
             bool isPurchaseFailed = false;
 
             shopCenter.AssignPurchaseHandler<FakeShopPackageA>(
-                PurchaseHandler(shouldSucceed: false).Object);
+                PurchaseHandler(shouldSucceed: false).Object
+            );
 
             shopCenter.Purchase(
                 package,
                 onSuccess: delegate { },
-                onFailure: (r) => isPurchaseFailed = true);
-
+                onFailure: (r) => isPurchaseFailed = true
+            );
 
             Assert.That(isPurchaseFailed, Is.True);
             Assert.That(package.IsApplied(), Is.False);
@@ -180,16 +198,13 @@ namespace Arman.ShopManagement.Tests
             var package = new FakeShopPackageA();
 
             shopCenter.AssignPurchaseHandler<FakeShopPackageA>(
-                PurchaseHandler(shouldSucceed: true).Object);
+                PurchaseHandler(shouldSucceed: true).Object
+            );
 
             IShopPackage purchasedPackage = null;
             shopCenter.SetPurchaseSuccessCallback((p, r) => purchasedPackage = p);
 
-            shopCenter.Purchase(
-                package,
-                onSuccess: delegate { },
-                onFailure: delegate { });
-
+            shopCenter.Purchase(package, onSuccess: delegate { }, onFailure: delegate { });
 
             Assert.That(purchasedPackage, Is.SameAs(package));
         }
@@ -200,16 +215,13 @@ namespace Arman.ShopManagement.Tests
             var package = new FakeShopPackageA();
 
             shopCenter.AssignPurchaseHandler<FakeShopPackageA>(
-                PurchaseHandler(shouldSucceed: false).Object);
+                PurchaseHandler(shouldSucceed: false).Object
+            );
 
             IShopPackage purchasedPackage = null;
             shopCenter.SetPurchaseFailureCallback((p, r) => purchasedPackage = p);
 
-            shopCenter.Purchase(
-                package,
-                onSuccess: delegate { },
-                onFailure: delegate { });
-
+            shopCenter.Purchase(package, onSuccess: delegate { }, onFailure: delegate { });
 
             Assert.That(purchasedPackage, Is.SameAs(package));
         }

@@ -3,7 +3,6 @@ using NUnit.Framework;
 
 namespace Arman.ObjectPooling.Tests
 {
-
     public class FakePoolable : IPoolable
     {
         public int id;
@@ -36,9 +35,7 @@ namespace Arman.ObjectPooling.Tests
 
     public class TestableObjectPool : ObjectPool<FakePoolable>
     {
-
         public bool createMethodIsCalled = false;
-
 
         protected override FakePoolable CreateObject()
         {
@@ -51,18 +48,15 @@ namespace Arman.ObjectPooling.Tests
             obj.SetActive(false);
         }
 
-
         protected override void ActivateObject(FakePoolable obj)
         {
             obj.SetActive(true);
         }
     }
 
-
-    public class ObjectPoolTest 
+    public class ObjectPoolTest
     {
         TestableObjectPool pool;
-
 
         [SetUp]
         public void Setup()
@@ -98,7 +92,6 @@ namespace Arman.ObjectPooling.Tests
             Assert.That(pool.Size(), Is.EqualTo(1));
         }
 
-
         [Test]
         public void AcquiringShouldNotCreateANewObjectWhenWhenThereAreObjectInThePool()
         {
@@ -108,7 +101,6 @@ namespace Arman.ObjectPooling.Tests
             var secondObject = pool.Acquire();
 
             Assert.That(firstObject, Is.SameAs(secondObject));
-
         }
 
         [Test]
@@ -129,6 +121,5 @@ namespace Arman.ObjectPooling.Tests
 
             Assert.That(pool.Size(), Is.EqualTo(2));
         }
-
     }
 }

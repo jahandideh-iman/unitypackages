@@ -8,6 +8,4 @@ namespace Arman.HttpConnection
 
         bool IsTimeOut(string msg);
     }
-
-
 }

@@ -13,7 +13,8 @@ namespace Arman.PersistentDataManagement
             return new PersistentDataManager(
                 new FileBasedPersistetDataIOStreamFactory(Application.persistentDataPath),
                 new JSONPersistentDataWrapper(),
-                saveVersion);
+                saveVersion
+            );
         }
     }
 }

@@ -59,7 +59,10 @@ test("unreleasedRange runs to the end of file when nothing follows", () => {
 test("unreleasedEntries ignores blanks and sub-headings", () => {
     const lines = CHANGELOG.split("\n");
     const { start, end } = unreleasedRange(lines);
-    assert.deepEqual(unreleasedEntries(lines.slice(start + 1, end)), ["- A new thing.", "- An old thing."]);
+    assert.deepEqual(unreleasedEntries(lines.slice(start + 1, end)), [
+        "- A new thing.",
+        "- An old thing.",
+    ]);
 });
 
 test("unreleasedEntries treats a bare sub-heading as no entry", () => {
@@ -67,7 +70,9 @@ test("unreleasedEntries treats a bare sub-heading as no entry", () => {
 });
 
 test("populatedSubsections lists only sub-headings with something under them", () => {
-    assert.deepEqual(populatedSubsections(["### Added", "", "- A thing.", "", "### Fixed", ""]), ["Added"]);
+    assert.deepEqual(populatedSubsections(["### Added", "", "- A thing.", "", "### Fixed", ""]), [
+        "Added",
+    ]);
 });
 
 test("bumpLevel takes the highest level present", () => {
@@ -123,13 +128,15 @@ test("releaseChangelog preserves CRLF line endings", () => {
 });
 
 test("replaceManifestVersion rewrites one line and leaves the rest byte-identical", () => {
-    const manifest = '{\r\n  "name": "com.arman.alpha",\r\n  "version": "0.1.0",\r\n  "unity": "6000.0"\r\n}\r\n';
+    const manifest =
+        '{\r\n  "name": "com.arman.alpha",\r\n  "version": "0.1.0",\r\n  "unity": "6000.0"\r\n}\r\n';
     const rewritten = replaceManifestVersion(manifest, "0.2.0");
     assert.equal(rewritten, manifest.replace('"version": "0.1.0"', '"version": "0.2.0"'));
 });
 
 test("replaceManifestVersion refuses an ambiguous manifest", () => {
-    const manifest = '{\n  "version": "0.1.0",\n  "dependencies": {\n    "version": "1.0.0"\n  }\n}\n';
+    const manifest =
+        '{\n  "version": "0.1.0",\n  "dependencies": {\n    "version": "1.0.0"\n  }\n}\n';
     assert.throws(() => replaceManifestVersion(manifest, "0.2.0"), /exactly one/);
 });
 
@@ -138,18 +145,27 @@ test("replaceManifestVersion refuses a manifest with no version key", () => {
 });
 
 test("replaceManifestDependency rewrites the range and nothing else", () => {
-    const manifest = '{\r\n  "name": "com.arman.beta",\r\n  "version": "0.1.0",\r\n  "dependencies": {\r\n    "com.arman.alpha": "0.1.0"\r\n  }\r\n}\r\n';
+    const manifest =
+        '{\r\n  "name": "com.arman.beta",\r\n  "version": "0.1.0",\r\n  "dependencies": {\r\n    "com.arman.alpha": "0.1.0"\r\n  }\r\n}\r\n';
     const rewritten = replaceManifestDependency(manifest, "com.arman.alpha", "0.2.0");
-    assert.equal(rewritten, manifest.replace('"com.arman.alpha": "0.1.0"', '"com.arman.alpha": "0.2.0"'));
+    assert.equal(
+        rewritten,
+        manifest.replace('"com.arman.alpha": "0.1.0"', '"com.arman.alpha": "0.2.0"'),
+    );
 });
 
 test("replaceManifestDependency cannot be fooled by the package's own name value", () => {
     const manifest = '{\n  "name": "com.arman.alpha",\n  "version": "0.1.0"\n}\n';
-    assert.throws(() => replaceManifestDependency(manifest, "com.arman.alpha", "0.2.0"), /exactly one/);
+    assert.throws(
+        () => replaceManifestDependency(manifest, "com.arman.alpha", "0.2.0"),
+        /exactly one/,
+    );
 });
 
 test("internalDependencies keeps only this repo's packages", () => {
-    const manifest = { dependencies: { "com.arman.alpha": "0.1.0", "com.unity.test-framework": "1.4.5" } };
+    const manifest = {
+        dependencies: { "com.arman.alpha": "0.1.0", "com.unity.test-framework": "1.4.5" },
+    };
     assert.deepEqual(internalDependencies(manifest), [["com.arman.alpha", "0.1.0"]]);
     assert.deepEqual(internalDependencies({}), []);
     assert.deepEqual(internalDependencies(null), []);
@@ -166,7 +182,8 @@ test("addChangedEntries creates both headings when the changelog has neither", (
 });
 
 test("addChangedEntries appends to an existing Changed section", () => {
-    const text = "# Changelog\n\n## [Unreleased]\n\n### Changed\n\n- Flattened the folders.\n\n## [0.1.0] - 2026-08-29\n";
+    const text =
+        "# Changelog\n\n## [Unreleased]\n\n### Changed\n\n- Flattened the folders.\n\n## [0.1.0] - 2026-08-29\n";
     assert.equal(
         addChangedEntries(text, [BULLET]),
         `# Changelog\n\n## [Unreleased]\n\n### Changed\n\n- Flattened the folders.\n${BULLET}\n\n## [0.1.0] - 2026-08-29\n`,
@@ -174,7 +191,8 @@ test("addChangedEntries appends to an existing Changed section", () => {
 });
 
 test("addChangedEntries files a new Changed section in Keep a Changelog order", () => {
-    const text = "# Changelog\n\n## [Unreleased]\n\n### Added\n\n- A thing.\n\n### Fixed\n\n- A leak.\n\n## [0.1.0] - 2026-08-29\n";
+    const text =
+        "# Changelog\n\n## [Unreleased]\n\n### Added\n\n- A thing.\n\n### Fixed\n\n- A leak.\n\n## [0.1.0] - 2026-08-29\n";
     const result = addChangedEntries(text, [BULLET]);
     assert.ok(result.indexOf("### Added") < result.indexOf("### Changed"), result);
     assert.ok(result.indexOf("### Changed") < result.indexOf("### Fixed"), result);
@@ -204,16 +222,30 @@ test("cascadeDependents walks the graph transitively", () => {
         pkg("Gamma", "com.arman.gamma", "0.1.0", { "com.arman.beta": "0.1.0" }),
         pkg("Delta", "com.arman.delta", "0.1.0"),
     ];
-    const direct = [{ folder: "Alpha", name: "com.arman.alpha", from: "0.1.0", to: "0.2.0", level: "feature", reason: "feature: Changed" }];
+    const direct = [
+        {
+            folder: "Alpha",
+            name: "com.arman.alpha",
+            from: "0.1.0",
+            to: "0.2.0",
+            level: "feature",
+            reason: "feature: Changed",
+        },
+    ];
     const { plan, errors } = cascadeDependents(packages, direct);
 
     assert.deepEqual(errors, []);
-    assert.deepEqual(plan.map((entry) => [entry.name, entry.to]), [
-        ["com.arman.alpha", "0.2.0"],
-        ["com.arman.beta", "0.1.1"],
-        ["com.arman.gamma", "0.1.1"],
+    assert.deepEqual(
+        plan.map((entry) => [entry.name, entry.to]),
+        [
+            ["com.arman.alpha", "0.2.0"],
+            ["com.arman.beta", "0.1.1"],
+            ["com.arman.gamma", "0.1.1"],
+        ],
+    );
+    assert.deepEqual(plan[1].dependencyUpdates, [
+        { name: "com.arman.alpha", from: "0.1.0", to: "0.2.0" },
     ]);
-    assert.deepEqual(plan[1].dependencyUpdates, [{ name: "com.arman.alpha", from: "0.1.0", to: "0.2.0" }]);
 });
 
 test("cascadeDependents survives a dependency cycle", () => {
@@ -221,11 +253,28 @@ test("cascadeDependents survives a dependency cycle", () => {
         pkg("Alpha", "com.arman.alpha", "0.1.0", { "com.arman.beta": "0.1.0" }),
         pkg("Beta", "com.arman.beta", "0.1.0", { "com.arman.alpha": "0.1.0" }),
     ];
-    const direct = [{ folder: "Alpha", name: "com.arman.alpha", from: "0.1.0", to: "0.2.0", level: "feature", reason: "feature: Changed" }];
+    const direct = [
+        {
+            folder: "Alpha",
+            name: "com.arman.alpha",
+            from: "0.1.0",
+            to: "0.2.0",
+            level: "feature",
+            reason: "feature: Changed",
+        },
+    ];
     const { plan } = cascadeDependents(packages, direct);
-    assert.deepEqual(plan.map((entry) => [entry.name, entry.to]), [["com.arman.alpha", "0.2.0"], ["com.arman.beta", "0.1.1"]]);
+    assert.deepEqual(
+        plan.map((entry) => [entry.name, entry.to]),
+        [
+            ["com.arman.alpha", "0.2.0"],
+            ["com.arman.beta", "0.1.1"],
+        ],
+    );
     // Alpha's own range on Beta is updated too, so neither side ships stale.
-    assert.deepEqual(plan[0].dependencyUpdates, [{ name: "com.arman.beta", from: "0.1.0", to: "0.1.1" }]);
+    assert.deepEqual(plan[0].dependencyUpdates, [
+        { name: "com.arman.beta", from: "0.1.0", to: "0.1.1" },
+    ]);
 });
 
 test("cascadeDependents reports a dependent it cannot version", () => {
@@ -233,7 +282,16 @@ test("cascadeDependents reports a dependent it cannot version", () => {
         pkg("Alpha", "com.arman.alpha", "0.1.0"),
         pkg("Beta", "com.arman.beta", "0.1.0-preview", { "com.arman.alpha": "0.1.0" }),
     ];
-    const direct = [{ folder: "Alpha", name: "com.arman.alpha", from: "0.1.0", to: "0.2.0", level: "feature", reason: "feature: Changed" }];
+    const direct = [
+        {
+            folder: "Alpha",
+            name: "com.arman.alpha",
+            from: "0.1.0",
+            to: "0.2.0",
+            level: "feature",
+            reason: "feature: Changed",
+        },
+    ];
     const { plan, errors } = cascadeDependents(packages, direct);
     assert.equal(plan.length, 1);
     assert.match(errors[0], /com\.arman\.beta: version `0\.1\.0-preview` is not plain/);

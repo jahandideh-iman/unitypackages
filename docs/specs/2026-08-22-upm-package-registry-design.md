@@ -43,18 +43,18 @@ subject to two Unity-specific constraints:
   window.** Resolution from `manifest.json` still works. This is a UX degradation, not a blocker —
   a distinction that changes the ranking below.
 
-| Option | Free | Unity-compatible | Verdict |
-|---|---|---|---|
-| **npmjs.com (public)** | Yes, unlimited public packages | **Full** — `/-/v1/search` returns HTTP 200 | **Selected** |
-| GitLab Pages static registry | Yes | Yes, if metadata is generated | Viable; needs custom generator |
-| GitLab Package Registry | Yes; anonymous read works on public projects | **Degraded** | Fallback only |
-| OpenUPM | Yes | Full | **Disqualified — GitHub-only** |
-| Verdaccio self-hosted | Not in practice | Full | Free PaaS tiers with persistent disk have dried up |
-| Cloudsmith Core | 500 MB / 1 GB delivery | Yes | Metered ceiling, no upside here |
+| Option                       | Free                                         | Unity-compatible                           | Verdict                                            |
+| ---------------------------- | -------------------------------------------- | ------------------------------------------ | -------------------------------------------------- |
+| **npmjs.com (public)**       | Yes, unlimited public packages               | **Full** — `/-/v1/search` returns HTTP 200 | **Selected**                                       |
+| GitLab Pages static registry | Yes                                          | Yes, if metadata is generated              | Viable; needs custom generator                     |
+| GitLab Package Registry      | Yes; anonymous read works on public projects | **Degraded**                               | Fallback only                                      |
+| OpenUPM                      | Yes                                          | Full                                       | **Disqualified — GitHub-only**                     |
+| Verdaccio self-hosted        | Not in practice                              | Full                                       | Free PaaS tiers with persistent disk have dried up |
+| Cloudsmith Core              | 500 MB / 1 GB delivery                       | Yes                                        | Metered ceiling, no upside here                    |
 
 ### Why OpenUPM — the obvious answer — does not apply
 
-OpenUPM's docs are explicit: *"The package must be open-source and hosted on GitHub."* This repo is
+OpenUPM's docs are explicit: _"The package must be open-source and hosted on GitHub."_ This repo is
 on GitLab. This single constraint is what makes the problem non-trivial; OpenUPM would otherwise be
 the default recommendation.
 
@@ -64,7 +64,7 @@ Probed live against project `15949052`:
 
 - The project is `"visibility": "public"` and anonymous reads are permitted (no 401).
 - **`/-/all` and `/-/v1/search` both return `302` redirecting to `registry.npmjs.org`.** Unity's
-  browse tab would therefore search *npm's* catalogue rather than this project's packages.
+  browse tab would therefore search _npm's_ catalogue rather than this project's packages.
 - A packument request for a package not present locally also 302s to npmjs, which silently masks
   typo'd package names instead of returning a clean 404.
 - GitLab issues [#382760](https://gitlab.com/gitlab-org/gitlab/-/issues/382760) and
@@ -85,7 +85,7 @@ Probed live against project `15949052`:
 ### Considered and rejected: Git URL dependencies
 
 `https://gitlab.com/....git?path=Packages/ServiceLocating#v1.2.0` works natively in Unity and needs
-no infrastructure. Rejected because Unity does not resolve the *dependencies* of a git-sourced
+no infrastructure. Rejected because Unity does not resolve the _dependencies_ of a git-sourced
 package — every consumer would have to manually add each transitive edge by hand (nine
 `service-locating` edges at the time of writing; three edges total today, see above).
 Acceptable as a stopgap, unworkable as the long-term answer.
@@ -108,8 +108,8 @@ Names stay exactly as they are today. Versions remain the source of truth in eac
 ~~**Pre-release suffixes are retained** (seven packages carry a `-preview` suffix; six of those are
 publishable) per explicit decision.~~ **Reversed 2026-08-30 — all seven `-preview` suffixes were
 dropped to plain `0.1.0`.** The consequence this paragraph warned about therefore no longer applies:
-Unity hides pre-release versions from the Package Manager UI unless *Project Settings → Package
-Manager → Enable Pre-release Packages* is enabled, but with no `-preview` suffix left anywhere,
+Unity hides pre-release versions from the Package Manager UI unless _Project Settings → Package
+Manager → Enable Pre-release Packages_ is enabled, but with no `-preview` suffix left anywhere,
 The consuming game project does not need that toggle for `scene-management` or `ui-management`.
 
 ### 3.2 Release tooling — `Tools/upm-release.mjs`
@@ -121,12 +121,12 @@ That glob naturally excludes `Packages/manifest.json` and `Packages/packages-loc
 at the `Packages/` root rather than in a subdirectory. Three directories contain spaces
 (`Asset Providing`, `Scene Management`, `UI Management`) and must be path-quoted throughout.
 
-| Subcommand | Behaviour |
-|---|---|
+| Subcommand | Behaviour                                                                                                                                                                                                                                                                                          |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `validate` | Per package: parseable JSON; name matches npm rules; valid semver; `license` field present; description is not stock placeholder text; `npm pack --dry-run` succeeds; every `com.arman.*` dependency resolves either to a version already on npm or to a package being published in this same run. |
-| `pack` | Writes tarballs to `PackageExports/`, preserving the existing artifact convention. |
-| `publish` | For each package, compares the local `version` against `npm view <name> versions`. Publishes only genuinely-new versions. Emits `published.json` listing what it did. |
-| `tag` | Reads `published.json` and creates a `<package-name>/<version>` tag and GitLab Release per entry. |
+| `pack`     | Writes tarballs to `PackageExports/`, preserving the existing artifact convention.                                                                                                                                                                                                                 |
+| `publish`  | For each package, compares the local `version` against `npm view <name> versions`. Publishes only genuinely-new versions. Emits `published.json` listing what it did.                                                                                                                              |
+| `tag`      | Reads `published.json` and creates a `<package-name>/<version>` tag and GitLab Release per entry.                                                                                                                                                                                                  |
 
 **Publish order is topologically sorted** over the internal dependency graph, so a single MR that
 bumps both `package-basics` and `persistent-data-management` publishes the dependency first.
@@ -207,7 +207,7 @@ Automation tokens bypass npm's mandatory 2FA-on-publish. A granular token would 
 
 ### 3.5 Why this shape — idempotency
 
-Publishing is driven by *comparing against the registry*, not by tracked state. Three consequences:
+Publishing is driven by _comparing against the registry_, not by tracked state. Three consequences:
 
 - Re-running a `master` pipeline publishes nothing new and is always safe.
 - A five-package release that fails after three leaves those three published; a re-run completes the
@@ -220,16 +220,16 @@ Publishing is driven by *comparing against the registry*, not by tracked state. 
 
 Ordered by dependency. Items 1–3 must land before the first publish; item 4 is the payoff.
 
-1. **MIT `LICENSE` file + `"license": "MIT"` field** in all 17 publishable packages. Currently *no*
+1. **MIT `LICENSE` file + `"license": "MIT"` field** in all 17 publishable packages. Currently _no_
    package has either. Publishing unlicensed public packages is not acceptable.
 2. **`PackageTemplate` → `"private": true`.** Its name is the placeholder
    `com.arman.package-template` and it must never publish. Add a `validate`-stage guard so
-   stock *"Replace this string with your own description"* text (present in four packages) cannot
+   stock _"Replace this string with your own description"_ text (present in four packages) cannot
    ship.
 3. **Rename `com.arman.foundation.persistent_data_managemement`** → `com.arman.persistent-data-management`.
    "managemement" is misspelled, and a published name is permanent. No other package declares a
    dependency on it, so this touches only its own `package.json` and the consuming game project's manifest.
-   *(Done 2026-08-23, subsumed by the repo-wide id normalisation — see the amendment note above.)*
+   _(Done 2026-08-23, subsumed by the repo-wide id normalisation — see the amendment note above.)_
 4. **Repoint the consuming game project** — see below.
 
 ## 5. Consumer migration (the consuming game project)
@@ -252,7 +252,7 @@ vendored folders from that project's `Packages/`.
 
 > **Risk — must be handled before deletion.** The six vendored folders are git-tracked and may
 > contain local edits that were never pushed upstream to `unitypackages`. Each must be diffed
-> against its canonical source *before* removal. Divergence is a decision point, not something to
+> against its canonical source _before_ removal. Divergence is a decision point, not something to
 > silently overwrite.
 
 ## 6. Out of scope
@@ -266,7 +266,7 @@ vendored folders from that project's `Packages/`.
 ## 7. Open risks
 
 - Publishing is irreversible after 72 hours. Cleanup items 1–3 are gates, not suggestions.
-- npm's global namespace is first-come. All 18 names are free *as of 2026-08-22*; the longer this
+- npm's global namespace is first-come. All 18 names are free _as of 2026-08-22_; the longer this
   sits, the more that can change.
 - The consuming game project and `unitypackages` are separate checkouts with separate `master` branches. Changes
   to `unitypackages` need explicit sign-off.

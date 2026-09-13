@@ -11,31 +11,37 @@ namespace Arman.AssetProviding
         [Serializable]
         public struct Entry
         {
-            [SerializeField] string id;
-            [SerializeField] Object asset;
+            [SerializeField]
+            string id;
 
-            public string ID { get => id; }
-            public Object Asset { get => asset; }
+            [SerializeField]
+            Object asset;
+
+            public string ID
+            {
+                get => id;
+            }
+            public Object Asset
+            {
+                get => asset;
+            }
         }
 
-        [SerializeField] Entry[] assets;
+        [SerializeField]
+        Entry[] assets;
 
         Dictionary<string, Object> assetsTable = new Dictionary<string, Object>();
 
-        public void OnBeforeSerialize()
-        {
-            
-        }
+        public void OnBeforeSerialize() { }
 
         public void OnAfterDeserialize()
         {
             assetsTable.Clear();
 
             foreach (var entry in assets)
-                if(entry.Asset != null)
+                if (entry.Asset != null)
                     assetsTable.Add(entry.ID, entry.Asset);
         }
-
 
         public override IAsyncUnityAssetProvider CreateAsyncProvider()
         {
@@ -46,6 +52,5 @@ namespace Arman.AssetProviding
         {
             return new TableBasedAssetProvider(assetsTable);
         }
-
     }
 }

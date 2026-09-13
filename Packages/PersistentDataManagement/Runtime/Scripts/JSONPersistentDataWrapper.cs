@@ -1,6 +1,4 @@
-﻿
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using NiceJson;
 
@@ -36,7 +34,7 @@ namespace Arman.PersistentDataManagement
 
             root = string.IsNullOrWhiteSpace(content)
                 ? new JsonObject()
-                : (JsonObject) JsonNode.ParseJsonString(content);
+                : (JsonObject)JsonNode.ParseJsonString(content);
 
             blockStack.Push(root);
         }

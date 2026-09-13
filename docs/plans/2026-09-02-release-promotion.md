@@ -35,19 +35,19 @@
 
 ## File Structure
 
-| File | Responsibility |
-|--|--|
-| `Tools/promotion-check.mjs` | **New.** Decides whether a pull request may merge into `master`. Pure decision function plus a thin CLI reading the event from the environment. |
-| `Tools/promotion-check.test.mjs` | **New.** Tests for the decision table and the CLI's exit codes. No git repo needed — the script reads only environment variables. |
-| `Tools/upm-release.mjs` | **Modified.** Gains the `prepare` subcommand: changelog parsing, bump derivation, version arithmetic, the two file rewrites, and the guards. |
-| `Tools/upm-release.test.mjs` | **New.** First tests this script has had. Covers the pure helpers (`unreleasedRange`, `bumpLevel`, `nextVersion`, `releaseChangelog`, `replaceManifestVersion`) directly, with no filesystem. |
+| File                                 | Responsibility                                                                                                                                                                                   |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `Tools/promotion-check.mjs`          | **New.** Decides whether a pull request may merge into `master`. Pure decision function plus a thin CLI reading the event from the environment.                                                  |
+| `Tools/promotion-check.test.mjs`     | **New.** Tests for the decision table and the CLI's exit codes. No git repo needed — the script reads only environment variables.                                                                |
+| `Tools/upm-release.mjs`              | **Modified.** Gains the `prepare` subcommand: changelog parsing, bump derivation, version arithmetic, the two file rewrites, and the guards.                                                     |
+| `Tools/upm-release.test.mjs`         | **New.** First tests this script has had. Covers the pure helpers (`unreleasedRange`, `bumpLevel`, `nextVersion`, `releaseChangelog`, `replaceManifestVersion`) directly, with no filesystem.    |
 | `Tools/upm-release.prepare.test.mjs` | **New.** End-to-end tests for the `prepare` subcommand, each against a throwaway git repo with CRLF fixtures. Split from the file above so the pure-helper suite stays fast and filesystem-free. |
-| `Tools/changelog-check.mjs` | **Modified.** Gains the repo-wide `empty-unreleased` rule and a reworded `missing-section` message. |
-| `Tools/changelog-check.test.mjs` | **Modified.** Six new tests for `empty-unreleased`. |
-| `.github/workflows/release.yml` | **Modified.** Gains the `promotion-guard` and `release-script-tests` jobs. The `tag` job is untouched. |
-| `.github/rulesets/master.json` | **New.** The checked-in ruleset applied to `master` with `gh api`. The repo is the record of what protection is configured. |
-| `Packages/*/CHANGELOG.md` | **Modified.** Every empty `## [Unreleased]` heading is deleted. |
-| `.agents/AGENTS.md` | **Modified.** Documents `prepare`, `promotion-guard`, the ruleset, and reverses the "every CHANGELOG carries an empty `## [Unreleased]` heading" rule. |
+| `Tools/changelog-check.mjs`          | **Modified.** Gains the repo-wide `empty-unreleased` rule and a reworded `missing-section` message.                                                                                              |
+| `Tools/changelog-check.test.mjs`     | **Modified.** Six new tests for `empty-unreleased`.                                                                                                                                              |
+| `.github/workflows/release.yml`      | **Modified.** Gains the `promotion-guard` and `release-script-tests` jobs. The `tag` job is untouched.                                                                                           |
+| `.github/rulesets/master.json`       | **New.** The checked-in ruleset applied to `master` with `gh api`. The repo is the record of what protection is configured.                                                                      |
+| `Packages/*/CHANGELOG.md`            | **Modified.** Every empty `## [Unreleased]` heading is deleted.                                                                                                                                  |
+| `.agents/AGENTS.md`                  | **Modified.** Documents `prepare`, `promotion-guard`, the ruleset, and reverses the "every CHANGELOG carries an empty `## [Unreleased]` heading" rule.                                           |
 
 The split follows the existing shape of `Tools/`: one script per concern, each with a sibling `*.test.mjs`, each runnable by hand. `promotion-check.mjs` is a separate script rather than a fourth subcommand of `upm-release.mjs` because it answers a question about a pull request, not about a package — it never reads `Packages/` at all.
 
@@ -56,10 +56,12 @@ The split follows the existing shape of `Tools/`: one script per concern, each w
 ### Task 1: Delete every empty `## [Unreleased]` heading
 
 **Files:**
+
 - Modify: `Packages/*/CHANGELOG.md` — every package whose `## [Unreleased]` section has no entries
 - Modify: `.agents/AGENTS.md:302` (the changelog section's opening sentence) and `.agents/AGENTS.md:379` (adding-a-new-package step 6)
 
 **Interfaces:**
+
 - Consumes: nothing.
 - Produces: a repository where no CHANGELOG has an empty `## [Unreleased]` heading — the precondition Task 2's rule needs in order to be introduced without false blame.
 
@@ -158,7 +160,7 @@ with:
 
 > A package CHANGELOG carries a `## [Unreleased]` heading **only while it has entries under it**. The contributor with something to record creates the heading; `upm-release.mjs prepare` renames it to a version heading and leaves nothing in its place. The headings seeded across all 18 packages on 2026-08-30 were deleted on 2026-09-02 — an empty heading is now a CI failure, see `empty-unreleased` below.
 
-And rewrite step 6 of *Adding a new package*:
+And rewrite step 6 of _Adding a new package_:
 
 > 6. Write a `README.md` and a `CHANGELOG.md` with **no `## [Unreleased]` heading** — add one when you have an entry to put under it. See [the changelog rules](#changelogs--two-rules-enforced-in-ci).
 
@@ -185,11 +187,13 @@ MSG
 ### Task 2: The `empty-unreleased` rule
 
 **Files:**
+
 - Modify: `Tools/changelog-check.mjs` — new scan function, new rule in the report, reworded `missing-section` explanation, `usage()` text, header comment
 - Modify: `Tools/changelog-check.test.mjs` — six new tests
 - Modify: `.agents/AGENTS.md` — the rules table and the details list
 
 **Interfaces:**
+
 - Consumes: the existing `entriesOf(lines)`, `unreleasedSection(text)`, `changelogAt(ref, folder)`, `manifestAt(ref, folder)` from `changelog-check.mjs`.
 - Produces: rule id `"empty-unreleased"`, reported as `{ rule: "empty-unreleased" }` inside a package's `problems` array, with **no waiver label**. Report entries created by this rule have `files: []`.
 
@@ -441,23 +445,25 @@ MSG
 ### Task 3: `promotion-check.mjs` and the `promotion-guard` job
 
 **Files:**
+
 - Create: `Tools/promotion-check.mjs`
 - Create: `Tools/promotion-check.test.mjs`
 - Modify: `.github/workflows/release.yml` — add the `promotion-guard` job
 - Modify: `.agents/AGENTS.md` — the Branching section
 
 **Interfaces:**
+
 - Consumes: nothing.
 - Produces: `Tools/promotion-check.mjs`, whose CLI reads `GITHUB_EVENT_NAME`, `GITHUB_BASE_REF`, and `GITHUB_HEAD_REF` from the environment (overridable with `--event`, `--base`, `--head`) and prints `{ ok, event, base, head, reason }` under `--json`. Exit `0` allowed, `1` refused, `2` bad usage.
 
 The decision table:
 
-| Event | Base | Head | Result |
-|--|--|--|--|
-| not `pull_request` | — | — | pass — "not a release pull request" |
-| `pull_request` | not `master` | — | pass — "not a release pull request" |
-| `pull_request` | `master` | `dev` | pass — "release pull request from `dev`" |
-| `pull_request` | `master` | anything else | **fail**, naming the branch |
+| Event              | Base         | Head          | Result                                   |
+| ------------------ | ------------ | ------------- | ---------------------------------------- |
+| not `pull_request` | —            | —             | pass — "not a release pull request"      |
+| `pull_request`     | not `master` | —             | pass — "not a release pull request"      |
+| `pull_request`     | `master`     | `dev`         | pass — "release pull request from `dev`" |
+| `pull_request`     | `master`     | anything else | **fail**, naming the branch              |
 
 The branch logic lives in the script, never in a workflow `if:`. The job runs on every event `release.yml` fires on and reports a genuine success in the cases that are not release pull requests — a job skipped by an `if:` would report `skipped`, and this job is about to become a required check, where `skipped` blocks the merge.
 
@@ -738,10 +744,12 @@ MSG
 ### Task 4: The `master` ruleset
 
 **Files:**
+
 - Create: `.github/rulesets/master.json`
 - Modify: `.agents/AGENTS.md` — the Branching section
 
 **Interfaces:**
+
 - Consumes: the check name `promotion-guard` from Task 3, plus the existing check names `validate` and `pack` from `release.yml`.
 - Produces: a ruleset applied to `master` on GitHub, and its definition checked into the repo so the configuration is reviewable.
 
@@ -801,7 +809,7 @@ Create `.github/rulesets/master.json`:
 
 Create `.github/rulesets/README.md`:
 
-```markdown
+````markdown
 # Rulesets
 
 The branch protection applied to this repository, checked in so that the
@@ -814,20 +822,21 @@ Apply or update:
 gh api repos/:owner/:repo/rulesets --input .github/rulesets/master.json      # create
 gh api --method PUT repos/:owner/:repo/rulesets/<id> --input .github/rulesets/master.json   # update
 gh api repos/:owner/:repo/rulesets                                            # list, to find <id>
-```
+````
 
 `master.json` requires a pull request into `master`, requires the
 `promotion-guard`, `validate`, and `pack` checks, and blocks force pushes and
 branch deletion. **`bypass_actors` is empty, repository owner included** — that
 is the point: merging into `master` publishes permanently, and a bypass is the
 door the whole flow closes.
-```
+
+````
 
 - [ ] **Step 3: Check the ruleset does not already exist**
 
 ```bash
 gh api repos/:owner/:repo/rulesets
-```
+````
 
 Expected: `[]`, or a list without a `master` entry. If one exists, note its `id` and use the `PUT` form in the next step instead.
 
@@ -879,11 +888,13 @@ MSG
 ### Task 5: `prepare`'s pure helpers
 
 **Files:**
+
 - Modify: `Tools/upm-release.mjs` — add a "prepare" section of pure functions, exported for tests
 - Create: `Tools/upm-release.test.mjs`
 - Modify: `.github/workflows/release.yml` — add the `release-script-tests` job
 
 **Interfaces:**
+
 - Consumes: the existing constants and helpers in `upm-release.mjs`.
 - Produces, all exported from `Tools/upm-release.mjs`:
   - `unreleasedRange(lines: string[]) → { start: number, end: number } | null` — the index of the `## [Unreleased]` heading and the index one past its last body line.
@@ -1259,12 +1270,14 @@ MSG
 ### Task 6: The `prepare` subcommand
 
 **Files:**
+
 - Modify: `Tools/upm-release.mjs` — `planPrepare`, `cmdPrepare`, `--bump` parsing, `usage()`, dispatch
 - Create: `Tools/upm-release.prepare.test.mjs`
 - Modify: `.github/workflows/release.yml` — add the new test file to `release-script-tests`
 - Modify: `.agents/AGENTS.md` — the release tooling section
 
 **Interfaces:**
+
 - Consumes: `unreleasedRange`, `unreleasedEntries`, `populatedSubsections`, `bumpLevel`, `nextVersion`, `explicitBump`, `releaseChangelog`, `replaceManifestVersion` from Task 5; the existing `discoverPackages`, `publishable`, `applyOnly`, `cmdValidate`, `git`, `fail`.
 - Produces:
   - `planPrepare(packages, { bumps, date }) → { plan, errors }` where a plan entry is `{ folder, name, from, to, level, reason }` and `reason` reads like `"minor: Added, Changed"`.
@@ -1719,6 +1732,7 @@ In `usage()`, add to the command list and options:
 ```
   prepare             turn each [Unreleased] section into a new version
 ```
+
 ```
   --bump <pkg>=<part> prepare: force major|minor|patch for one package; repeatable
   --date <YYYY-MM-DD> prepare: the date written into the version heading
@@ -1791,10 +1805,12 @@ MSG
 ### Task 7: The first release
 
 **Files:**
+
 - Modify: `Packages/*/CHANGELOG.md` and `Packages/*/package.json` for the five packages with unreleased work
 - No source changes.
 
 **Interfaces:**
+
 - Consumes: `prepare` from Task 6, `promotion-guard` from Task 3, the ruleset from Task 4.
 - Produces: five packages at `0.2.0` — `com.arman.in-game-message-logging`, `com.arman.package-basics`, `com.arman.persistent-data-management`, `com.arman.unity-utilities`, `com.arman.update-management`. The other twelve stay at `0.1.0` and tag nothing; `tag` is idempotent.
 

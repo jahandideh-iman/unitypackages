@@ -1,14 +1,21 @@
-﻿
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Arman.ObjectPooling
 {
-    public class MonobehaviorObjectPool<T>: MonoBehaviour, IObjectPool<T> where T : Component, IPoolable
+    public class MonobehaviorObjectPool<T> : MonoBehaviour, IObjectPool<T>
+        where T : Component, IPoolable
     {
-        [SerializeField] T componentPrefab = default;
-        [SerializeField] Transform poolingContainer = default;
-        [SerializeField] int initialReserve = default;
-        [SerializeField] bool autoSetup = default;
+        [SerializeField]
+        T componentPrefab = default;
+
+        [SerializeField]
+        Transform poolingContainer = default;
+
+        [SerializeField]
+        int initialReserve = default;
+
+        [SerializeField]
+        bool autoSetup = default;
 
         protected UnityComponentObjectPool<T> internalPool = new UnityComponentObjectPool<T>();
 
@@ -25,7 +32,6 @@ namespace Arman.ObjectPooling
 
             internalPool.Reserve(initialReserve);
         }
-
 
         public T Acquire()
         {

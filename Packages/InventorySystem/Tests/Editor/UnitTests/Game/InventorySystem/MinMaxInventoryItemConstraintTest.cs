@@ -1,7 +1,5 @@
-﻿
-using Arman.InventorySystem;
+﻿using Arman.InventorySystem;
 using NUnit.Framework;
-
 
 namespace Arman.InventorySystem.Tests
 {

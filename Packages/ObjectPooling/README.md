@@ -8,14 +8,14 @@ transition. Unity implementations pool `Component` prefabs under a container tra
 
 Namespace `Arman.ObjectPooling`:
 
-| Type | Purpose |
-|---|---|
-| `IPoolable` | `OnAcquired()` and `OnReleased()` — the pooled object's lifecycle hooks. |
-| `IObjectPool<T>` | `Acquire()`, `Release(obj)`, `Reserve(count)`, `Size()`. |
-| `ObjectPool<T>` | Abstract pool; subclasses supply `CreateObject`, `ActivateObject`, `DeactivateObject`. |
-| `UnityComponentObjectPool<T>` | `ObjectPool<T>` for `Component` prefabs; `SetComponentPrefab`, `SetPoolingContainer`. |
-| `MonobehaviorObjectPool<T>` | `MonoBehaviour` front-end over a `UnityComponentObjectPool<T>`. |
-| `ScriptableObjectPool<T>` | `ScriptableObject` front-end over the same, with `Setup(Transform)`. |
+| Type                          | Purpose                                                                                |
+| ----------------------------- | -------------------------------------------------------------------------------------- |
+| `IPoolable`                   | `OnAcquired()` and `OnReleased()` — the pooled object's lifecycle hooks.               |
+| `IObjectPool<T>`              | `Acquire()`, `Release(obj)`, `Reserve(count)`, `Size()`.                               |
+| `ObjectPool<T>`               | Abstract pool; subclasses supply `CreateObject`, `ActivateObject`, `DeactivateObject`. |
+| `UnityComponentObjectPool<T>` | `ObjectPool<T>` for `Component` prefabs; `SetComponentPrefab`, `SetPoolingContainer`.  |
+| `MonobehaviorObjectPool<T>`   | `MonoBehaviour` front-end over a `UnityComponentObjectPool<T>`.                        |
+| `ScriptableObjectPool<T>`     | `ScriptableObject` front-end over the same, with `Setup(Transform)`.                   |
 
 ## Usage
 
