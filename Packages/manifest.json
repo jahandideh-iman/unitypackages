@@ -1,4 +1,13 @@
 {
+  "scopedRegistries": [
+      {
+          "name": "package.openupm.com",
+          "url": "https://package.openupm.com",
+          "scopes": [
+              "com.cysharp.unitask"
+          ]
+      }
+  ],
   "dependencies": {
     "com.unity.2d.animation": "15.1.0",
     "com.unity.2d.aseprite": "5.0.3",

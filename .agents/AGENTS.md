@@ -6,7 +6,7 @@ Read it before making changes.
 
 ## What this repo is
 
-A Unity project that exists **as a host for 18 embedded UPM packages**, not as a game. `Assets/` holds only a scratch sandbox (a couple of scenes) used to exercise packages during development; the real content is everything under `Packages/`.
+A Unity project that exists **as a host for 19 embedded UPM packages**, not as a game. `Assets/` holds only a scratch sandbox (a couple of scenes) used to exercise packages during development; the real content is everything under `Packages/`.
 
 Each subfolder of `Packages/` is a standalone, publishable UPM package. Unity treats them as *embedded* packages, so they compile and are testable in place without any registry round-trip.
 
@@ -46,12 +46,12 @@ unitypackages/
 
 ## Package anatomy
 
-A package folder follows the standard UPM layout. Actual usage across the 18 packages:
+A package folder follows the standard UPM layout. Actual usage across the 19 packages:
 
 | Folder | Used by | Purpose |
 |--|--|--|
-| `Runtime/` | 18 / 18 | Runtime code + its asmdef. Every package has one. |
-| `Tests/Editor/` | 10 | EditMode tests, own asmdef. |
+| `Runtime/` | 19 / 19 | Runtime code + its asmdef. Every package has one. |
+| `Tests/Editor/` | 11 | EditMode tests, own asmdef. |
 | `Samples~/` | 3 | Importable example content — see below. |
 | `Editor/` | 3 | Editor-only code, own asmdef. |
 
@@ -79,6 +79,7 @@ Assemblies are named `Arman.<PackageName>[.<Layer>]`. Be aware the existing nami
 | `Asset Providing` | `com.arman.asset-providing` | 0.1.0 | — |
 | `ComponentSystem` | `com.arman.component-system` | 0.1.0 | — |
 | `ConfigurationManagement` | `com.arman.configuration-management` | 0.1.0 | — |
+| `DependencyResolution` | `com.arman.dependency-resolution` | 0.1.0 | — |
 | `DevelopmentConsole` | `com.arman.development-console` | 0.1.0 | — |
 | `EventManagement` | `com.arman.event-management` | 0.1.0 | — |
 | `HttpConnection` | `com.arman.http-connection` | 0.1.0 | — |
@@ -206,7 +207,7 @@ Vendored under `.agents/Skills/` (canonical) and mirrored to `.claude/skills/` (
 | Skill | Use it for |
 |--|--|
 | `lifeblood-mcp` | Routing between the `lifeblood` MCP tools; read before a multi-step refactor. |
-| `unity-package-management` | Add/remove/upgrade UPM packages via `UnityEditor.PackageManager.Client` instead of hand-editing `Packages/manifest.json`. Applies to this project's *external* deps — the 18 packages it hosts are embedded, not registry-resolved. |
+| `unity-package-management` | Add/remove/upgrade UPM packages via `UnityEditor.PackageManager.Client` instead of hand-editing `Packages/manifest.json`. Applies to this project's *external* deps — the 19 packages it hosts are embedded, not registry-resolved. |
 | `unity-cli` | Editor install, project creation, headless build/test. |
 
 ### `sharplens`: Code Navigation — ALWAYS PREFER over Grep/Glob/LS
