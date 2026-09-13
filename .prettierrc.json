@@ -1,0 +1,19 @@
+{
+    "printWidth": 100,
+    "tabWidth": 4,
+    "endOfLine": "auto",
+    "overrides": [
+        {
+            "files": ["package.json", "*.yml", "*.yaml", "*.md"],
+            "options": {
+                "tabWidth": 2
+            }
+        },
+        {
+            "files": "*.md",
+            "options": {
+                "embeddedLanguageFormatting": "off"
+            }
+        }
+    ]
+}

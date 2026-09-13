@@ -6,9 +6,9 @@ namespace Arman.ConfigurationManagement
     {
         public abstract void RegisterSelf(IConfigurationManager manager);
 
-
         // TODO: Move this to a better place.
-        public T[] ShallowCopy<T>(T[] array) where T : ScriptableObject
+        public T[] ShallowCopy<T>(T[] array)
+            where T : ScriptableObject
         {
             var coppies = new T[array.Length];
 

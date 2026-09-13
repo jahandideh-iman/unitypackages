@@ -4,10 +4,10 @@ The branch protection applied to this repository, checked in so that the
 configuration is reviewable and restorable rather than living only in the
 GitHub UI.
 
-| File | Branch | Live ruleset |
-|--|--|--|
-| `master.json` | `refs/heads/master` | `Master` |
-| `dev.json` | `~DEFAULT_BRANCH`, i.e. `dev` | `default` |
+| File          | Branch                        | Live ruleset |
+| ------------- | ----------------------------- | ------------ |
+| `master.json` | `refs/heads/master`           | `Master`     |
+| `dev.json`    | `~DEFAULT_BRANCH`, i.e. `dev` | `default`    |
 
 Both are **updates to rulesets that already exist**. Use `PUT` against the id —
 `POST`ing the file creates a second, overlapping ruleset on the same branch:

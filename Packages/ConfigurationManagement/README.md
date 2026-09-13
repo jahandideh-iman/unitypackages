@@ -11,23 +11,23 @@ the target object and mutates it.
 
 Namespace `Arman.ConfigurationManagement` (core types):
 
-| Type | Purpose |
-|---|---|
-| `IConfigurer` | `RegisterSelf(IConfigurationManager)` — a configurer adds itself to a manager. |
-| `IConfigurer<T>` | Adds `Configure(T entity)`. |
-| `IConfigurationManager` | `Register<T>`, `Configure<T>`, `Contains<T>`, `FindConfigurer<T>`, `RemoveConfigurer<T>`. |
-| `ConfigurationManager` | The plain C# manager; one configurer per target type. |
-| `CompositeConfigurer<T>` | Groups several `IConfigurer<T>` and applies them in order. |
-| `DynamicConfigurer<T>` | Built from `Action<T>` delegates added with `AddConfigAction`. |
+| Type                     | Purpose                                                                                   |
+| ------------------------ | ----------------------------------------------------------------------------------------- |
+| `IConfigurer`            | `RegisterSelf(IConfigurationManager)` — a configurer adds itself to a manager.            |
+| `IConfigurer<T>`         | Adds `Configure(T entity)`.                                                               |
+| `IConfigurationManager`  | `Register<T>`, `Configure<T>`, `Contains<T>`, `FindConfigurer<T>`, `RemoveConfigurer<T>`. |
+| `ConfigurationManager`   | The plain C# manager; one configurer per target type.                                     |
+| `CompositeConfigurer<T>` | Groups several `IConfigurer<T>` and applies them in order.                                |
+| `DynamicConfigurer<T>`   | Built from `Action<T>` delegates added with `AddConfigAction`.                            |
 
 Namespace `Arman.ConfigurationManagement` (Unity types):
 
-| Type | Purpose |
-|---|---|
-| `ScriptableConfiguration` | Abstract `ScriptableObject` implementing `IConfigurer`. |
-| `UnityConfigurationMaster` | A `ScriptableConfiguration` holding a `ScriptableConfiguration[]`; `RegisterSelf` registers all of them. |
-| `UnityConfigurationManager` | `MonoBehaviour` manager that registers its `configurationMaster` on `Init()`. |
-| `AutoFillAssetArrayAttribute` | Inspector helper that populates a `ScriptableConfiguration[]` field. |
+| Type                          | Purpose                                                                                                  |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `ScriptableConfiguration`     | Abstract `ScriptableObject` implementing `IConfigurer`.                                                  |
+| `UnityConfigurationMaster`    | A `ScriptableConfiguration` holding a `ScriptableConfiguration[]`; `RegisterSelf` registers all of them. |
+| `UnityConfigurationManager`   | `MonoBehaviour` manager that registers its `configurationMaster` on `Init()`.                            |
+| `AutoFillAssetArrayAttribute` | Inspector helper that populates a `ScriptableConfiguration[]` field.                                     |
 
 ## Usage
 

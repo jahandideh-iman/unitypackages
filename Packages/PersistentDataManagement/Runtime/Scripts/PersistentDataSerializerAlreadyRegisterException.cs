@@ -4,7 +4,9 @@
     {
         public IPersistentDataSerializer serializer;
 
-        public PersistentDataSerializerAlreadyRegisterException(IPersistentDataSerializer serializer)
+        public PersistentDataSerializerAlreadyRegisterException(
+            IPersistentDataSerializer serializer
+        )
         {
             this.serializer = serializer;
         }
@@ -14,5 +16,4 @@
             return $"Serializer \"{serializer}\" is already registered";
         }
     }
-
 }

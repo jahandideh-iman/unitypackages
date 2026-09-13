@@ -13,7 +13,9 @@ namespace Arman.UpdateManagement.Tests
     {
         const string ThrownMessage = "updatable failed";
 
-        static readonly Regex ExpectedLog = new Regex("InvalidOperationException: " + ThrownMessage);
+        static readonly Regex ExpectedLog = new Regex(
+            "InvalidOperationException: " + ThrownMessage
+        );
 
         UpdateManager manager = null!;
         IChannel channel = null!;
@@ -28,7 +30,8 @@ namespace Arman.UpdateManagement.Tests
         static Mock<IUpdatable> ThrowingUpdatable()
         {
             var throwing = new Mock<IUpdatable>();
-            throwing.Setup(updatable => updatable.UpdateTime(It.IsAny<float>()))
+            throwing
+                .Setup(updatable => updatable.UpdateTime(It.IsAny<float>()))
                 .Throws(new InvalidOperationException(ThrownMessage));
             return throwing;
         }

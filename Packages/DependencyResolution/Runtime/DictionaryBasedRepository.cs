@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 
-
 namespace Arman.DependencyResolution
 {
     internal class DictionaryBasedRepository : IRepository

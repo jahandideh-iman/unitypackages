@@ -1,7 +1,4 @@
 ﻿namespace Arman.InventorySystem
 {
-    public interface IInventoryItem
-    { }
-
-
+    public interface IInventoryItem { }
 }

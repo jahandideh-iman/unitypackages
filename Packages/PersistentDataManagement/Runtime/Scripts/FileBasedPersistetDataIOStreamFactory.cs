@@ -1,5 +1,5 @@
-﻿using Arman.PackageBasics;
-using System.IO;
+﻿using System.IO;
+using Arman.PackageBasics;
 
 namespace Arman.PersistentDataManagement
 {
@@ -11,7 +11,6 @@ namespace Arman.PersistentDataManagement
         {
             this.path = path;
         }
-
 
         public bool HasReadableStreamFor(IChannel channel)
         {
@@ -43,6 +42,4 @@ namespace Arman.PersistentDataManagement
             return Path.Combine(path, channel.ToString());
         }
     }
-
-
 }

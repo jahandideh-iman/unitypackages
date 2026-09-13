@@ -63,8 +63,14 @@ test("readVersions returns empty for a missing directory", () => {
 // ---------------------------------------------------------- versionChanges
 
 test("versionChanges reports only the packages whose version moved", () => {
-    const before = new Map([["a", "0.1.0"], ["b", "0.1.0"]]);
-    const after = new Map([["a", "0.2.0"], ["b", "0.1.0"]]);
+    const before = new Map([
+        ["a", "0.1.0"],
+        ["b", "0.1.0"],
+    ]);
+    const after = new Map([
+        ["a", "0.2.0"],
+        ["b", "0.1.0"],
+    ]);
     assert.deepEqual(versionChanges(before, after), [{ name: "a", from: "0.1.0", to: "0.2.0" }]);
 });
 
@@ -81,7 +87,9 @@ test("versionChanges marks a package that did not exist before as new", () => {
 // ----------------------------------------------------------- commit message
 
 test("commitMessage names the package when exactly one moved", () => {
-    const message = commitMessage([{ name: "com.arman.object-pooling", from: "0.1.0", to: "0.2.0" }]);
+    const message = commitMessage([
+        { name: "com.arman.object-pooling", from: "0.1.0", to: "0.2.0" },
+    ]);
     assert.match(message, /^chore\(release\): com\.arman\.object-pooling@0\.2\.0\n/);
     assert.match(message, /- com\.arman\.object-pooling 0\.1\.0 -> 0\.2\.0/);
 });
@@ -99,7 +107,9 @@ test("commitMessage counts the packages when several moved, and lists each", () 
 // -------------------------------------------------------- pull request body
 
 test("pullRequestBody tabulates every change and warns that merging publishes", () => {
-    const body = pullRequestBody([{ name: "com.arman.object-pooling", from: "0.1.0", to: "0.2.0" }]);
+    const body = pullRequestBody([
+        { name: "com.arman.object-pooling", from: "0.1.0", to: "0.2.0" },
+    ]);
     assert.match(body, /## Packages \(1\)/);
     assert.match(body, /\| `com\.arman\.object-pooling` \| 0\.1\.0 \| 0\.2\.0 \|/);
     assert.match(body, /Merging this pull request \*\*publishes\*\*/);

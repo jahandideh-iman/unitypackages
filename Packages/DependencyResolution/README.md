@@ -8,19 +8,19 @@ registration exactly once, in dependency order.
 
 Everything lives in the `Arman.DependencyResolution` namespace.
 
-| Type | Role |
-|---|---|
-| `IDependencyResolver` | The registration surface: `RegisterType<T>()`, `RegisterFactory<T>(Delegate)`, `RegisterInstance<T>(T)`, and `Build()`. |
-| `ReflectionBasedDependencyResolver` | The implementation. Reads constructor and factory parameters through reflection to discover dependencies. |
-| `IResolutionEntry<T>` | Returned by every `Register*` call. `As<U>()` also exposes the registration under `U`, and chains. |
-| `DependencyResolverExtensions` | Typed `RegisterFactory` overloads for `Func<TResult>` through `Func<T1, …, T9, TResult>`, so a method group can be passed directly. |
-| `IRepository` | The result of `Build()`: `Get<T>()` and `TryGet<T>(out T)`. |
+| Type                                | Role                                                                                                                                |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `IDependencyResolver`               | The registration surface: `RegisterType<T>()`, `RegisterFactory<T>(Delegate)`, `RegisterInstance<T>(T)`, and `Build()`.             |
+| `ReflectionBasedDependencyResolver` | The implementation. Reads constructor and factory parameters through reflection to discover dependencies.                           |
+| `IResolutionEntry<T>`               | Returned by every `Register*` call. `As<U>()` also exposes the registration under `U`, and chains.                                  |
+| `DependencyResolverExtensions`      | Typed `RegisterFactory` overloads for `Func<TResult>` through `Func<T1, …, T9, TResult>`, so a method group can be passed directly. |
+| `IRepository`                       | The result of `Build()`: `Get<T>()` and `TryGet<T>(out T)`.                                                                         |
 
-| Registration | Dependencies are | Instance comes from |
-|---|---|---|
-| `RegisterType<T>()` | The parameters of `T`'s first public constructor. | That constructor. |
-| `RegisterFactory<T>(factory)` | The factory's parameters. | The factory's return value. |
-| `RegisterInstance<T>(instance)` | None. | The instance you passed. |
+| Registration                    | Dependencies are                                  | Instance comes from         |
+| ------------------------------- | ------------------------------------------------- | --------------------------- |
+| `RegisterType<T>()`             | The parameters of `T`'s first public constructor. | That constructor.           |
+| `RegisterFactory<T>(factory)`   | The factory's parameters.                         | The factory's return value. |
+| `RegisterInstance<T>(instance)` | None.                                             | The instance you passed.    |
 
 ## Usage
 

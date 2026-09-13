@@ -1,7 +1,4 @@
-﻿
-
-
-using Arman.PackageBasics;
+﻿using Arman.PackageBasics;
 
 namespace Arman.UpdateManagement
 {
@@ -24,6 +21,5 @@ namespace Arman.UpdateManagement
 
         bool Has(IUpdatable updatable);
         bool IsChannelGloballyPaused(IChannel channel);
-
     }
 }

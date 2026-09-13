@@ -19,7 +19,7 @@ implementation of `IUpdateManager` is `UpdateManager`.
 across the test assemblies are called `*Mock`, `Mock*`, or `Fake*` with no relation between the name
 and what the class does. Some are genuine fakes — small working implementations that hold state and
 are asserted on as values. Others are mocks in the strict sense: they exist only to count calls,
-capture arguments, or record call ordering, and the test's assertion *is* the interaction. The second
+capture arguments, or record call ordering, and the test's assertion _is_ the interaction. The second
 group is hand-rolled infrastructure that a mocking library does better and in a tenth of the lines —
 `PersistentDataWrapperMock` alone is 96 lines, roughly 60 of which are `NotImplementedException`
 stubs for interface members no test touches.
@@ -36,17 +36,17 @@ explicitly-named fakes.
 
 ### 2.2 Out of scope
 
-* **Releasing.** Both parts land on `dev` with CHANGELOG entries under `## [Unreleased]`. Running
+- **Releasing.** Both parts land on `dev` with CHANGELOG entries under `## [Unreleased]`. Running
   `Tools/upm-release.mjs prepare`, promoting to `master`, and tagging stay a separate, deliberate
   human decision — see [Distribution and releases](../../.agents/AGENTS.md#distribution-and-releases).
-* **Assembly names.** `Arman.X.Tests.Editor` vs `Arman.X.Editor.Tests` stays inconsistent. AGENTS.md
+- **Assembly names.** `Arman.X.Tests.Editor` vs `Arman.X.Editor.Tests` stays inconsistent. AGENTS.md
   is explicit that assembly renames break consumer asmdef references and should not be tidied
   opportunistically.
-* **`Empty*` / `MemoryBased*` runtime helpers.** `EmptyPersistetDataIOStreamFactory` and
+- **`Empty*` / `MemoryBased*` runtime helpers.** `EmptyPersistetDataIOStreamFactory` and
   `MemoryBasedPersistetDataIOStreamFactory` carry a typo ("Persistet") in a published API. Fixing it
   is a second breaking rename with no relation to this one; it is left alone deliberately.
-* **`JsonBasic`** in `PackageBasics/Runtime/ThirdParties/NiceJson.cs` — vendored third-party code.
-* **`FakeConfigurer<T>` and `FakeMultiConfigurerAB`** in ConfigurationManagement. They are already
+- **`JsonBasic`** in `PackageBasics/Runtime/ThirdParties/NiceJson.cs` — vendored third-party code.
+- **`FakeConfigurer<T>` and `FakeMultiConfigurerAB`** in ConfigurationManagement. They are already
   fakes and already named correctly.
 
 ## 3. Part A — dropping the `Basic` prefix
@@ -56,20 +56,20 @@ explicitly-named fakes.
 Ten of the twelve are the sole implementation of a matching interface. The remaining two are included
 because leaving them would strand `Basic` in two public names for no reason.
 
-| Package | From | To | Implements |
-|---|---|---|---|
-| `ComponentSystem` | `BasicEntity` | `Entity` | `IEntity` |
-| `ComponentSystem` | `BasicSpecializedEntity<T>` | `SpecializedEntity<T>` | `ISpecializedEntity<T>` |
-| `ComponentSystem` | `CacheableBasicEntity<T>` | `CacheableEntity<T>` | *derives from `BasicEntity`* |
-| `ConfigurationManagement` | `BasicConfigurationManager` | `ConfigurationManager` | `IConfigurationManager` |
-| `EventManagement` | `BasicEventManager` | `EventManager` | `IEventManager` |
-| `InventorySystem` | `BasicInventory<T>` | `Inventory<T>` | `IInventory<T>` |
-| `ObjectPooling` | `BasicObjectPool<T>` | `ObjectPool<T>` | `IObjectPool<T>` (abstract) |
-| `PackageBasics` | `BasicContainer<T>` | `Container<T>` | `IContainer<T>` |
-| `PersistentDataManagement` | `BasicPersistentDataManager` | `PersistentDataManager` | `IPersistentDataManager` |
-| `ShopManagement` | `BasicShopCenter` | `ShopCenter` | `IShopCenter` |
-| `UpdateManagement` | `BasicUpdateManager` | `UpdateManager` | `IUpdateManager` |
-| `Asset Providing` | `BasicAssetProviderServiceConfig` | `AssetProviderServiceConfig` | *`ScriptableObject`* |
+| Package                    | From                              | To                           | Implements                   |
+| -------------------------- | --------------------------------- | ---------------------------- | ---------------------------- |
+| `ComponentSystem`          | `BasicEntity`                     | `Entity`                     | `IEntity`                    |
+| `ComponentSystem`          | `BasicSpecializedEntity<T>`       | `SpecializedEntity<T>`       | `ISpecializedEntity<T>`      |
+| `ComponentSystem`          | `CacheableBasicEntity<T>`         | `CacheableEntity<T>`         | _derives from `BasicEntity`_ |
+| `ConfigurationManagement`  | `BasicConfigurationManager`       | `ConfigurationManager`       | `IConfigurationManager`      |
+| `EventManagement`          | `BasicEventManager`               | `EventManager`               | `IEventManager`              |
+| `InventorySystem`          | `BasicInventory<T>`               | `Inventory<T>`               | `IInventory<T>`              |
+| `ObjectPooling`            | `BasicObjectPool<T>`              | `ObjectPool<T>`              | `IObjectPool<T>` (abstract)  |
+| `PackageBasics`            | `BasicContainer<T>`               | `Container<T>`               | `IContainer<T>`              |
+| `PersistentDataManagement` | `BasicPersistentDataManager`      | `PersistentDataManager`      | `IPersistentDataManager`     |
+| `ShopManagement`           | `BasicShopCenter`                 | `ShopCenter`                 | `IShopCenter`                |
+| `UpdateManagement`         | `BasicUpdateManager`              | `UpdateManager`              | `IUpdateManager`             |
+| `Asset Providing`          | `BasicAssetProviderServiceConfig` | `AssetProviderServiceConfig` | _`ScriptableObject`_         |
 
 Test types follow their subject: `BasicUpdateManagerTest_ThrowingUpdatables` →
 `UpdateManagerTest_ThrowingUpdatables`, `BasicPersistentDataManagerTestContext` →
@@ -104,16 +104,16 @@ later, when `prepare` runs.
 
 ### 3.4 Risks
 
-* **`ObjectPool<T>` shares a simple name with `UnityEngine.Pool.ObjectPool<T>`.** Both live in
+- **`ObjectPool<T>` shares a simple name with `UnityEngine.Pool.ObjectPool<T>`.** Both live in
   different namespaces, so this is only ambiguous for a consumer who imports `Arman.ObjectPooling`
   and `UnityEngine.Pool` in the same file — and C# reports that as an error the consumer resolves
   with an alias, not as silent misbehaviour. To be confirmed during implementation: that nothing in this
   repo imports both.
-* **`AssetProviderServiceConfig` is a `ScriptableObject`.** Unity binds a `.asset` to its script by
+- **`AssetProviderServiceConfig` is a `ScriptableObject`.** Unity binds a `.asset` to its script by
   the `.cs.meta` GUID, and resolves the class inside by file name. Renaming file and class together
   while preserving the `.meta` keeps existing assets bound; renaming only one of the two breaks them.
   Confirmed by diffing the GUID before and after — see §7.
-* No name collisions exist inside the repo — all twelve target names were confirmed unused before the
+- No name collisions exist inside the repo — all twelve target names were confirmed unused before the
   design was accepted.
 
 ## 4. Part B — Moq for the interaction tests
@@ -128,12 +128,12 @@ added in Moq 4.20 and so carries no telemetry.
 It is added to `Packages/manifest.json` — the sandbox project's own dependencies — and **not** to any
 package's `package.json`. This matters:
 
-* A test-only dependency in `dependencies` would force every consumer to download Moq at runtime for
+- A test-only dependency in `dependencies` would force every consumer to download Moq at runtime for
   a package they only ever use in a player build. Unity's own packages avoid this by splitting tests
   into a separate `*.tests` package referenced through the informational `relatedPackages` field.
   This repo ships `Tests/` inside each package instead, so the equivalent restraint is to declare
   Moq at the project level only.
-* The consequence, accepted: a consumer who adds one of these packages to `testables` *and* wants to
+- The consequence, accepted: a consumer who adds one of these packages to `testables` _and_ wants to
   compile its tests must add `nuget.moq` themselves. That is a rare, deliberate act, and the
   alternative imposes a real cost on every ordinary consumer.
 
@@ -162,16 +162,16 @@ bites here is not knowable from documentation; it is settled by the first compil
 The rule: **Moq only where the assertion is the interaction.** If a test asserts on a double's state,
 or passes it around by identity, it wants a fake.
 
-| Package | Double | Why it is a mock |
-|---|---|---|
-| `UpdateManagement` | `UpdatableMock` | `UpdateCallCount()` / `IsUpdated()`; also needs to throw on demand → `Setup(...).Throws(...)`, `Verify(..., Times.Exactly(3))` |
-| `PersistentDataManagement` | `PersistentDataSerializerMock` | `IsSerializedCalledOnce()` / `IsDeserializedCalledOnce()` plus argument capture |
-| `PersistentDataManagement` | `PersistentDataIOStreamFactoryMock` | Per-channel call counting → `Verify(f => f.CreateWriteStreamFor(ch), Times.Once)` |
-| `PersistentDataManagement` | `PersistentDataWrapperMock` | `Clear()` call counting and call-*ordering* assertions; ~60 of its 96 lines are unused stubs |
-| `ShopManagement` | `PurchaseHandlerMock` | Argument capture (`givenShopPackage`) plus configurable success/failure |
-| `ComponentSystem` | `CacheMock` | Asserts `TryCache` received A, B, C **in order** |
-| `InventorySystem` | `MockInventoryItemConstraint` | Asserts `ApplyTo` received the running value; must also pass it through → `Returns<int>(v => v)` |
-| `EventManagement` | `ListenerMock` | Asserts `OnEvent` was, or was not, called with a given event → `Times.Never` reads better than a null check |
+| Package                    | Double                              | Why it is a mock                                                                                                               |
+| -------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `UpdateManagement`         | `UpdatableMock`                     | `UpdateCallCount()` / `IsUpdated()`; also needs to throw on demand → `Setup(...).Throws(...)`, `Verify(..., Times.Exactly(3))` |
+| `PersistentDataManagement` | `PersistentDataSerializerMock`      | `IsSerializedCalledOnce()` / `IsDeserializedCalledOnce()` plus argument capture                                                |
+| `PersistentDataManagement` | `PersistentDataIOStreamFactoryMock` | Per-channel call counting → `Verify(f => f.CreateWriteStreamFor(ch), Times.Once)`                                              |
+| `PersistentDataManagement` | `PersistentDataWrapperMock`         | `Clear()` call counting and call-_ordering_ assertions; ~60 of its 96 lines are unused stubs                                   |
+| `ShopManagement`           | `PurchaseHandlerMock`               | Argument capture (`givenShopPackage`) plus configurable success/failure                                                        |
+| `ComponentSystem`          | `CacheMock`                         | Asserts `TryCache` received A, B, C **in order**                                                                               |
+| `InventorySystem`          | `MockInventoryItemConstraint`       | Asserts `ApplyTo` received the running value; must also pass it through → `Returns<int>(v => v)`                               |
+| `EventManagement`          | `ListenerMock`                      | Asserts `OnEvent` was, or was not, called with a given event → `Times.Never` reads better than a null check                    |
 
 `CacheMock` converts by constructing `CacheableEntity<ICache>` rather than
 `CacheableEntity<CacheMock>`; `ICache` satisfies the `where T : ICache` constraint, and verification
@@ -179,12 +179,12 @@ happens on the mock directly instead of through `entity.Cache()`.
 
 ### 4.3 Which doubles stay fakes
 
-| Package | From | To | Why it stays a fake |
-|---|---|---|---|
-| `ShopManagement` | `ShopPackageMock` | `FakeShopPackage` | Pure state — `Apply()` sets a flag `IsApplied()` reads |
-| `ShopManagement` | `ShopPackageMockA` / `B` | `FakeShopPackageA` / `B` | **Must** be real distinct types. `PackagesOfType<T>()` and `AssignPurchaseHandler<T>()` dispatch on the concrete type, and a Moq proxy's type is generated |
-| `EventManagement` | `EventMock` | `FakeGameEvent` | `IGameEvent` is an empty marker interface — there is nothing to verify |
-| `ObjectPooling` | `MockObject` | `FakePoolable` | The pool constructs these itself in `CreateObject()`, and tests assert identity across acquire/release |
+| Package           | From                     | To                       | Why it stays a fake                                                                                                                                        |
+| ----------------- | ------------------------ | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ShopManagement`  | `ShopPackageMock`        | `FakeShopPackage`        | Pure state — `Apply()` sets a flag `IsApplied()` reads                                                                                                     |
+| `ShopManagement`  | `ShopPackageMockA` / `B` | `FakeShopPackageA` / `B` | **Must** be real distinct types. `PackagesOfType<T>()` and `AssignPurchaseHandler<T>()` dispatch on the concrete type, and a Moq proxy's type is generated |
+| `EventManagement` | `EventMock`              | `FakeGameEvent`          | `IGameEvent` is an empty marker interface — there is nothing to verify                                                                                     |
+| `ObjectPooling`   | `MockObject`             | `FakePoolable`           | The pool constructs these itself in `CreateObject()`, and tests assert identity across acquire/release                                                     |
 
 ### 4.4 Consequences for releasing
 
@@ -207,18 +207,18 @@ written against final names instead of names that change underneath it.
 
 ## 6. Decisions taken
 
-| Decision | Chosen | Alternative rejected |
-|---|---|---|
-| How Moq enters the repo | `nuget.moq` from the Unity registry, declared in `Packages/manifest.json` | Vendoring DLLs (one shared copy needed, licensing to track); NuGetForUnity (extra tool dependency) |
-| Which doubles convert | Only those whose assertion is the interaction | Converting all fifteen — several are fakes, and three *cannot* be mocks |
-| Rename scope | All twelve, including `CacheableBasicEntity` and the `ScriptableObject` | Only the ten clean interface implementations, leaving `Basic` in two public names |
-| Breaking-change handling | Hard rename, `### Removed` entries, no shims | `[Obsolete]` forwarding types for one release — 12 extra shipped types and a cleanup pass, and it does not work for the `ScriptableObject` |
-| Releasing | Left to a separate human decision | Bumping and tagging as part of this work |
+| Decision                 | Chosen                                                                    | Alternative rejected                                                                                                                       |
+| ------------------------ | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| How Moq enters the repo  | `nuget.moq` from the Unity registry, declared in `Packages/manifest.json` | Vendoring DLLs (one shared copy needed, licensing to track); NuGetForUnity (extra tool dependency)                                         |
+| Which doubles convert    | Only those whose assertion is the interaction                             | Converting all fifteen — several are fakes, and three _cannot_ be mocks                                                                    |
+| Rename scope             | All twelve, including `CacheableBasicEntity` and the `ScriptableObject`   | Only the ten clean interface implementations, leaving `Basic` in two public names                                                          |
+| Breaking-change handling | Hard rename, `### Removed` entries, no shims                              | `[Obsolete]` forwarding types for one release — 12 extra shipped types and a cleanup pass, and it does not work for the `ScriptableObject` |
+| Releasing                | Left to a separate human decision                                         | Bumping and tagging as part of this work                                                                                                   |
 
 ## 7. Verification
 
-* `unity test --mode EditMode` green after each part, on the Editor named in `ProjectVersion.txt`
+- `unity test --mode EditMode` green after each part, on the Editor named in `ProjectVersion.txt`
   (no `-e`, no `--allow-install`), or `unity command run_tests --mode EditMode` against a live Editor.
-* `node Tools/upm-release.mjs validate` — catches a `.meta` lost during a file rename.
-* `node Tools/changelog-check.mjs --base dev --head HEAD` — catches a missing `### Removed` entry.
-* `git diff` on the twelve `.cs.meta` files confirms every GUID is unchanged.
+- `node Tools/upm-release.mjs validate` — catches a `.meta` lost during a file rename.
+- `node Tools/changelog-check.mjs --base dev --head HEAD` — catches a missing `### Removed` entry.
+- `git diff` on the twelve `.cs.meta` files confirms every GUID is unchanged.

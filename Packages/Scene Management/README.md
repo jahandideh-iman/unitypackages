@@ -11,9 +11,9 @@ not race the `Awake` order of everything else in the scene.
 
 Everything lives in the `Arman.SceneManagement` namespace.
 
-| Type | Purpose |
-|---|---|
-| `SceneManager` | `Open(string sceneName)` — loads a scene. |
+| Type              | Purpose                                                              |
+| ----------------- | -------------------------------------------------------------------- |
+| `SceneManager`    | `Open(string sceneName)` — loads a scene.                            |
 | `SceneInitilizer` | Abstract `MonoBehaviour`; override `Init()` for per-scene bootstrap. |
 
 ## Usage

@@ -5,7 +5,8 @@ namespace Arman.AssetProviding
     [CreateAssetMenu(menuName = ContextMenuConsts.PROVIDER_CATEGORY + "Resources Folder Provider")]
     public class ResourcesAssetProviderConfig : AssetProviderConfig
     {
-        [SerializeField] string resourcesPathPrefix;
+        [SerializeField]
+        string resourcesPathPrefix;
 
         public override IAsyncUnityAssetProvider CreateAsyncProvider()
         {

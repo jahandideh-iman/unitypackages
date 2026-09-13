@@ -20,7 +20,9 @@ const PREAMBLE = "# Changelog\r\n\r\n";
 const RELEASED = "## [0.1.0] - 2026-08-29\r\n\r\nInitial release.\r\n";
 
 function changelog(body) {
-    return body === null ? PREAMBLE + RELEASED : `${PREAMBLE}## [Unreleased]\r\n\r\n${body}\r\n${RELEASED}`;
+    return body === null
+        ? PREAMBLE + RELEASED
+        : `${PREAMBLE}## [Unreleased]\r\n\r\n${body}\r\n${RELEASED}`;
 }
 
 function manifest(name, extra = {}) {
@@ -41,7 +43,8 @@ function manifest(name, extra = {}) {
 
 function git(cwd, ...args) {
     const result = spawnSync("git", args, { cwd, encoding: "utf8" });
-    if (result.status !== 0) throw new Error(`git ${args.join(" ")} failed: ${result.stderr || result.stdout}`);
+    if (result.status !== 0)
+        throw new Error(`git ${args.join(" ")} failed: ${result.stderr || result.stdout}`);
     return result.stdout.trim();
 }
 
@@ -60,7 +63,10 @@ function makeRepo(t, packages) {
             fs.writeFileSync(path.join(dir, name), contents);
             // validate requires a sibling .meta for every real file, exactly as
             // Unity would generate one; prepare re-validates what it touches.
-            fs.writeFileSync(path.join(dir, `${name}.meta`), "fileFormatVersion: 2\r\nguid: 00000000000000000000000000000000\r\n");
+            fs.writeFileSync(
+                path.join(dir, `${name}.meta`),
+                "fileFormatVersion: 2\r\nguid: 00000000000000000000000000000000\r\n",
+            );
         }
     }
 
@@ -86,7 +92,9 @@ function json(repo, args = []) {
     try {
         return { status: result.status, report: JSON.parse(result.stdout) };
     } catch {
-        throw new Error(`non-JSON output (exit ${result.status}):\n${result.stdout}\n${result.stderr}`);
+        throw new Error(
+            `non-JSON output (exit ${result.status}):\n${result.stdout}\n${result.stderr}`,
+        );
     }
 }
 
@@ -195,7 +203,10 @@ test("--only limits the run", (t) => {
         },
     });
     const { report } = json(repo, ["--only", "Alpha"]);
-    assert.deepEqual(report.plan.map((p) => p.folder), ["Alpha"]);
+    assert.deepEqual(
+        report.plan.map((p) => p.folder),
+        ["Alpha"],
+    );
     assert.match(read(repo, "Beta", "package.json"), /"version": "0\.1\.0"/);
 });
 
@@ -224,7 +235,10 @@ test("a dirty tree is refused unless --allow-dirty", (t) => {
     fs.writeFileSync(path.join(repo, "Packages", "Alpha", "README.md"), "stray\r\n");
     // Give the stray file a .meta too, so the only thing under test is the
     // dirty-tree guard, not an unrelated validate failure.
-    fs.writeFileSync(path.join(repo, "Packages", "Alpha", "README.md.meta"), "fileFormatVersion: 2\r\nguid: 00000000000000000000000000000001\r\n");
+    fs.writeFileSync(
+        path.join(repo, "Packages", "Alpha", "README.md.meta"),
+        "fileFormatVersion: 2\r\nguid: 00000000000000000000000000000001\r\n",
+    );
     assert.equal(prepare(repo, ["--date", "2026-09-02"]).status, 1);
     // --dry-run alone already bypasses the dirty-tree guard (nothing is
     // written either way), so it isn't a real test of --allow-dirty on its
@@ -252,7 +266,10 @@ test("a folder name with a space prepares correctly, CRLF and manifest intact", 
     });
     const { status, report } = json(repo);
     assert.equal(status, 0);
-    assert.deepEqual(report.plan.map((p) => [p.folder, p.to]), [["UI Management", "0.2.0"]]);
+    assert.deepEqual(
+        report.plan.map((p) => [p.folder, p.to]),
+        [["UI Management", "0.2.0"]],
+    );
     const text = read(repo, "UI Management", "CHANGELOG.md");
     assert.ok(text.includes("\r\n"));
     assert.ok(!text.includes("[Unreleased]"));
@@ -362,12 +379,16 @@ function chain(body = null) {
     return {
         Alpha: ALPHA,
         Beta: {
-            "package.json": manifest("com.arman.beta", { dependencies: { "com.arman.alpha": "0.1.0" } }),
+            "package.json": manifest("com.arman.beta", {
+                dependencies: { "com.arman.alpha": "0.1.0" },
+            }),
             "CHANGELOG.md": changelog(body),
             "LICENSE.md": "MIT\r\n",
         },
         Gamma: {
-            "package.json": manifest("com.arman.gamma", { dependencies: { "com.arman.beta": "0.1.0" } }),
+            "package.json": manifest("com.arman.gamma", {
+                dependencies: { "com.arman.beta": "0.1.0" },
+            }),
             "CHANGELOG.md": changelog(null),
             "LICENSE.md": "MIT\r\n",
         },
@@ -380,7 +401,11 @@ test("a dependent with nothing of its own is cascaded a patch bump", (t) => {
     assert.equal(status, 0);
     assert.deepEqual(
         report.plan.map((p) => [p.name, p.to, p.level]),
-        [["com.arman.alpha", "0.2.0", "feature"], ["com.arman.beta", "0.1.1", "fix"], ["com.arman.gamma", "0.1.1", "fix"]],
+        [
+            ["com.arman.alpha", "0.2.0", "feature"],
+            ["com.arman.beta", "0.1.1", "fix"],
+            ["com.arman.gamma", "0.1.1", "fix"],
+        ],
     );
     // The cascade is transitive: Gamma is here only because Beta moved.
     assert.match(report.plan[2].reason, /com\.arman\.beta/);
@@ -412,7 +437,11 @@ test("a dependent with its own entries keeps its own level and still gets the bu
     assert.equal(status, 0);
     assert.deepEqual(
         report.plan.map((p) => [p.name, p.to, p.level]),
-        [["com.arman.alpha", "0.2.0", "feature"], ["com.arman.beta", "0.1.1", "fix"], ["com.arman.gamma", "0.1.1", "fix"]],
+        [
+            ["com.arman.alpha", "0.2.0", "feature"],
+            ["com.arman.beta", "0.1.1", "fix"],
+            ["com.arman.gamma", "0.1.1", "fix"],
+        ],
     );
     const text = read(repo, "Beta", "CHANGELOG.md");
     assert.ok(text.includes("- Stopped the leak."), text);
@@ -425,18 +454,24 @@ test("--bump is honoured for a package the cascade pulled in", (t) => {
     const repo = makeRepo(t, chain());
     const { status, report } = json(repo, ["--bump", "com.arman.beta=minor"]);
     assert.equal(status, 0);
-    assert.deepEqual(report.plan.map((p) => [p.name, p.to]), [
-        ["com.arman.alpha", "0.2.0"],
-        ["com.arman.beta", "0.2.0"],
-        ["com.arman.gamma", "0.1.1"],
-    ]);
+    assert.deepEqual(
+        report.plan.map((p) => [p.name, p.to]),
+        [
+            ["com.arman.alpha", "0.2.0"],
+            ["com.arman.beta", "0.2.0"],
+            ["com.arman.gamma", "0.1.1"],
+        ],
+    );
 });
 
 test("--only still cascades, so the release is never left inconsistent", (t) => {
     const repo = makeRepo(t, chain());
     const { status, report } = json(repo, ["--only", "Alpha"]);
     assert.equal(status, 0);
-    assert.deepEqual(report.plan.map((p) => p.name), ["com.arman.alpha", "com.arman.beta", "com.arman.gamma"]);
+    assert.deepEqual(
+        report.plan.map((p) => p.name),
+        ["com.arman.alpha", "com.arman.beta", "com.arman.gamma"],
+    );
 });
 
 test("a package that depends on nothing being released is left alone", (t) => {
@@ -450,7 +485,10 @@ test("a package that depends on nothing being released is left alone", (t) => {
     });
     const { status, report } = json(repo);
     assert.equal(status, 0);
-    assert.deepEqual(report.plan.map((p) => p.name), ["com.arman.alpha"]);
+    assert.deepEqual(
+        report.plan.map((p) => p.name),
+        ["com.arman.alpha"],
+    );
     assert.match(read(repo, "Beta", "package.json"), /"version": "0\.1\.0"/);
 });
 
@@ -458,14 +496,20 @@ test("a private dependent is never cascaded", (t) => {
     const repo = makeRepo(t, {
         Alpha: ALPHA,
         Beta: {
-            "package.json": manifest("com.arman.beta", { private: true, dependencies: { "com.arman.alpha": "0.1.0" } }),
+            "package.json": manifest("com.arman.beta", {
+                private: true,
+                dependencies: { "com.arman.alpha": "0.1.0" },
+            }),
             "CHANGELOG.md": changelog(null),
             "LICENSE.md": "MIT\r\n",
         },
     });
     const { status, report } = json(repo);
     assert.equal(status, 0);
-    assert.deepEqual(report.plan.map((p) => p.name), ["com.arman.alpha"]);
+    assert.deepEqual(
+        report.plan.map((p) => p.name),
+        ["com.arman.alpha"],
+    );
 });
 
 test("--dry-run writes no cascaded change", (t) => {
@@ -493,19 +537,71 @@ test("--only never demotes a cascaded dependent that earned more than a patch", 
     assert.equal(status, 0);
     // Beta was pulled in by the cascade, but its own `### Removed` decides its
     // level — 0.x folds breaking onto the minor.
-    assert.deepEqual(report.plan.map((p) => [p.name, p.to, p.level]), [
-        ["com.arman.alpha", "0.2.0", "feature"],
-        ["com.arman.beta", "0.2.0", "breaking"],
-        ["com.arman.gamma", "0.1.1", "fix"],
-    ]);
-    assert.ok(read(repo, "Beta", "CHANGELOG.md").includes("- Updated `com.arman.alpha` to `0.2.0`."));
+    assert.deepEqual(
+        report.plan.map((p) => [p.name, p.to, p.level]),
+        [
+            ["com.arman.alpha", "0.2.0", "feature"],
+            ["com.arman.beta", "0.2.0", "breaking"],
+            ["com.arman.gamma", "0.1.1", "fix"],
+        ],
+    );
+    assert.ok(
+        read(repo, "Beta", "CHANGELOG.md").includes("- Updated `com.arman.alpha` to `0.2.0`."),
+    );
 });
 
 test("--only reports a cascaded dependent whose own entries cannot be planned", (t) => {
     const repo = makeRepo(t, chain("- A bullet under no `###` heading at all.\r\n"));
     const { status, report } = json(repo, ["--only", "Alpha"]);
     assert.equal(status, 1);
-    assert.ok(report.errors.some((e) => /com\.arman\.beta: has entries .* could not be given a version/.test(e)), JSON.stringify(report.errors));
+    assert.ok(
+        report.errors.some((e) =>
+            /com\.arman\.beta: has entries .* could not be given a version/.test(e),
+        ),
+        JSON.stringify(report.errors),
+    );
     // Atomic as ever: the error stopped every write, not just Beta's.
     assert.match(read(repo, "Alpha", "package.json"), /"version": "0\.1\.0"/);
+});
+
+// ---------------------------------------------------------- formatting
+
+// A release PR is `prepare`'s output, and it has to pass the required `format`
+// check like any other PR. Prettier is the repo's one npm dependency. It runs as
+// a subprocess, so this file still imports nothing but node builtins.
+const PRETTIER = path.join(HERE, "..", "node_modules", "prettier", "bin", "prettier.cjs");
+const PRETTIER_CONFIG = path.join(HERE, "..", ".prettierrc.json");
+
+function prettier(repo, mode) {
+    // Fail, don't skip: a skipped test is how this rule would quietly stop being enforced.
+    assert.ok(
+        fs.existsSync(PRETTIER),
+        `Prettier is not installed at ${PRETTIER}. Run \`npm ci\` at the repo root.`,
+    );
+    return spawnSync(
+        process.execPath,
+        [
+            PRETTIER,
+            mode,
+            "--config",
+            PRETTIER_CONFIG,
+            "Packages/**/CHANGELOG.md",
+            "Packages/**/package.json",
+        ],
+        { cwd: repo, encoding: "utf8" },
+    );
+}
+
+test("prepare's output is already formatted, so a release PR passes the format check", (t) => {
+    // chain() covers both write paths: Alpha's heading is renamed, and Beta and
+    // Gamma get a generated `### Changed` section and a manifest range rewrite.
+    const repo = makeRepo(t, chain());
+    const formatted = prettier(repo, "--write");
+    assert.equal(formatted.status, 0, formatted.stdout + formatted.stderr);
+    git(repo, "commit", "--allow-empty", "-am", "format");
+
+    assert.equal(json(repo).status, 0);
+
+    const checked = prettier(repo, "--check");
+    assert.equal(checked.status, 0, checked.stdout + checked.stderr);
 });

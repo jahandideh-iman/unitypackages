@@ -1,7 +1,6 @@
 ﻿using System;
 using UnityEngine.Scripting;
 
-
 namespace Arman.DevelopmentConsole
 {
     [AttributeUsage(System.AttributeTargets.Method, AllowMultiple = false)]

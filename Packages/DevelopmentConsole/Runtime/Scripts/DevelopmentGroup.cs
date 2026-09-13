@@ -6,7 +6,6 @@ using UnityEngine.UI;
 
 namespace Arman.DevelopmentConsole
 {
-
     public class DevelopmentGroup : MonoBehaviour
     {
         public DevelopmentCommand commandPrefab;

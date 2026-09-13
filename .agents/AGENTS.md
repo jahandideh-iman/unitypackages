@@ -8,10 +8,9 @@ Read it before making changes.
 
 A Unity project that exists **as a host for embedded UPM packages**, not as a game. `Assets/` holds only a scratch sandbox (a couple of scenes) used to exercise packages during development; the real content is everything under `Packages/`.
 
-Each subfolder of `Packages/` is a standalone, publishable UPM package. Unity treats them as *embedded* packages, so they compile and are testable in place without any registry round-trip.
+Each subfolder of `Packages/` is a standalone, publishable UPM package. Unity treats them as _embedded_ packages, so they compile and are testable in place without any registry round-trip.
 
 Consumers get these packages from a registry, **not** by copying folders. See [Distribution and releases](#distribution-and-releases).
-
 
 ## Repo layout
 
@@ -23,7 +22,10 @@ unitypackages/
 ├── .claude/
 │   └── skills/              # mirror of .agents/Skills/ — the copy Claude Code discovers
 ├── .github/
-│   └── workflows/release.yml # validate → pack → tag; a tag is the release
+│   ├── rulesets/            # dev.json, master.json — applied with gh api
+│   └── workflows/           # tests, release, changelog, format
+├── .config/
+│   └── dotnet-tools.json    # pins CSharpier
 ├── Assets/                  # scratch sandbox only — Scenes/, StreamingAssets/
 ├── Tools/
 │   └── upm-release.mjs      # release tooling, dependency-free Node
@@ -37,6 +39,8 @@ unitypackages/
 │   └── <PackageName>/
 ├── ProjectSettings/
 ├── UserSettings/
+├── .editorconfig            # editor defaults + C# naming warnings
+├── package.json             # root tooling only (Prettier) — not a UPM package
 └── LICENSE                  # MIT, repo-level
 ```
 
@@ -48,12 +52,12 @@ unitypackages/
 
 A package folder follows the standard UPM layout:
 
-| Folder | Required | Purpose |
-|--|--|--|
-| `Runtime/` | yes | Runtime code + its asmdef. Every package has one. |
-| `Tests/Editor/` | no | EditMode tests, own asmdef. |
-| `Samples~/` | no | Importable example content — see below. |
-| `Editor/` | no | Editor-only code, own asmdef. Omit it when there is no editor code. |
+| Folder          | Required | Purpose                                                             |
+| --------------- | -------- | ------------------------------------------------------------------- |
+| `Runtime/`      | yes      | Runtime code + its asmdef. Every package has one.                   |
+| `Tests/Editor/` | no       | EditMode tests, own asmdef.                                         |
+| `Samples~/`     | no       | Importable example content — see below.                             |
+| `Editor/`       | no       | Editor-only code, own asmdef. Omit it when there is no editor code. |
 
 No package has a `Documentation/` folder. Five did, but all five held Unity's unedited "Package Starter Kit" template rather than any real content, and were deleted on 2026-08-30 in favour of the per-package `README.md`. Add one back only when a package genuinely outgrows its README.
 
@@ -61,40 +65,40 @@ Sample folders carry the `~` suffix in the repo: `Samples~/<SampleName>/`. UPM h
 
 Required at the package root: `package.json`, `LICENSE.md`, and a `.meta` file for **every** file and folder.
 
-`Third Party Notices.md` belongs only to `PackageBasics`, the one package that vendors third-party code (NiceJson, MIT). Five other packages carried `[provide component name]` placeholder notices for code they do not bundle; those were deleted on 2026-08-30. `DevelopmentConsole` also had one, for a vendored Unity Asset Store log viewer that was deleted on 2026-08-30 — see the note in *Known inconsistencies*.
+`Third Party Notices.md` belongs only to `PackageBasics`, the one package that vendors third-party code (NiceJson, MIT). Five other packages carried `[provide component name]` placeholder notices for code they do not bundle; those were deleted on 2026-08-30. `DevelopmentConsole` also had one, for a vendored Unity Asset Store log viewer that was deleted on 2026-08-30 — see the note in _Known inconsistencies_.
 
 ### Assembly definitions
 
 Assemblies are named `Arman.<PackageName>[.<Layer>]`. Be aware the existing naming is **not consistent** and should not be "tidied" opportunistically — assembly renames break consumer asmdef references:
 
-* Runtime assemblies carry **no** layer suffix — `Arman.ServiceLocating`, `Arman.EventManagement`, `Arman.UIManagement`. Every package, `PackageTemplate` included, follows this.
-* Test assemblies use **both** orderings: `Arman.X.Tests.Editor` and `Arman.X.Editor.Tests`.
+- Runtime assemblies carry **no** layer suffix — `Arman.ServiceLocating`, `Arman.EventManagement`, `Arman.UIManagement`. Every package, `PackageTemplate` included, follows this.
+- Test assemblies use **both** orderings: `Arman.X.Tests.Editor` and `Arman.X.Editor.Tests`.
 
 **For new packages, use `Arman.<PackageName>` / `Arman.<PackageName>.Editor` / `Arman.<PackageName>.Tests.Editor`.** Leave existing names alone unless deliberately migrating one.
 
 ## Package catalogue
 
-| Folder | Package name | Version | Depends on (`com.arman.` elided) |
-|--|--|--|--|
-| `Asset Providing` | `com.arman.asset-providing` | 0.1.0 | — |
-| `ComponentSystem` | `com.arman.component-system` | 0.1.0 | — |
-| `ConfigurationManagement` | `com.arman.configuration-management` | 0.1.0 | — |
-| `DependencyResolution` | `com.arman.dependency-resolution` | 0.1.0 | — |
-| `DevelopmentConsole` | `com.arman.development-console` | 0.1.0 | — |
-| `EventManagement` | `com.arman.event-management` | 0.1.0 | — |
-| `HttpConnection` | `com.arman.http-connection` | 0.1.0 | — |
-| `InGameMessageLogging` | `com.arman.in-game-message-logging` | 0.1.0 | unity-utilities |
-| `InventorySystem` | `com.arman.inventory-system` | 0.1.0 | — |
-| `ObjectPooling` | `com.arman.object-pooling` | 0.1.0 | — |
-| `PackageBasics` | `com.arman.package-basics` | 0.1.0 | — |
-| `PackageTemplate` | `com.arman.package-template` | 0.1.0 | — *(private, never published)* |
-| `PersistentDataManagement` | `com.arman.persistent-data-management` | 0.1.0 | package-basics |
-| `Scene Management` | `com.arman.scene-management` | 0.1.0 | — |
-| `ServiceLocating` | `com.arman.service-locating` | 0.1.0 | — |
-| `ShopManagement` | `com.arman.shop-management` | 0.1.0 | — |
-| `UI Management` | `com.arman.ui-management` | 0.1.0 | — |
-| `UnityUtilities` | `com.arman.unity-utilities` | 0.1.0 | — |
-| `UpdateManagement` | `com.arman.update-management` | 0.1.0 | package-basics |
+| Folder                     | Package name                           | Version | Depends on (`com.arman.` elided) |
+| -------------------------- | -------------------------------------- | ------- | -------------------------------- |
+| `Asset Providing`          | `com.arman.asset-providing`            | 0.1.0   | —                                |
+| `ComponentSystem`          | `com.arman.component-system`           | 0.1.0   | —                                |
+| `ConfigurationManagement`  | `com.arman.configuration-management`   | 0.1.0   | —                                |
+| `DependencyResolution`     | `com.arman.dependency-resolution`      | 0.1.0   | —                                |
+| `DevelopmentConsole`       | `com.arman.development-console`        | 0.1.0   | —                                |
+| `EventManagement`          | `com.arman.event-management`           | 0.1.0   | —                                |
+| `HttpConnection`           | `com.arman.http-connection`            | 0.1.0   | —                                |
+| `InGameMessageLogging`     | `com.arman.in-game-message-logging`    | 0.1.0   | unity-utilities                  |
+| `InventorySystem`          | `com.arman.inventory-system`           | 0.1.0   | —                                |
+| `ObjectPooling`            | `com.arman.object-pooling`             | 0.1.0   | —                                |
+| `PackageBasics`            | `com.arman.package-basics`             | 0.1.0   | —                                |
+| `PackageTemplate`          | `com.arman.package-template`           | 0.1.0   | — _(private, never published)_   |
+| `PersistentDataManagement` | `com.arman.persistent-data-management` | 0.1.0   | package-basics                   |
+| `Scene Management`         | `com.arman.scene-management`           | 0.1.0   | —                                |
+| `ServiceLocating`          | `com.arman.service-locating`           | 0.1.0   | —                                |
+| `ShopManagement`           | `com.arman.shop-management`            | 0.1.0   | —                                |
+| `UI Management`            | `com.arman.ui-management`              | 0.1.0   | —                                |
+| `UnityUtilities`           | `com.arman.unity-utilities`            | 0.1.0   | —                                |
+| `UpdateManagement`         | `com.arman.update-management`          | 0.1.0   | package-basics                   |
 
 ### Naming
 
@@ -102,27 +106,30 @@ Assemblies are named `Arman.<PackageName>[.<Layer>]`. Be aware the existing nami
 
 This was normalised on 2026-08-23. Previously the set mixed three namespaces (`com.arman.foundation.*`, `com.arman.presentation.*`, plain `com.arman.*`) with two separator styles (`service_locating` vs `object-pooling`). The `foundation.` / `presentation.` segments were dropped and every `snake_case` id converted to `kebab-case`.
 
-The rename was safe because **nothing had ever been published** — `git tag` listed zero tags, and under the OpenUPM model (see [Distribution and releases](#distribution-and-releases)) a tag *is* the release. That window is now closed:
+The rename was safe because **nothing had ever been published** — `git tag` listed zero tags, and under the OpenUPM model (see [Distribution and releases](#distribution-and-releases)) a tag _is_ the release. That window is now closed:
 
 ⚠️ **From the first published tag onward, a package id is permanent.** Do not rename an id that has ever appeared in a `<package-name>/<version>` tag. Check `git tag` before assuming otherwise.
 
-Note that **assembly** names were deliberately *not* normalised alongside the ids — see [Assembly definitions](#assembly-definitions). A package id and its asmdef names do not have to agree, and several don't.
+Note that **assembly** names were deliberately _not_ normalised alongside the ids — see [Assembly definitions](#assembly-definitions). A package id and its asmdef names do not have to agree, and several don't.
 
 ## Test Commands
 
 Unity tests run through the official [Unity CLI](https://unity.com/blog/meet-the-unity-cli) (the standalone `unity` binary — `unity doctor` shows install/auth state; not to be confused with `Unity.exe` batchmode, which it wraps). Ensure the Editor named in `ProjectSettings/ProjectVersion.txt` is installed and registered (`unity editors`). There are two ways to run tests, pick based on whether an interactive Editor is already open on this project:
 
-* **No Editor open (CI, fresh checkout) — spawns its own batch instance:**
+- **No Editor open (CI, fresh checkout) — spawns its own batch instance:**
+
   ```powershell
   unity test --mode EditMode --output Library/editmode-results.xml
   unity test --mode PlayMode --output Library/playmode-results.xml
   ```
+
   `unity test` auto-detects the project (current directory) and editor version (`ProjectVersion.txt`); pass `--editor-version`/`-e <path>` to override, `--allow-install` to fetch a missing editor version, and `--timeout <seconds>` to cap a hung run. Add `--json` for machine-parseable output.
 
   **Exit codes (observed on CLI 1.0.0-beta.3, 2026-08-27):** `0` success, **`8` tests ran and failed**, **`6` the run never produced results** (compiler errors, a missing `--execute-method` target, a dead Editor). Check that distinction before treating a nonzero exit as "couldn't run" — `6` genuinely means "couldn't run," `8` means the suite is red.
 
   For CI, `--report-format nunit,junit --junit-output <path>` emits a JUnit report alongside the NUnit one, which is what GitLab's test tab reads. No external XSLT step is needed.
-* **Editor already open (the common case while developing) — runs in the live instance, no second process, faster:**
+
+- **Editor already open (the common case while developing) — runs in the live instance, no second process, faster:**
   ```powershell
   unity command run_tests --mode EditMode
   unity command run_tests --mode PlayMode
@@ -135,13 +142,13 @@ Unity tests run through the official [Unity CLI](https://unity.com/blog/meet-the
 
 The repo uses [`nuget.moq`](https://docs.unity3d.com/Packages/nuget.moq@2.0/manual/index.html) 2.0.1, declared in `Packages/manifest.json`. **Pick by what the test asserts, not by habit:**
 
-* **The assertion *is* the interaction** — call counts, captured arguments, ordering, "was this collaborator used at all" → use `Mock<T>` and `Verify`. A hand-written class that exists only to increment a counter is re-implementing `Times.Once`.
-* **The assertion is state or identity** — the object is compared, applied, returned, or dispatched on → write a small `Fake*` class. Name it `Fake<Thing>`, not `<Thing>Mock`.
+- **The assertion _is_ the interaction** — call counts, captured arguments, ordering, "was this collaborator used at all" → use `Mock<T>` and `Verify`. A hand-written class that exists only to increment a counter is re-implementing `Times.Once`.
+- **The assertion is state or identity** — the object is compared, applied, returned, or dispatched on → write a small `Fake*` class. Name it `Fake<Thing>`, not `<Thing>Mock`.
 
 Two cases genuinely need a real type, and both are in the tree as examples:
 
-* `FakeShopPackage` / `FakeShopPackageA` / `FakeShopPackageB` — `ShopCenter.PackagesOfType<T>()` and `AssignPurchaseHandler<T>()` dispatch on the **concrete** type argument, and a Moq proxy's runtime type is generated, so it cannot express them.
-* `FakePoolable` — `ObjectPool<T>` constructs its own instances in `CreateObject()`, so there is nothing to hand a proxy to.
+- `FakeShopPackage` / `FakeShopPackageA` / `FakeShopPackageB` — `ShopCenter.PackagesOfType<T>()` and `AssignPurchaseHandler<T>()` dispatch on the **concrete** type argument, and a Moq proxy's runtime type is generated, so it cannot express them.
+- `FakePoolable` — `ObjectPool<T>` constructs its own instances in `CreateObject()`, so there is nothing to hand a proxy to.
 
 **Wiring a test assembly for Moq.** Every test asmdef sets `"overrideReferences": true`, so Moq and the two support assemblies it ships have to be listed explicitly — adding the package alone is not enough:
 
@@ -160,21 +167,22 @@ Do **not** fix a duplicate-assembly error by turning `overrideReferences` off �
 
 ## CI
 
-`.github/workflows/tests.yml` runs the test suites on every same-repo pull request and on pushes to `dev` and `master` — both the Unity suites and, in a single `tooling-tests` job, the tests for the repo's own scripts. Every job that needs Node reads the version from `.nvmrc` via `node-version-file`, so a bump is one edit rather than six. `.github/workflows/release.yml` separately runs `validate` and `pack`, and `.github/workflows/changelog.yml` enforces [the changelog rules](#changelogs--four-rules-enforced-in-ci). Design notes: [`docs/specs/2026-08-30-pr-test-ci-design.md`](../docs/specs/2026-08-30-pr-test-ci-design.md).
+`.github/workflows/tests.yml` runs the test suites on every same-repo pull request and on pushes to `dev` and `master` — both the Unity suites and, in a single `tooling-tests` job, the tests for the repo's own scripts. Every job that needs Node reads the version from `.nvmrc` via `node-version-file`, so a bump is one edit rather than seven. `.github/workflows/release.yml` separately runs `validate` and `pack`, and `.github/workflows/changelog.yml` enforces [the changelog rules](#changelogs--four-rules-enforced-in-ci). `.github/workflows/format.yml` runs the [formatters](#formatting) in check mode. Design notes: [`docs/specs/2026-08-30-pr-test-ci-design.md`](../docs/specs/2026-08-30-pr-test-ci-design.md).
 
-| Job | Runner | Notes |
-|--|--|--|
-| `tooling-tests` | `ubuntu-latest` | The repo's own tooling tests — the `Tools/ci/` PowerShell helpers, the changelog check, and the release flow. Runs on forks too. |
-| `unity-tests` | self-hosted Windows | EditMode + PlayMode. **Never runs on fork PRs** — see below. |
-| `report` | `ubuntu-latest` | Turns the JUnit XML into PR annotations. |
+| Job             | Runner              | Notes                                                                                                                            |
+| --------------- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `tooling-tests` | `ubuntu-latest`     | The repo's own tooling tests — the `Tools/ci/` PowerShell helpers, the changelog check, and the release flow. Runs on forks too. |
+| `unity-tests`   | self-hosted Windows | EditMode + PlayMode. **Never runs on fork PRs** — see below.                                                                     |
+| `report`        | `ubuntu-latest`     | Turns the JUnit XML into PR annotations.                                                                                         |
+| `format`        | `ubuntu-latest`     | `npm run format:check`: CSharpier and Prettier. Runs on forks too.                                                               |
 
-Job names are unique across all three workflows on purpose: two identically named entries in a PR's check list cannot be told apart, which matters the moment either becomes a required check. Hence `unity-tests` rather than `test`. It is also why the three tooling-test jobs were merged — one of them had to be called `release-script-tests` purely to dodge a collision with `changelog.yml`'s `test`. For the same reason the report step runs with `annotate_only: true`: creating a check run gives GitHub no way to say which check suite it belongs to, and it filed the result under the *changelog* workflow, so a red Unity suite pointed the reader at the wrong place.
+Job names are unique across all four workflows on purpose: two identically named entries in a PR's check list cannot be told apart, which matters the moment either becomes a required check. Hence `unity-tests` rather than `test`. It is also why the three tooling-test jobs were merged — one of them had to be called `release-script-tests` purely to dodge a collision with `changelog.yml`'s `test`. For the same reason the report step runs with `annotate_only: true`: creating a check run gives GitHub no way to say which check suite it belongs to, and it filed the result under the _changelog_ workflow, so a red Unity suite pointed the reader at the wrong place.
 
 Three rules that are load-bearing rather than stylistic:
 
-* **The `unity-tests` job must never run on a fork PR.** This repo is public and the runner is a physical machine with a live Unity licence. The job's `if:` condition is the only thing preventing a drive-by PR from executing code there. Never add a `pull_request_target` trigger to this workflow, and never pin a third-party action by tag instead of commit SHA.
-* **CI runs the Editor in `ProjectVersion.txt`, or fails.** No `-e`, no `--allow-install`. `Tools/ci/Resolve-UnityEditor.ps1` enforces this.
-* **Only `Library/` survives between runs.** `TestResults/` and `Logs/` are wiped every job, so everything the pipeline publishes was produced by that run. The `clean_library` input on a manual dispatch forces a cold run, which is how you tell a poisoned cache from broken code.
+- **The `unity-tests` job must never run on a fork PR.** This repo is public and the runner is a physical machine with a live Unity licence. The job's `if:` condition is the only thing preventing a drive-by PR from executing code there. Never add a `pull_request_target` trigger to this workflow, and never pin a third-party action by tag instead of commit SHA.
+- **CI runs the Editor in `ProjectVersion.txt`, or fails.** No `-e`, no `--allow-install`. `Tools/ci/Resolve-UnityEditor.ps1` enforces this.
+- **Only `Library/` survives between runs.** `TestResults/` and `Logs/` are wiped every job, so everything the pipeline publishes was produced by that run. The `clean_library` input on a manual dispatch forces a cold run, which is how you tell a poisoned cache from broken code.
 
 The helper scripts under `Tools/ci/` have their own tests, which need no Unity and no runner:
 
@@ -185,7 +193,7 @@ pwsh -File Tools/ci/Tests/Test-CiScripts.ps1                    # in CI (PowerSh
 
 The `tooling-tests` job runs `pwsh`, because it is on `ubuntu-latest`. The self-hosted `unity-tests` job runs **Windows PowerShell 5.1**, via an explicit shell string set as a job default — PowerShell Core is not installed on the runner, so `shell: pwsh` there fails with `pwsh: command not found` before any step does work.
 
-That shell string spells out three things the built-in `shell: powershell` would not give it: `-NoProfile`, an execution-policy override (the runner account's policy is Restricted and otherwise refuses the `.ps1` GitHub generates per `run:` block), and a trailing `exit $LASTEXITCODE`. The last is load-bearing — GitHub appends that epilogue to its *built-in* shells only, and without it a step whose final act is a failing script reports success. Both were found the hard way, on the first two live runs.
+That shell string spells out three things the built-in `shell: powershell` would not give it: `-NoProfile`, an execution-policy override (the runner account's policy is Restricted and otherwise refuses the `.ps1` GitHub generates per `run:` block), and a trailing `exit $LASTEXITCODE`. The last is load-bearing — GitHub appends that epilogue to its _built-in_ shells only, and without it a step whose final act is a failing script reports success. Both were found the hard way, on the first two live runs.
 
 Lint the workflows with [`actionlint`](https://github.com/rhysd/actionlint); `.github/actionlint.yaml` declares the self-hosted runner's label so a typo in it is still caught.
 
@@ -195,8 +203,8 @@ Lint the workflows with [`actionlint`](https://github.com/rhysd/actionlint); `.g
 
 Two MCP servers are available, with a deliberate division of labour:
 
-* **`sharplens`** (`mcp__sharplens__*`) — **the default for C# code navigation, inspection, and refactoring.** A pure .NET/Roslyn server exposing 92 tools. Use it for "where is this defined / what calls this / rename this / does this compile".
-* **`lifeblood`** (`mcp__lifeblood__*`) — retained for the **Unity-aware and change-impact** questions SharpLens cannot answer. See "What still belongs to `lifeblood`" below.
+- **`sharplens`** (`mcp__sharplens__*`) — **the default for C# code navigation, inspection, and refactoring.** A pure .NET/Roslyn server exposing 92 tools. Use it for "where is this defined / what calls this / rename this / does this compile".
+- **`lifeblood`** (`mcp__lifeblood__*`) — retained for the **Unity-aware and change-impact** questions SharpLens cannot answer. See "What still belongs to `lifeblood`" below.
 
 For the Editor — console, scenes, GameObjects, assets, eval, tests, builds — use the official `unity` CLI directly (see below); it isn't registered as an MCP server. Prefer all of these over generic file tools and over guessing.
 
@@ -204,25 +212,25 @@ For the Editor — console, scenes, GameObjects, assets, eval, tests, builds —
 
 Vendored under `.agents/Skills/` (canonical) and mirrored to `.claude/skills/` (what Claude Code discovers). **Edit one, copy to the other** — they must stay identical.
 
-| Skill | Use it for |
-|--|--|
-| `lifeblood-mcp` | Routing between the `lifeblood` MCP tools; read before a multi-step refactor. |
-| `unity-package-management` | Add/remove/upgrade UPM packages via `UnityEditor.PackageManager.Client` instead of hand-editing `Packages/manifest.json`. Applies to this project's *external* deps — the packages it hosts are embedded, not registry-resolved. |
-| `unity-cli` | Editor install, project creation, headless build/test. |
+| Skill                      | Use it for                                                                                                                                                                                                                       |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `lifeblood-mcp`            | Routing between the `lifeblood` MCP tools; read before a multi-step refactor.                                                                                                                                                    |
+| `unity-package-management` | Add/remove/upgrade UPM packages via `UnityEditor.PackageManager.Client` instead of hand-editing `Packages/manifest.json`. Applies to this project's _external_ deps — the packages it hosts are embedded, not registry-resolved. |
+| `unity-cli`                | Editor install, project creation, headless build/test.                                                                                                                                                                           |
 
 ### `sharplens`: Code Navigation — ALWAYS PREFER over Grep/Glob/LS
 
-| Instead of | Use |
-|------------|-----|
-| `Grep` for where a symbol is defined | `mcp__sharplens__go_to_definition`, `mcp__sharplens__search_symbols` |
-| `Grep` for callers of a method | `mcp__sharplens__find_references`, `mcp__sharplens__find_callers` |
-| `Grep` for interface implementers | `mcp__sharplens__find_implementations`, `mcp__sharplens__get_derived_types` |
-| `LS` / reading files to map a type | `mcp__sharplens__get_type_overview`, `mcp__sharplens__get_type_members` |
-| Reading a whole file to see one method | `mcp__sharplens__get_method_source` |
-| Skimming a file to learn its shape | `mcp__sharplens__get_file_overview` |
-| Guessing at a compile error | `mcp__sharplens__get_diagnostics`, then `mcp__sharplens__get_code_fixes` |
-| Hand-editing a rename across files | `mcp__sharplens__rename_symbol` |
-| Manually tracing a call chain | `mcp__sharplens__get_call_graph`, `mcp__sharplens__find_path_between` |
+| Instead of                             | Use                                                                         |
+| -------------------------------------- | --------------------------------------------------------------------------- |
+| `Grep` for where a symbol is defined   | `mcp__sharplens__go_to_definition`, `mcp__sharplens__search_symbols`        |
+| `Grep` for callers of a method         | `mcp__sharplens__find_references`, `mcp__sharplens__find_callers`           |
+| `Grep` for interface implementers      | `mcp__sharplens__find_implementations`, `mcp__sharplens__get_derived_types` |
+| `LS` / reading files to map a type     | `mcp__sharplens__get_type_overview`, `mcp__sharplens__get_type_members`     |
+| Reading a whole file to see one method | `mcp__sharplens__get_method_source`                                         |
+| Skimming a file to learn its shape     | `mcp__sharplens__get_file_overview`                                         |
+| Guessing at a compile error            | `mcp__sharplens__get_diagnostics`, then `mcp__sharplens__get_code_fixes`    |
+| Hand-editing a rename across files     | `mcp__sharplens__rename_symbol`                                             |
+| Manually tracing a call chain          | `mcp__sharplens__get_call_graph`, `mcp__sharplens__find_path_between`       |
 
 **Why?** These use Roslyn semantic analysis — far faster, far fewer tokens, and correct where text search is not (partial types, overloads, inheritance, `using` aliases). They also cover refactorings generic file tools can't do at all: `extract_method`, `extract_interface`, `change_signature`, `encapsulate_field`, `move_type_to_file`, `implement_missing_members`, `organize_usings`, `fix_all`.
 
@@ -234,13 +242,13 @@ Useful beyond navigation: `mcp__sharplens__get_project_health`, `find_god_object
 
 `lifeblood` is a shared daemon exposing Roslyn semantic analysis over a C# solution. Call `lifeblood_analyze` with `projectPath` pointing at the repo root once per session before any other `lifeblood_*` tool; write-side tools (`find_references`, `rename`, `diagnose`, `compile_check`) additionally need a non-read-only analyze (`readOnly:false`). Prefer it over `Grep`/`Glob` whenever the question is semantic:
 
-| Instead of | Use |
-|--|--|
-| `Grep` for a symbol | `lifeblood_find_definition`, `lifeblood_find_references` |
-| `Grep` for implementers of an interface | `lifeblood_find_implementations` |
-| Guessing what a change breaks | `lifeblood_blast_radius`, `lifeblood_file_impact`, `lifeblood_test_impact` |
-| Eyeballing asmdef wiring | `lifeblood_asmdef_check`, `lifeblood_cycles` |
-| A cross-package symbol rename | `lifeblood_rename` |
+| Instead of                              | Use                                                                        |
+| --------------------------------------- | -------------------------------------------------------------------------- |
+| `Grep` for a symbol                     | `lifeblood_find_definition`, `lifeblood_find_references`                   |
+| `Grep` for implementers of an interface | `lifeblood_find_implementations`                                           |
+| Guessing what a change breaks           | `lifeblood_blast_radius`, `lifeblood_file_impact`, `lifeblood_test_impact` |
+| Eyeballing asmdef wiring                | `lifeblood_asmdef_check`, `lifeblood_cycles`                               |
+| A cross-package symbol rename           | `lifeblood_rename`                                                         |
 
 ⚠️ **`lifeblood` needs a solution** If there is no `.sln`/`.slnx` or `.csproj`, **generate the solution first, then analyze.** . Runs `unity command menu --path "Assets/Open C# Project"`) to generate.
 
@@ -248,13 +256,13 @@ Useful beyond navigation: `mcp__sharplens__get_project_health`, `find_god_object
 
 SharpLens has no Unity knowledge whatsoever. Use `lifeblood` for:
 
-| Question | Tool |
-|----------|------|
-| Does this asmdef actually declare its dependencies? | `lifeblood_asmdef_check` |
+| Question                                                       | Tool                                                                       |
+| -------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Does this asmdef actually declare its dependencies?            | `lifeblood_asmdef_check`                                                   |
 | Does this hold in player builds as well as `#if UNITY_EDITOR`? | `lifeblood_analyze` with `defineProfiles:["Editor","Player","Standalone"]` |
-| Is this MonoBehaviour / UnityEvent-wired code genuinely dead? | `lifeblood_dead_code` |
-| Which architectural invariant governs this area? | `lifeblood_invariant_check`, then read `docs/invariants/*.md` |
-| What's the blast radius, and which tests should I run? | `lifeblood_blast_radius`, `lifeblood_file_impact`, `lifeblood_test_impact` |
+| Is this MonoBehaviour / UnityEvent-wired code genuinely dead?  | `lifeblood_dead_code`                                                      |
+| Which architectural invariant governs this area?               | `lifeblood_invariant_check`, then read `docs/invariants/*.md`              |
+| What's the blast radius, and which tests should I run?         | `lifeblood_blast_radius`, `lifeblood_file_impact`, `lifeblood_test_impact` |
 
 > **Unity-blindness warning.** SharpLens ships near-equivalents — `analyze_change_impact`, `check_architecture`, `find_unused_code`, `find_untested_code`, `find_dead_branches` — that know nothing about Unity. They will report MonoBehaviour message methods (`Awake`, `Start`, `OnEnable`, `Update`), `[SerializeField]` targets, and UnityEvent-wired handlers as unused or unreachable, because nothing in C# source calls them. **Never delete Unity-facing code on a SharpLens unused/dead-code result alone** — confirm with `lifeblood_dead_code`, which resolves MonoBehaviour and Editor reflection entry points and UnityEvent persistent calls from scene/prefab YAML.
 
@@ -264,15 +272,15 @@ The Unity Editor is reachable through Unity's own `unity` CLI, backed by the `co
 
 Common commands (see `unity command` for the full ~140-command surface — GameObjects, prefabs, scenes, assets, animator, timeline, navmesh, lighting, builds):
 
-| Need | Command |
-|------|---------|
+| Need                                                                              | Command                                         |
+| --------------------------------------------------------------------------------- | ----------------------------------------------- |
 | Read the console before fixing a compile error — do not guess the line/error code | `unity command console --tail 50 --level error` |
-| Inspect the active scene hierarchy before changing it | `unity command get_scene_hierarchy` |
-| Quick C# check without a full recompile/domain reload | `unity command eval --code "<expression>"` |
-| Find GameObjects by name/tag/component | `unity command find_gameobjects --name "..."` |
-| Run tests from inside a live Editor (vs. the batchmode `unity test`) | `unity command run_tests --mode EditMode` |
+| Inspect the active scene hierarchy before changing it                             | `unity command get_scene_hierarchy`             |
+| Quick C# check without a full recompile/domain reload                             | `unity command eval --code "<expression>"`      |
+| Find GameObjects by name/tag/component                                            | `unity command find_gameobjects --name "..."`   |
+| Run tests from inside a live Editor (vs. the batchmode `unity test`)              | `unity command run_tests --mode EditMode`       |
 
-* **Only modify Unity assets (`.unity` scenes, `.prefab` files, `.asset` ScriptableObjects, etc.) through `unity-mcp` tools or the Unity Editor itself — never by hand-editing their YAML with a text tool.** If the specific `unity-mcp` call you need is broken, report the bug and find another Editor-mediated path rather than falling back to a raw file edit.
+- **Only modify Unity assets (`.unity` scenes, `.prefab` files, `.asset` ScriptableObjects, etc.) through `unity-mcp` tools or the Unity Editor itself — never by hand-editing their YAML with a text tool.** If the specific `unity-mcp` call you need is broken, report the bug and find another Editor-mediated path rather than falling back to a raw file edit.
 
 ### Permissions
 
@@ -316,7 +324,7 @@ Passing it any argument is an error (exit 2) that points back at `upm-release.mj
 
 > `release.bat` has twice been committed with the backslashes eaten out of its `Tools\release.bat` usage comments — once harmlessly, once into bare `release.bat` command lines, which cmd executes and which recurse forever when the working directory is `Tools/`. The file now contains **no backslash at all**, and three tests pin that. Keep it that way.
 
-`--only` takes a package id or a folder name (`--only "UI Management"` works), is repeatable, and errors if it matches nothing. It was written for rollout step 4's single-package smoke test; that test is done, but it remains the way to release one package by hand without touching the others. Under `--only`, `validate` still resolves dependencies against *every* package, not just the selected ones.
+`--only` takes a package id or a folder name (`--only "UI Management"` works), is repeatable, and errors if it matches nothing. It was written for rollout step 4's single-package smoke test; that test is done, but it remains the way to release one package by hand without touching the others. Under `--only`, `validate` still resolves dependencies against _every_ package, not just the selected ones.
 
 `prepare` turns every package's `## [Unreleased]` section into a version. Per package: no heading, or a heading with no entries, means skip; otherwise the `###` sub-headings with bullets under them decide the level — `Removed` is breaking, `Added`/`Changed`/`Deprecated` are features, `Fixed`/`Security` are fixes, highest wins — and **while the major is `0`, breaking and feature both land on the minor**. The heading is renamed to `## [X.Y.Z] - YYYY-MM-DD` with nothing left in its place, `package.json`'s `version` line is rewritten in place, and `validate` re-runs over the packages it touched.
 
@@ -338,12 +346,12 @@ Why bump the dependent at all, when `validate` accepts a dependency at a version
 
 The job used to be gated to `workflow_dispatch` with a `publish` input, so that the spec's rollout step 4 — a single-package smoke test — could settle the Package Manager visibility question before 17 packages were submitted. That test passed and all 17 published on 2026-08-31, so the gate was dropped per rollout step 5. **Keep the `github.ref == 'refs/heads/master'` condition:** it is now the only thing stopping a routine push to `dev` from publishing.
 
-The registry-hosting design and the CI release flow are specced in [`docs/specs/`](../docs/specs/). Both documents were drafted elsewhere and moved here on 2026-08-30 — they describe *this* repo, so this is their home, and the copies here are canonical.
+The registry-hosting design and the CI release flow are specced in [`docs/specs/`](../docs/specs/). Both documents were drafted elsewhere and moved here on 2026-08-30 — they describe _this_ repo, so this is their home, and the copies here are canonical.
 
-| Document | Contents |
-|--|--|
-| [`docs/specs/2026-08-22-upm-package-registry-design.md`](../docs/specs/2026-08-22-upm-package-registry-design.md) | GitLab + npmjs.com variant. Superseded, but still holds the shared problem statement and cleanup list. |
-| [`docs/specs/2026-08-23-upm-package-registry-github-design.md`](../docs/specs/2026-08-23-upm-package-registry-github-design.md) | **Current direction** — GitHub + OpenUPM. |
+| Document                                                                                                                        | Contents                                                                                               |
+| ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| [`docs/specs/2026-08-22-upm-package-registry-design.md`](../docs/specs/2026-08-22-upm-package-registry-design.md)               | GitLab + npmjs.com variant. Superseded, but still holds the shared problem statement and cleanup list. |
+| [`docs/specs/2026-08-23-upm-package-registry-github-design.md`](../docs/specs/2026-08-23-upm-package-registry-github-design.md) | **Current direction** — GitHub + OpenUPM.                                                              |
 
 Both specs were written before the 2026-08-23 package-id normalisation and were amended on 2026-08-30 to use the real flat kebab-case ids — see [Naming](#naming). The GitHub spec's §3 now carries the full submission table (all 17 ids, `gitTagPrefix` bases, versions); this catalogue stays the source of truth if the two ever disagree.
 
@@ -361,14 +369,14 @@ node Tools/changelog-check.mjs --base dev --head HEAD --json
 node --test Tools/changelog-check.test.mjs    # the check's own tests, 50 of them
 ```
 
-| Rule | What it enforces | Waiver label |
-|--|--|--|
-| `missing-entry` | A change to a package's **shipped code** must be recorded under that package's `## [Unreleased]` heading. Reported as `missing-changelog` or `missing-section` when the file or the heading is what is absent; the waiver covers all three. Opening a **new version section** satisfies the rule in place of an entry, so a release PR — where `prepare` has renamed every heading — passes without a waiver. | `no-changelog` |
-| `frozen-section` | A version section whose `<package-name>/<version>` tag **already exists** must not be edited or deleted. | `changelog-rewrite` |
-| `empty-unreleased` | A `## [Unreleased]` heading must have at least one entry under it. Checked **repo-wide** at the head commit, not just on the packages the PR touched. | *none* |
-| `unpromoted-unreleased` | On a PR **into `master`** only: no `## [Unreleased]` heading may survive at all. Also repo-wide. | *none* |
+| Rule                    | What it enforces                                                                                                                                                                                                                                                                                                                                                                                              | Waiver label        |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
+| `missing-entry`         | A change to a package's **shipped code** must be recorded under that package's `## [Unreleased]` heading. Reported as `missing-changelog` or `missing-section` when the file or the heading is what is absent; the waiver covers all three. Opening a **new version section** satisfies the rule in place of an entry, so a release PR — where `prepare` has renamed every heading — passes without a waiver. | `no-changelog`      |
+| `frozen-section`        | A version section whose `<package-name>/<version>` tag **already exists** must not be edited or deleted.                                                                                                                                                                                                                                                                                                      | `changelog-rewrite` |
+| `empty-unreleased`      | A `## [Unreleased]` heading must have at least one entry under it. Checked **repo-wide** at the head commit, not just on the packages the PR touched.                                                                                                                                                                                                                                                         | _none_              |
+| `unpromoted-unreleased` | On a PR **into `master`** only: no `## [Unreleased]` heading may survive at all. Also repo-wide.                                                                                                                                                                                                                                                                                                              | _none_              |
 
-The two waivers are deliberately separate — "this change needs no entry" is not the same claim as "I may rewrite what `0.1.0` says it shipped". Labels are read *inside* the script rather than gating the job with `if:`, so the check always reports a real success instead of `skipped`; that matters if it is ever made a required check, because a skipped required check blocks the merge.
+The two waivers are deliberately separate — "this change needs no entry" is not the same claim as "I may rewrite what `0.1.0` says it shipped". Labels are read _inside_ the script rather than gating the job with `if:`, so the check always reports a real success instead of `skipped`; that matters if it is ever made a required check, because a skipped required check blocks the merge.
 
 **Shipped code** triggers `missing-entry`, and only that: anything under `Runtime/` or `Editor/`, plus `package.json`. `Tests/`, `Samples/`, `Documentation/`, every `*.md`, and every `*.meta` are exempt — none of them reach a consumer of the published tarball, so a doc fix or a GUID churn never demands an entry. `frozen-section` looks at the CHANGELOG regardless, precisely because Markdown is otherwise exempt and released history could be rewritten unseen.
 
@@ -376,17 +384,17 @@ Two packages are skipped by `missing-entry` and `frozen-section`: one with `"pri
 
 Details worth not re-deriving:
 
-* The diff is taken against the **merge base**, so commits landing on `dev` after you branched are never blamed on your PR.
-* A bare `### Added` with no bullet under it does not count as an entry.
-* Trailing whitespace inside a frozen section is ignored — no reader can see it.
-* **The release PR is not a false positive.** Renaming `## [Unreleased]` to `## [0.2.0]` satisfies `missing-entry` on its own, because opening a version section that did not exist at the base is exactly what a release does. That version has no tag yet, so `frozen-section` does not fire on it either; the tag comes after the merge.
-* `frozen-section` reads `git tag`, so CI checks out with `fetch-depth: 0`. A shallow fetch would leave the tag list empty and silently disable the rule.
-* `empty-unreleased` has **no waiver label**, deliberately: "I need an empty heading" is not a claim worth being able to make. Delete the heading or fill it in.
-* It and `unpromoted-unreleased` are the two rules that are not diff-scoped. Every publishable package's CHANGELOG is read at the head commit, which is only fair because all 18 were cleaned before the rules landed (2026-09-02).
-* `unpromoted-unreleased` is **the release gate**, and the reason it exists: on 2026-09-02 a release PR (dev → master) passed every check with all 17 packages still carrying populated `## [Unreleased]` sections. Nothing was published — no `package.json` version had moved, so `tag` correctly tagged nothing — but the work would have landed on `master` still labelled unreleased. The remedy the failure names is the missing step: run `node Tools/upm-release.mjs prepare` on `dev`, commit, push.
-* It needs the base **branch name**, which `--base` (a SHA in CI) cannot supply, so `changelog.yml` passes `--base-branch "$BASE_REF"` from `github.event.pull_request.base.ref`. Omit the flag and the rule is inert — a local `node Tools/changelog-check.mjs --base dev --head HEAD` never fires it. To rehearse a release PR locally, add `--base-branch master`.
-* It supersedes `empty-unreleased` rather than compounding with it: an empty heading is unpromoted too, and one remedy deserves one diagnostic.
-* Unlike every other rule, a package **new in the PR is not exempt** from it. A new package legitimately carries an empty scaffold heading while it is being written, but one crossing into `master` for the first time still has to name the version it publishes as.
+- The diff is taken against the **merge base**, so commits landing on `dev` after you branched are never blamed on your PR.
+- A bare `### Added` with no bullet under it does not count as an entry.
+- Trailing whitespace inside a frozen section is ignored — no reader can see it.
+- **The release PR is not a false positive.** Renaming `## [Unreleased]` to `## [0.2.0]` satisfies `missing-entry` on its own, because opening a version section that did not exist at the base is exactly what a release does. That version has no tag yet, so `frozen-section` does not fire on it either; the tag comes after the merge.
+- `frozen-section` reads `git tag`, so CI checks out with `fetch-depth: 0`. A shallow fetch would leave the tag list empty and silently disable the rule.
+- `empty-unreleased` has **no waiver label**, deliberately: "I need an empty heading" is not a claim worth being able to make. Delete the heading or fill it in.
+- It and `unpromoted-unreleased` are the two rules that are not diff-scoped. Every publishable package's CHANGELOG is read at the head commit, which is only fair because all 18 were cleaned before the rules landed (2026-09-02).
+- `unpromoted-unreleased` is **the release gate**, and the reason it exists: on 2026-09-02 a release PR (dev → master) passed every check with all 17 packages still carrying populated `## [Unreleased]` sections. Nothing was published — no `package.json` version had moved, so `tag` correctly tagged nothing — but the work would have landed on `master` still labelled unreleased. The remedy the failure names is the missing step: run `node Tools/upm-release.mjs prepare` on `dev`, commit, push.
+- It needs the base **branch name**, which `--base` (a SHA in CI) cannot supply, so `changelog.yml` passes `--base-branch "$BASE_REF"` from `github.event.pull_request.base.ref`. Omit the flag and the rule is inert — a local `node Tools/changelog-check.mjs --base dev --head HEAD` never fires it. To rehearse a release PR locally, add `--base-branch master`.
+- It supersedes `empty-unreleased` rather than compounding with it: an empty heading is unpromoted too, and one remedy deserves one diagnostic.
+- Unlike every other rule, a package **new in the PR is not exempt** from it. A new package legitimately carries an empty scaffold heading while it is being written, but one crossing into `master` for the first time still has to name the version it publishes as.
 
 ## Git and hosting
 
@@ -400,10 +408,10 @@ Never prefix a git command with `cd` (e.g. `cd <dir> && git ...`); use `git -C <
 
 Two long-lived branches, split by purpose:
 
-| Branch | Role |
-|--|--|
-| `dev` | **Development.** The repo default on GitHub. Every feature, fix, and docs branch cuts from here and PRs back into here. |
-| `master` | **Release only.** Moves solely via a release PR from `dev`. Every release tag is cut from this branch. |
+| Branch   | Role                                                                                                                    |
+| -------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `dev`    | **Development.** The repo default on GitHub. Every feature, fix, and docs branch cuts from here and PRs back into here. |
+| `master` | **Release only.** Moves solely via a release PR from `dev`. Every release tag is cut from this branch.                  |
 
 So the day-to-day loop is: branch from `dev` → PR into `dev` → merge. `gh pr create` targets `dev` by default; you only pass `--base master` for a release PR.
 
@@ -411,18 +419,19 @@ Releasing is a promotion, not a separate build. Bump the `version` fields on `de
 
 This split is enforced in two places, and both are deliberate belt-and-braces: `Tools/upm-release.mjs` refuses to tag off `master` (`RELEASE_BRANCH`, overridable with `--allow-branch`), and the `tag` job in `release.yml` is conditioned on `github.ref == 'refs/heads/master'`. The workflow condition is the one that matters, now that the job runs on `push`: it is the only thing stopping a routine push to `dev` from publishing every package. Keep it.
 
-The *source* of a release PR is enforced separately, by `promotion-guard` in `release.yml` (`Tools/promotion-check.mjs`): a pull request into `master` from anything other than `dev` fails. A GitHub ruleset cannot express this — rulesets target a destination ref and say nothing about a pull request's source — so the ruleset's job is to make `promotion-guard` a **required** check. Run it by hand with `node Tools/promotion-check.mjs --event pull_request --base master --head my-branch`.
+The _source_ of a release PR is enforced separately, by `promotion-guard` in `release.yml` (`Tools/promotion-check.mjs`): a pull request into `master` from anything other than `dev` fails. A GitHub ruleset cannot express this — rulesets target a destination ref and say nothing about a pull request's source — so the ruleset's job is to make `promotion-guard` a **required** check. Run it by hand with `node Tools/promotion-check.mjs --event pull_request --base master --head my-branch`.
 
 Both branches carry a ruleset, checked in under [`.github/rulesets/`](../.github/rulesets/): `master.json` and `dev.json`. Each requires a pull request and blocks force pushes and branch deletion. **Neither has bypass actors, repository owner included.** Merging into `master` publishes permanently; a bypass is the door this flow exists to close.
 
-| Required check | `dev` | `master` |
-|--|:--:|:--:|
-| `check` (changelog) | yes | yes |
-| `promotion-guard` | yes | yes |
-| `validate` | yes | yes |
-| `pack` | yes | yes |
-| `tooling-tests` | yes | yes |
-| `unity-tests` | **no** | yes |
+| Required check      | `dev`  | `master` |
+| ------------------- | :----: | :------: |
+| `check` (changelog) |  yes   |   yes    |
+| `promotion-guard`   |  yes   |   yes    |
+| `validate`          |  yes   |   yes    |
+| `pack`              |  yes   |   yes    |
+| `tooling-tests`     |  yes   |   yes    |
+| `format`            |  yes   |   yes    |
+| `unity-tests`       | **no** |   yes    |
 
 `unity-tests` is required on `master` but not on `dev`, and that asymmetry is load-bearing. A skipped required check blocks the merge, and `unity-tests` is deliberately skipped on fork pull requests — requiring it on `dev`, which is where fork pull requests land, would block every outside contributor permanently. A release pull request comes from this repo's `dev`, where the job always runs, so requiring it on `master` costs nothing. Net effect: a red Unity suite can reach `dev`, but can never publish. `report` and `tag` are required on neither, for the same skip reason.
 
@@ -436,22 +445,63 @@ The GitHub web UI is not the source of truth here, and is a poor way to edit the
 
 ⚠️ **Never delete, ignore, or hand-create a `.meta` file carelessly.** In this repo the rule is stricter than in a game project, because these files ship to consumers:
 
-* Every file *and folder* in a package has a `.meta` carrying a GUID.
-* Asmdef GUIDs are referenced by other asmdefs (`"references": ["GUID:..."]`). Losing one silently breaks compilation in dependent packages.
-* Always commit an asset and its `.meta` together.
-* `npm pack` includes `.meta` files automatically — verify with `npm pack --dry-run` when adding root-level files.
+- Every file _and folder_ in a package has a `.meta` carrying a GUID.
+- Asmdef GUIDs are referenced by other asmdefs (`"references": ["GUID:..."]`). Losing one silently breaks compilation in dependent packages.
+- Always commit an asset and its `.meta` together.
+- `npm pack` includes `.meta` files automatically — verify with `npm pack --dry-run` when adding root-level files.
+
+## Formatting
+
+Layout is owned by two formatters, run through one pair of npm scripts from the repo root:
+
+```powershell
+dotnet tool restore     # once: installs the pinned CSharpier from .config/dotnet-tools.json
+npm ci                  # once: installs the pinned Prettier from package-lock.json
+npm run format          # rewrite every in-scope file
+npm run format:check    # what the required `format` check runs
+```
+
+| Tool            | Formats                                        | Config                                  |
+| --------------- | ---------------------------------------------- | --------------------------------------- |
+| CSharpier 1.3.0 | `*.cs`                                         | `.csharpierrc.json`, `.csharpierignore` |
+| Prettier 3.9.6  | JSON, YAML, JS, Markdown — changelogs included | `.prettierrc.json`, `.prettierignore`   |
+
+`.editorconfig` covers the rest: editor defaults, and the naming rules from [C# coding style](#c-coding-style) as IDE1006 warnings. Those show in Rider, Visual Studio and VS Code only; neither Unity nor CI reports them. Code blocks inside Markdown are left as written (`embeddedLanguageFormatting: "off"`): docs quote exact file contents and fragments, and reformatting them would change what they show.
+
+The root `package.json` exists only to pin Prettier. It is `private`, Unity ignores it (Unity reads `Packages/manifest.json`), and the release tooling globs `Packages/*/package.json`, which does not match it. The `Tools/` scripts stay dependency-free.
+
+**Excluded, and why.** Each exclusion has a reason; don't remove one without replacing the reason:
+
+- **Unity-written files** — `.meta`, `.asset`, `.prefab`, `.unity`, `.anim`, `.asmdef`, `ProjectSettings/`, `Packages/manifest.json`, `Packages/packages-lock.json`. Unity's next save would undo the formatting. `.asmdef` in particular is written with no final newline, and Prettier always adds one.
+- **Vendored code** — `.agents/Skills/`, `.claude/`, `.qwen/`, `Packages/PackageBasics/Runtime/ThirdParties/`. Reformatting makes it harder to compare with upstream.
+- **`Tools/ci/Tests/fixtures/`** — read byte for byte by the tests.
+- **Line endings and BOMs are left alone.** Both formatters use `endOfLine: auto`, and `.editorconfig` sets neither `end_of_line` nor `charset`. Git stores LF, and most C# files carry a BOM.
+
+**Release tooling must emit formatted text.** A release PR is the output of `upm-release.mjs prepare`, and it has to pass `format` like any other PR. `Tools/upm-release.prepare.test.mjs` runs `prepare` on formatted input and asserts that `prettier --check` still passes. This is why `tooling-tests` runs `npm ci`. If you change how `prepare` writes a heading or a bullet, that test is the one that tells you.
+
+**`git blame`.** The repo-wide reformat is listed in `.git-blame-ignore-revs`. GitHub honours it automatically; locally, run once:
+
+```powershell
+git config blame.ignoreRevsFile .git-blame-ignore-revs
+```
+
+**The first release PR after the reformat merges** — `dev` → `master`, carrying the reformat commit across — needs both waiver labels, `no-changelog` and `changelog-rewrite`. Prettier turned `*Name*` into `_Name_` inside every tagged section, so `Tools/changelog-check.mjs` reports `frozen-section` for every tagged package; it also reports `missing-section`/`missing-entry` for packages the release doesn't otherwise touch.
+
+**Upgrading a formatter** is its own pull request: bump the pin, run `npm run format`, commit the result, and add that commit to `.git-blame-ignore-revs`. Merge it with a merge commit, not a squash, or the listed SHA will not exist on `dev`. The same reformat problem applies to a formatter upgrade whenever it changes changelog text: that pull request, and the next release PR after it, both need `no-changelog` and `changelog-rewrite`.
 
 ## C# coding style
 
-* **Curly braces:** Allman (brace on its own line).
-* **PascalCase:** classes, interfaces, methods, properties, public/internal fields.
-* **Interfaces are `I`-prefixed.** All 35 were renamed on 2026-08-23 (`Service` → `IService`, `PersistentDataWrapper` → `IPersistentDataWrapper`, …), file names included, via `git mv` so the `.meta` GUIDs survived. Anything without the prefix is a class or struct — don't add an interface that breaks this.
-* **The sole implementation of an interface takes the interface's name without the `I`.** `IUpdateManager` is implemented by `UpdateManager`, `IShopCenter` by `ShopCenter`. Do **not** reach for a `Basic` prefix: the twelve types that carried one were renamed on 2026-09-05 (`BasicEntity` → `Entity`, `BasicObjectPool<T>` → `ObjectPool<T>`, …) because the prefix distinguished them from nothing. Introduce a qualifier only when a second implementation actually exists and the name has to say which one it is — the way `UnityUpdateManager` and `UnityConfigurationManager` (MonoBehaviour adapters over the plain types) already do.
-* **camelCase:** locals and parameters.
-* **`_camelCase`:** private/protected fields, including `[SerializeField]` ones.
-* **`[SerializeField]` on private fields** rather than making them public.
-* **Keep `UnityEngine` out of foundation packages** where it isn't needed. `PackageBasics` and `ServiceLocating` are pure C# and testable as plain libraries — preserve that.
-* Avoid per-frame allocations; prefer event-driven designs over `Update()` polling.
+Layout — indentation, wrapping, brace placement — is CSharpier's; see [Formatting](#formatting). The rules below are the ones a formatter cannot apply.
+
+- **Curly braces:** Allman (brace on its own line).
+- **PascalCase:** classes, interfaces, methods, properties, public/internal fields.
+- **Interfaces are `I`-prefixed.** All 35 were renamed on 2026-08-23 (`Service` → `IService`, `PersistentDataWrapper` → `IPersistentDataWrapper`, …), file names included, via `git mv` so the `.meta` GUIDs survived. Anything without the prefix is a class or struct — don't add an interface that breaks this.
+- **The sole implementation of an interface takes the interface's name without the `I`.** `IUpdateManager` is implemented by `UpdateManager`, `IShopCenter` by `ShopCenter`. Do **not** reach for a `Basic` prefix: the twelve types that carried one were renamed on 2026-09-05 (`BasicEntity` → `Entity`, `BasicObjectPool<T>` → `ObjectPool<T>`, …) because the prefix distinguished them from nothing. Introduce a qualifier only when a second implementation actually exists and the name has to say which one it is — the way `UnityUpdateManager` and `UnityConfigurationManager` (MonoBehaviour adapters over the plain types) already do.
+- **camelCase:** locals and parameters.
+- **`_camelCase`:** private/protected fields, including `[SerializeField]` ones.
+- **`[SerializeField]` on private fields** rather than making them public.
+- **Keep `UnityEngine` out of foundation packages** where it isn't needed. `PackageBasics` and `ServiceLocating` are pure C# and testable as plain libraries — preserve that.
+- Avoid per-frame allocations; prefer event-driven designs over `Update()` polling.
 
 ## Adding a new package
 
@@ -467,7 +517,7 @@ The GitHub web UI is not the source of truth here, and is a poor way to edit the
 
 Real, deliberately unfixed. Don't "clean these up" as a side quest — each has a cost, and the asmdef ones break consumer references:
 
-* **All packages now have real descriptions.** Ten previously carried `"description": "Description"` placeholders; their functional summaries were authored 2026-08-29: Asset Providing (async/sync provider service), Event Management (pub-sub with copy-on-write propagation), HttpConnection (UnityWebRequest wrapper), InventorySystem (generic quantity tracking), ObjectPooling (reuse pattern abstractions), PackageBasics (C# utility container types), PersistentDataManagement (serialization layer), Scene Management (DeferredProcedureExecutor wrapper), UI Management (Canvas stack framework), UpdateManagement (async app updates).
-* **Every package now has a README and a CHANGELOG.** The 13 that were missing them (i.e. every package other than the five documented ones plus `PackageTemplate`) were authored on 2026-08-29 from each package's runtime source.
-* `PackageTemplate` mixes `Arman.PackageTemplate` and `Arman.TemplatePackage` in its own asmdef names.
-* **`DevelopmentConsole`'s vendored log viewer was deleted, not relicensed.** It used to bundle the "Unity Logs Viewer" (`Reporter`) under `Runtime/ThirdParties/` and `Editor/Scripts/ThirdParties/` with no copyright header, no license file and no attribution, while `Reporter.cs.meta` recorded `licenseType: Store` — i.e. the files came from the Unity Asset Store, which cannot be redistributed inside an MIT package. On 2026-08-30 both `ThirdParties` trees were removed, along with the `Reporter` and `ToggleLogButton` objects in `Runtime/Prefabs/DevelopmentConsole.prefab` and the package's now-empty `Editor/` assembly. Do not restore it. The panel's `onErrorDetected` `UnityEvent` survives but now ships with no listener attached.
+- **All packages now have real descriptions.** Ten previously carried `"description": "Description"` placeholders; their functional summaries were authored 2026-08-29: Asset Providing (async/sync provider service), Event Management (pub-sub with copy-on-write propagation), HttpConnection (UnityWebRequest wrapper), InventorySystem (generic quantity tracking), ObjectPooling (reuse pattern abstractions), PackageBasics (C# utility container types), PersistentDataManagement (serialization layer), Scene Management (DeferredProcedureExecutor wrapper), UI Management (Canvas stack framework), UpdateManagement (async app updates).
+- **Every package now has a README and a CHANGELOG.** The 13 that were missing them (i.e. every package other than the five documented ones plus `PackageTemplate`) were authored on 2026-08-29 from each package's runtime source.
+- `PackageTemplate` mixes `Arman.PackageTemplate` and `Arman.TemplatePackage` in its own asmdef names.
+- **`DevelopmentConsole`'s vendored log viewer was deleted, not relicensed.** It used to bundle the "Unity Logs Viewer" (`Reporter`) under `Runtime/ThirdParties/` and `Editor/Scripts/ThirdParties/` with no copyright header, no license file and no attribution, while `Reporter.cs.meta` recorded `licenseType: Store` — i.e. the files came from the Unity Asset Store, which cannot be redistributed inside an MIT package. On 2026-08-30 both `ThirdParties` trees were removed, along with the `Reporter` and `ToggleLogButton` objects in `Runtime/Prefabs/DevelopmentConsole.prefab` and the package's now-empty `Editor/` assembly. Do not restore it. The panel's `onErrorDetected` `UnityEvent` survives but now ships with no listener attached.

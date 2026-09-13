@@ -1,13 +1,16 @@
-﻿using UnityEngine;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace Arman.UIManagement
 {
     [RequireComponent(typeof(Canvas))]
     public class UIManager : MonoBehaviour
     {
-        [SerializeField] private Panel popupBackgroundPanel = default;
-        [SerializeField] private int sortingOffsetBetweenPopups = default;
+        [SerializeField]
+        private Panel popupBackgroundPanel = default;
+
+        [SerializeField]
+        private int sortingOffsetBetweenPopups = default;
 
         private Canvas canvas;
         private Window mainWindow;
@@ -47,7 +50,8 @@ namespace Arman.UIManagement
                 CurrentFocusedWindow().OnBackButtonPressed();
         }
 
-        public T OpenPopUp<T>(T popup) where T : Window
+        public T OpenPopUp<T>(T popup)
+            where T : Window
         {
             AttachToSelf(popup);
             popup.Init(this);
@@ -66,7 +70,8 @@ namespace Arman.UIManagement
         {
             popup.SetSorting(
                 CurrentFocusedWindow().SortingOrder() + sortingOffsetBetweenPopups,
-                canvas.sortingLayerID);
+                canvas.sortingLayerID
+            );
         }
 
         private void FocusPopupPanelOn(Window window)
@@ -90,7 +95,6 @@ namespace Arman.UIManagement
                 HidePopupPanel();
             else
                 FocusPopupPanelOn(CurrentFocusedWindow());
-            
         }
 
         public void SetMainCamera(Camera camera)

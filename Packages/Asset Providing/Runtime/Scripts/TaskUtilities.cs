@@ -5,17 +5,15 @@ namespace Arman.AssetProviding
 {
     public static class TaskUtilities
     {
-
         public static Task WaitUntil(Func<bool> condition)
         {
-            return Task.Run(
-                async () =>
+            return Task.Run(async () =>
+            {
+                while (!condition())
                 {
-                    while (!condition())
-                    {
-                        await Task.Delay(100);
-                    }
-                });
+                    await Task.Delay(100);
+                }
+            });
         }
     }
 }

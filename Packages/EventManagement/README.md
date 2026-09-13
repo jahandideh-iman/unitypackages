@@ -10,12 +10,12 @@ library.
 
 Everything lives in the `Arman.EventManagement` namespace.
 
-| Type | Purpose |
-|---|---|
-| `IGameEvent` | Marker interface for an event. Carry whatever payload you like. |
-| `IEventListener` | `OnEvent(IGameEvent evt, object sender)`. |
-| `IEventManager` | `Propagate`, `Register`, `UnRegister`, `Has`, `Clear`. |
-| `EventManager` | The implementation. |
+| Type             | Purpose                                                         |
+| ---------------- | --------------------------------------------------------------- |
+| `IGameEvent`     | Marker interface for an event. Carry whatever payload you like. |
+| `IEventListener` | `OnEvent(IGameEvent evt, object sender)`.                       |
+| `IEventManager`  | `Propagate`, `Register`, `UnRegister`, `Has`, `Clear`.          |
+| `EventManager`   | The implementation.                                             |
 
 ## Usage
 

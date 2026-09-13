@@ -1,0 +1,17 @@
+# Vendored.
+.agents/Skills/
+.claude/
+.qwen/
+
+# Written by Unity. Its next save would undo any formatting; .asmdef files in
+# particular are written with no final newline, which Prettier always adds.
+ProjectSettings/
+Packages/manifest.json
+Packages/packages-lock.json
+*.asmdef
+
+# Written by npm.
+package-lock.json
+
+# Read byte for byte by the CI-script tests.
+Tools/ci/Tests/fixtures/

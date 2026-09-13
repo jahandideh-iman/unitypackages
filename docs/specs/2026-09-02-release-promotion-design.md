@@ -12,7 +12,7 @@ Two parts of the release flow described in
 are written down but not enforced.
 
 **The source branch is a convention.** `.agents/AGENTS.md` says `master` "moves solely via a release
-PR from `dev`", and two guards protect the *tagging* step — `Tools/upm-release.mjs` refuses to tag
+PR from `dev`", and two guards protect the _tagging_ step — `Tools/upm-release.mjs` refuses to tag
 off `master`, and the `tag` job is conditioned on `github.ref == 'refs/heads/master'`. Neither one
 stops the thing that causes the damage. Any feature branch can open a pull request into `master`
 today, and merging it would publish whatever versions that branch happens to carry, from a base that
@@ -22,7 +22,7 @@ commit on `master` also exists on `dev`.
 **The version bump is manual and error-prone.** Releasing means, for every package with accumulated
 `## [Unreleased]` entries: decide a semver bump by reading the entries, edit `version` in
 `package.json`, and rename the `## [Unreleased]` heading to `## [x.y.z] - <date>`. Seventeen
-publishable packages, done by hand, where a wrong version is *permanent* the moment the release PR
+publishable packages, done by hand, where a wrong version is _permanent_ the moment the release PR
 merges — OpenUPM picks the tag up and `<name>/<version>` can never be reissued.
 
 A third, smaller problem sits alongside the second. Every CHANGELOG was seeded with an empty
@@ -32,14 +32,14 @@ a question you answer by reading rather than by looking.
 
 ## 2. What changes
 
-| Change | Where | New? |
-|---|---|---|
-| `promotion-guard` job — a PR into `master` must come from `dev` | `Tools/promotion-check.mjs`, `release.yml` | new |
-| `master` ruleset — require a PR, require the checks, no bypass | `.github/rulesets/master.json` | new |
-| `prepare` subcommand — derive bumps, rewrite versions and changelogs | `Tools/upm-release.mjs` | new |
-| `empty-unreleased` rule — an empty `## [Unreleased]` heading fails CI | `Tools/changelog-check.mjs` | new |
-| `release-script-tests` job — `node --test` for the release tooling | `Tools/upm-release.test.mjs`, `release.yml` | new |
-| Empty `## [Unreleased]` headings deleted from 13 packages | `Packages/*/CHANGELOG.md` | cleanup |
+| Change                                                                | Where                                       | New?    |
+| --------------------------------------------------------------------- | ------------------------------------------- | ------- |
+| `promotion-guard` job — a PR into `master` must come from `dev`       | `Tools/promotion-check.mjs`, `release.yml`  | new     |
+| `master` ruleset — require a PR, require the checks, no bypass        | `.github/rulesets/master.json`              | new     |
+| `prepare` subcommand — derive bumps, rewrite versions and changelogs  | `Tools/upm-release.mjs`                     | new     |
+| `empty-unreleased` rule — an empty `## [Unreleased]` heading fails CI | `Tools/changelog-check.mjs`                 | new     |
+| `release-script-tests` job — `node --test` for the release tooling    | `Tools/upm-release.test.mjs`, `release.yml` | new     |
+| Empty `## [Unreleased]` headings deleted from 13 packages             | `Packages/*/CHANGELOG.md`                   | cleanup |
 
 Untouched: the `tag` job and its `github.ref` condition, `validate`, `pack`, the `missing-entry` and
 `frozen-section` rules, and everything in `tests.yml`.
@@ -70,12 +70,12 @@ deliberate human act.
 `Tools/promotion-check.mjs`, dependency-free Node, tests in `Tools/promotion-check.test.mjs`. It
 reads the event name, base ref and head ref from the environment and decides:
 
-| Event | Base | Head | Result |
-|---|---|---|---|
-| not `pull_request` | — | — | pass — "not a release PR" |
-| `pull_request` | not `master` | — | pass — "not a release PR" |
-| `pull_request` | `master` | `dev` | pass |
-| `pull_request` | `master` | anything else | **fail**, naming the branch |
+| Event              | Base         | Head          | Result                      |
+| ------------------ | ------------ | ------------- | --------------------------- |
+| not `pull_request` | —            | —             | pass — "not a release PR"   |
+| `pull_request`     | not `master` | —             | pass — "not a release PR"   |
+| `pull_request`     | `master`     | `dev`         | pass                        |
+| `pull_request`     | `master`     | anything else | **fail**, naming the branch |
 
 Exit codes match the repo's other tooling: `0` pass, `1` fail, `2` bad usage. `--json` for
 machine-readable output, as `upm-release.mjs` and `changelog-check.mjs` both have.
@@ -91,7 +91,7 @@ prints "not a release PR" and exits 0 on the overwhelming majority of runs.
 
 ### Where the job lives
 
-In `release.yml`, not a new workflow. A pull request into `master` *is* a release, and `release.yml`
+In `release.yml`, not a new workflow. A pull request into `master` _is_ a release, and `release.yml`
 already carries the branch-role commentary this rule belongs with. It runs on `ubuntu-latest` with
 Node 22, alongside `validate` — no `needs:`, since it is independent of both.
 
@@ -103,18 +103,18 @@ moment either becomes required. `changelog.yml` already owns `check` and `test`.
 
 A GitHub ruleset targeting `master`:
 
-* require a pull request before merging
-* require status checks: `promotion-guard`, `validate`, `pack`
-* block force pushes
-* block branch deletion
-* **no bypass actors** — the repo owner included
+- require a pull request before merging
+- require status checks: `promotion-guard`, `validate`, `pack`
+- block force pushes
+- block branch deletion
+- **no bypass actors** — the repo owner included
 
 The ruleset JSON is checked in at `.github/rulesets/master.json` and applied with `gh api`, so the
 configuration is reviewable in the repo and reproducible after an accident, rather than existing
 only as clicks in GitHub's settings UI. GitHub's rulesets API accepts this file directly.
 
 **A ruleset cannot express the rule in §4.** There is no "restrict the source branch of a pull
-request" primitive; rulesets target the *destination* ref only. That is precisely the division of
+request" primitive; rulesets target the _destination_ ref only. That is precisely the division of
 labour here: the script carries the rule, the ruleset makes the script unskippable.
 
 ## 5. `prepare`: derive the bump, rewrite the files
@@ -141,22 +141,22 @@ Packages are discovered the same way every other subcommand discovers them — g
    nothing on the next release.
 4. Derive a bump level from the headings, highest wins:
 
-   | Heading | Level |
-   |---|---|
-   | `Removed` | breaking |
-   | `Added`, `Changed`, `Deprecated` | feature |
-   | `Fixed`, `Security` | fix |
+   | Heading                          | Level    |
+   | -------------------------------- | -------- |
+   | `Removed`                        | breaking |
+   | `Added`, `Changed`, `Deprecated` | feature  |
+   | `Fixed`, `Security`              | fix      |
 
 5. Map the level onto the current version. **While the major version is `0`, a breaking change bumps
    the minor**, not the major — sixteen of the seventeen publishable packages are `0.x`, and that is
    a deliberate open question per §5 of the GitHub spec, not an accident to be resolved by tooling.
    Once a package is `1.x` or beyond, breaking bumps the major.
 
-   | Level | at `0.x` | at `>= 1.0` |
-   |---|---|---|
-   | breaking | minor | major |
-   | feature | minor | minor |
-   | fix | patch | patch |
+   | Level    | at `0.x` | at `>= 1.0` |
+   | -------- | -------- | ----------- |
+   | breaking | minor    | major       |
+   | feature  | minor    | minor       |
+   | fix      | patch    | patch       |
 
 6. Rewrite `CHANGELOG.md`: rename `## [Unreleased]` to `## [X.Y.Z] - YYYY-MM-DD`, leaving the
    entries beneath it exactly as they are. **Nothing is left in its place** — see §6.
@@ -187,7 +187,7 @@ mixed with unrelated edits is one you skim instead.
 
 `prepare` does not touch `com.arman.*` entries in any package's `dependencies`. A dependent pinning
 `com.arman.package-basics: "0.1.0"` stays valid after PackageBasics moves to `0.2.0`, because
-`validate` accepts a dependency at a version that is *either current or already tagged*, and `0.1.0`
+`validate` accepts a dependency at a version that is _either current or already tagged_, and `0.1.0`
 is tagged. Auto-bumping dependents would churn every package on every release and turn one package's
 patch into a repo-wide version wave, for no gain a consumer can observe.
 
@@ -216,7 +216,7 @@ A third rule in `Tools/changelog-check.mjs`, reported by the existing `check` jo
 already implemented.
 
 **Scope: repo-wide, not diff-scoped.** The two existing rules examine only the packages a pull
-request touched, because both are claims *about the change*. This one is a claim about the state of
+request touched, because both are claims _about the change_. This one is a claim about the state of
 the repository, so it walks every publishable package's CHANGELOG at the head commit. Diff-scoping
 it would let an empty heading sit forever in a package nobody edits. Repo-wide cannot produce false
 blame here because §7 cleans all thirteen before the rule ships — after that, an empty heading can
@@ -234,7 +234,7 @@ Private packages are skipped, consistent with the other two rules.
 ### Knock-on: the `missing-section` message
 
 `changelog-check.mjs` already reports `missing-section` when a package's shipped code changed and
-its CHANGELOG has no `## [Unreleased]` heading at all. That stays — it is now the *common* path
+its CHANGELOG has no `## [Unreleased]` heading at all. That stays — it is now the _common_ path
 rather than an oddity, since the heading no longer pre-exists. Its message needs rewording: today it
 reads "Add one above the newest version and record the change under it", which is phrased for a
 world where the heading was seeded and you forgot to fill it in.
@@ -259,7 +259,7 @@ Removing it from the template is not incidental. A newly scaffolded package's CH
 initial release; shipping it a placeholder section guarantees every new package starts by violating
 §6.
 
-The five packages that *do* have entries — InGameMessageLogging, PackageBasics,
+The five packages that _do_ have entries — InGameMessageLogging, PackageBasics,
 PersistentDataManagement, UnityUtilities, UpdateManagement — keep their headings, which §8 then
 renames.
 
@@ -270,13 +270,13 @@ rule) and touches no tagged version section, so `frozen-section` stays quiet.
 
 Once §4–§7 have landed on `dev`, `prepare` bumps five packages from `0.1.0` to `0.2.0`:
 
-| Package | Bump | From the headings |
-|---|---|---|
-| `com.arman.in-game-message-logging` | minor | Changed |
-| `com.arman.package-basics` | minor | Changed |
-| `com.arman.persistent-data-management` | minor | Added, Changed |
-| `com.arman.unity-utilities` | minor | Changed |
-| `com.arman.update-management` | minor | Changed |
+| Package                                | Bump  | From the headings |
+| -------------------------------------- | ----- | ----------------- |
+| `com.arman.in-game-message-logging`    | minor | Changed           |
+| `com.arman.package-basics`             | minor | Changed           |
+| `com.arman.persistent-data-management` | minor | Added, Changed    |
+| `com.arman.unity-utilities`            | minor | Changed           |
+| `com.arman.update-management`          | minor | Changed           |
 
 The other twelve stay at `0.1.0` and tag nothing — `tag` is idempotent, so a push to `master` that
 changes no version tags nothing.
@@ -295,12 +295,12 @@ permanent. There is no dry run in front of that step and no undo behind it.
 
 ## 9. What this does not do
 
-* **Does not auto-merge or auto-release.** No schedule, no `workflow_dispatch` that publishes. The
+- **Does not auto-merge or auto-release.** No schedule, no `workflow_dispatch` that publishes. The
   human act stays the release PR merge, exactly as today.
-* **Does not bump dependency ranges** (§5).
-* **Does not resolve the `0.x` question.** Whether these packages should be `1.0` is §5 of the
+- **Does not bump dependency ranges** (§5).
+- **Does not resolve the `0.x` question.** Whether these packages should be `1.0` is §5 of the
   GitHub spec and stays open; this spec only makes sure the tooling does not answer it accidentally.
-* **Does not restrict who may push to `dev`.** `dev` is the development branch; it is protected by
+- **Does not restrict who may push to `dev`.** `dev` is the development branch; it is protected by
   the existing PR checks and nothing more.
-* **Does not add a pre-release channel.** No package carries a pre-release suffix and none gains
+- **Does not add a pre-release channel.** No package carries a pre-release suffix and none gains
   one here.

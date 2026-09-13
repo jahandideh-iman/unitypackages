@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 
-
 namespace Arman.DependencyResolution
 {
     public partial class ReflectionBasedDependencyResolver
@@ -17,6 +16,7 @@ namespace Arman.DependencyResolution
 
             HashSet<Type> Targets();
         }
+
         private class Entry<T> : IResolutionEntry<T>, IInternalEntry
         {
             private static readonly HashSet<Type> _emptyHashset = new();
@@ -25,14 +25,15 @@ namespace Arman.DependencyResolution
             private HashSet<Type> _dependencies;
             private HashSet<Type> _targets = new();
 
-            private Entry(Func<IReadOnlyDictionary<Type, object>, T> factory, HashSet<Type> dependencies)
+            private Entry(
+                Func<IReadOnlyDictionary<Type, object>, T> factory,
+                HashSet<Type> dependencies
+            )
             {
-
                 _factory = factory;
                 _dependencies = dependencies;
                 _targets.Add(typeof(T));
             }
-
 
             public object Build(IReadOnlyDictionary<Type, object> resolved)
             {
@@ -49,12 +50,13 @@ namespace Arman.DependencyResolution
                 return _targets;
             }
 
-
             public IResolutionEntry<T> As<U>()
             {
                 if (!typeof(U).IsAssignableFrom(typeof(T)))
                 {
-                    throw new ArgumentException($"Can not register type {typeof(T)} to {typeof(U)}");
+                    throw new ArgumentException(
+                        $"Can not register type {typeof(T)} to {typeof(U)}"
+                    );
                 }
                 _targets.Add(typeof(U));
                 return this;
@@ -75,10 +77,16 @@ namespace Arman.DependencyResolution
                 var method = factory.Method;
                 if (!typeof(T).IsAssignableFrom(method.ReturnType))
                 {
-                    throw new ArgumentException($"Factory {method.Name} returns {method.ReturnType}, which is not assignable to {typeof(T)}", nameof(factory));
+                    throw new ArgumentException(
+                        $"Factory {method.Name} returns {method.ReturnType}, which is not assignable to {typeof(T)}",
+                        nameof(factory)
+                    );
                 }
 
-                var parameterTypes = method.GetParameters().Select(parameterInfo => parameterInfo.ParameterType).ToArray();
+                var parameterTypes = method
+                    .GetParameters()
+                    .Select(parameterInfo => parameterInfo.ParameterType)
+                    .ToArray();
 
                 return new Entry<T>(Factory, dependencies: new HashSet<Type>(parameterTypes));
 
@@ -90,7 +98,8 @@ namespace Arman.DependencyResolution
                     {
                         return (T)factory.DynamicInvoke(arguments)!;
                     }
-                    catch (TargetInvocationException exception) when (exception.InnerException != null)
+                    catch (TargetInvocationException exception)
+                        when (exception.InnerException != null)
                     {
                         // Surface the factory's own exception instead of the reflection wrapper
                         ExceptionDispatchInfo.Capture(exception.InnerException).Throw();
@@ -103,7 +112,10 @@ namespace Arman.DependencyResolution
             {
                 var constructor = typeof(T).GetConstructors().First();
 
-                var parameterTypes = constructor.GetParameters().Select(parameterInfo => parameterInfo.ParameterType).ToArray();
+                var parameterTypes = constructor
+                    .GetParameters()
+                    .Select(parameterInfo => parameterInfo.ParameterType)
+                    .ToArray();
 
                 return new Entry<T>(Factory, dependencies: new HashSet<Type>(parameterTypes));
 
@@ -115,7 +127,8 @@ namespace Arman.DependencyResolution
                     {
                         return (T)constructor.Invoke(arguments)!;
                     }
-                    catch (TargetInvocationException exception) when (exception.InnerException != null)
+                    catch (TargetInvocationException exception)
+                        when (exception.InnerException != null)
                     {
                         // Surface the factory's own exception instead of the reflection wrapper
                         ExceptionDispatchInfo.Capture(exception.InnerException).Throw();
@@ -123,8 +136,6 @@ namespace Arman.DependencyResolution
                     }
                 }
             }
-
         }
-
     }
 }

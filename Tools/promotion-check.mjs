@@ -33,10 +33,16 @@ function shortRef(ref) {
 
 export function decide(event, base, head, headRepo, repo) {
     if (event !== "pull_request") {
-        return { ok: true, reason: `event is \`${event || "none"}\`, not a pull request — nothing to guard.` };
+        return {
+            ok: true,
+            reason: `event is \`${event || "none"}\`, not a pull request — nothing to guard.`,
+        };
     }
     if (base !== RELEASE_BRANCH) {
-        return { ok: true, reason: `pull request targets \`${base || "?"}\`, not \`${RELEASE_BRANCH}\`.` };
+        return {
+            ok: true,
+            reason: `pull request targets \`${base || "?"}\`, not \`${RELEASE_BRANCH}\`.`,
+        };
     }
     if (head === SOURCE_BRANCH) {
         // A fork can name its branch `dev` too. `head` alone cannot tell a
@@ -48,7 +54,10 @@ export function decide(event, base, head, headRepo, repo) {
                 reason: `pull request into \`${RELEASE_BRANCH}\` claims to come from \`${SOURCE_BRANCH}\`, but its head repository (\`${headRepo || "?"}\`) is not this repository (\`${repo || "?"}\`). A release pull request must come from this repository's \`${SOURCE_BRANCH}\` branch, not a fork.`,
             };
         }
-        return { ok: true, reason: `release pull request \`${SOURCE_BRANCH}\` → \`${RELEASE_BRANCH}\`.` };
+        return {
+            ok: true,
+            reason: `release pull request \`${SOURCE_BRANCH}\` → \`${RELEASE_BRANCH}\`.`,
+        };
     }
     return {
         ok: false,
@@ -75,7 +84,13 @@ function parseArgs(argv) {
         const arg = argv[i];
         if (arg === "--json") {
             flags.json = true;
-        } else if (arg === "--event" || arg === "--base" || arg === "--head" || arg === "--head-repo" || arg === "--repo") {
+        } else if (
+            arg === "--event" ||
+            arg === "--base" ||
+            arg === "--head" ||
+            arg === "--head-repo" ||
+            arg === "--repo"
+        ) {
             const value = argv[++i];
             if (value === undefined) return null;
             flags[arg.slice(2)] = value;
@@ -96,5 +111,7 @@ const headRepo = (flags["head-repo"] ?? process.env.PR_HEAD_REPO ?? "").trim();
 const repo = (flags.repo ?? process.env.GITHUB_REPOSITORY ?? "").trim();
 
 const result = { ...decide(event, base, head, headRepo, repo), event, base, head };
-console.log(flags.json ? JSON.stringify(result, null, 2) : `${result.ok ? "ok" : "FAIL"}  ${result.reason}`);
+console.log(
+    flags.json ? JSON.stringify(result, null, 2) : `${result.ok ? "ok" : "FAIL"}  ${result.reason}`,
+);
 process.exit(result.ok ? 0 : 1);

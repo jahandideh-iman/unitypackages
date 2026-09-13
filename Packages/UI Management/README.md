@@ -11,14 +11,14 @@ knows what is on top.
 
 Everything lives in the `Arman.UIManagement` namespace.
 
-| Type | Purpose |
-|---|---|
-| `UIManager` | `MonoBehaviour` on a `Canvas`. Owns the stack: `Init`, `SetMainWindow`, `OpenPopUp<T>`, `Close`, `MainWindow`, `SetMainCamera`. |
-| `UIElement` | Base `MonoBehaviour` with an `InternalOnDestroy` hook. |
-| `Window` | `UIElement` on its own `Canvas` + `GraphicRaycaster`; overridable `InternalInit`, `OnBackButtonPressed`, `OnFocused`. |
-| `MainWindow` | The bottom-of-stack window. |
-| `PopupWindow` | A window with `Close()` and a `closeOnBackButtonPressed` toggle. |
-| `Panel` | A `Window` with a `CanvasGroup` and background image — `SetVisible`, `SetAlpha`, `RestoreAlpha`. Used for the popup dimmer. |
+| Type          | Purpose                                                                                                                         |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `UIManager`   | `MonoBehaviour` on a `Canvas`. Owns the stack: `Init`, `SetMainWindow`, `OpenPopUp<T>`, `Close`, `MainWindow`, `SetMainCamera`. |
+| `UIElement`   | Base `MonoBehaviour` with an `InternalOnDestroy` hook.                                                                          |
+| `Window`      | `UIElement` on its own `Canvas` + `GraphicRaycaster`; overridable `InternalInit`, `OnBackButtonPressed`, `OnFocused`.           |
+| `MainWindow`  | The bottom-of-stack window.                                                                                                     |
+| `PopupWindow` | A window with `Close()` and a `closeOnBackButtonPressed` toggle.                                                                |
+| `Panel`       | A `Window` with a `CanvasGroup` and background image — `SetVisible`, `SetAlpha`, `RestoreAlpha`. Used for the popup dimmer.     |
 
 ## Usage
 

@@ -10,13 +10,13 @@ than a framework you buy into.
 
 Everything lives in the `Arman.UnityUtilities` namespace.
 
-| Type | Purpose |
-|---|---|
-| `DelayHandler` | A coroutine timer. Raises `timeoutEvent` after `duration` seconds; `StartTimer()`, `StartTimer(float)`, `StopTimer()`, optional `autoStart`. |
-| `UnityAnimationPlayer` | Wrapper over the legacy `Animation` component — `Play()`, `Play(name)`, `Play(clip)`, `RemoveClip(name)`, `Stop()`. |
-| `UnityAnimatorEventHandler` | Receives `OnAnimationEvent(string)` from an animation clip and invokes the matching named `UnityEvent`. |
-| `UnityEventDelegator` | Holds a list of id/`UnityEvent` pairs; `Delegate(id)` invokes one, `DelegateAll()` invokes all. |
-| `BooleanUnityEvent`, `FloatUnityEvent`, `IntUnityEvent`, `StringUnityEvent` | Serializable `UnityEvent<T>` subclasses. |
+| Type                                                                        | Purpose                                                                                                                                      |
+| --------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DelayHandler`                                                              | A coroutine timer. Raises `timeoutEvent` after `duration` seconds; `StartTimer()`, `StartTimer(float)`, `StopTimer()`, optional `autoStart`. |
+| `UnityAnimationPlayer`                                                      | Wrapper over the legacy `Animation` component — `Play()`, `Play(name)`, `Play(clip)`, `RemoveClip(name)`, `Stop()`.                          |
+| `UnityAnimatorEventHandler`                                                 | Receives `OnAnimationEvent(string)` from an animation clip and invokes the matching named `UnityEvent`.                                      |
+| `UnityEventDelegator`                                                       | Holds a list of id/`UnityEvent` pairs; `Delegate(id)` invokes one, `DelegateAll()` invokes all.                                              |
+| `BooleanUnityEvent`, `FloatUnityEvent`, `IntUnityEvent`, `StringUnityEvent` | Serializable `UnityEvent<T>` subclasses.                                                                                                     |
 
 ## Usage
 

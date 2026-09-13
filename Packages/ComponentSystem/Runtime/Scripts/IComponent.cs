@@ -1,9 +1,4 @@
-﻿
-
-namespace Arman.ComponentSystem
+﻿namespace Arman.ComponentSystem
 {
-    public interface IComponent 
-    {
-
-    }
+    public interface IComponent { }
 }

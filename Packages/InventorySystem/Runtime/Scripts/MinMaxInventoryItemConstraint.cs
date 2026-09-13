@@ -17,9 +17,8 @@
                 return max;
             else if (value < min)
                 return min;
-            else 
+            else
                 return value;
         }
     }
-
 }

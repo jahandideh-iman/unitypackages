@@ -1,9 +1,9 @@
-﻿
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Arman.ObjectPooling
 {
-    public abstract class ObjectPool<T> : IObjectPool<T> where T: IPoolable
+    public abstract class ObjectPool<T> : IObjectPool<T>
+        where T : IPoolable
     {
         Stack<T> pooledObjects = new Stack<T>();
 
@@ -49,6 +49,5 @@ namespace Arman.ObjectPooling
 
         protected abstract void DeactivateObject(T obj);
         protected abstract void ActivateObject(T obj);
-
     }
 }

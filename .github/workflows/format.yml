@@ -1,0 +1,44 @@
+name: format
+
+# CSharpier (C#) and Prettier (JSON, YAML, JS, Markdown) in check mode. See
+# docs/specs/2026-09-13-auto-formatting-design.md and "Formatting" in
+# .agents/AGENTS.md.
+#
+# Its own workflow rather than a job in tests.yml: it has nothing to do with the
+# Unity suites, and tests.yml's concurrency group cancels in-progress runs.
+#
+# Runs on fork pull requests too. It is read-only, uses no secrets and never
+# touches the self-hosted runner, so the fork boundary that protects
+# unity-tests does not apply.
+
+on:
+  pull_request:
+  push:
+    branches: [dev, master]
+
+permissions:
+  contents: read
+
+jobs:
+  # A required check on dev and master. The name is unique across workflows;
+  # see "CI" in .agents/AGENTS.md for why that matters.
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - run: dotnet tool restore
+      - run: npm ci
+
+      - name: Check formatting
+        run: |
+          if ! npm run format:check; then
+            echo '::error::Formatting is out of date. Run `npm run format` locally and commit the result.'
+            exit 1
+          fi

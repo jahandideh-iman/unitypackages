@@ -11,14 +11,14 @@ composition half only, small enough to drop into an existing design.
 
 Everything lives in the `Arman.ComponentSystem` namespace.
 
-| Type | Purpose |
-|---|---|
-| `IComponent` | Marker interface. Any component type implements it. |
-| `IEntity` | `AddComponent`, `GetComponent<T>()`, `AllComponents()`. |
-| `Entity` | The implementation, plus `AddComponents(params)`, `GetComponentFromEnd<T>()` and `GetComponent<T>(int)`. |
-| `ISpecializedEntity<T>` / `SpecializedEntity<T>` | An entity constrained to one component family, with a typed `List<T> AllComponents()`. |
-| `ICache` | `TryCache(IComponent)` — a hook for caching frequently-read components. |
-| `CacheableEntity<T>` | `Entity` that offers every added component to an `ICache`. |
+| Type                                             | Purpose                                                                                                  |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
+| `IComponent`                                     | Marker interface. Any component type implements it.                                                      |
+| `IEntity`                                        | `AddComponent`, `GetComponent<T>()`, `AllComponents()`.                                                  |
+| `Entity`                                         | The implementation, plus `AddComponents(params)`, `GetComponentFromEnd<T>()` and `GetComponent<T>(int)`. |
+| `ISpecializedEntity<T>` / `SpecializedEntity<T>` | An entity constrained to one component family, with a typed `List<T> AllComponents()`.                   |
+| `ICache`                                         | `TryCache(IComponent)` — a hook for caching frequently-read components.                                  |
+| `CacheableEntity<T>`                             | `Entity` that offers every added component to an `ICache`.                                               |
 
 ## Usage
 

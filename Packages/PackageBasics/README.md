@@ -11,13 +11,13 @@ is testable as a plain library.
 
 Namespace `Arman.Utility.Core`:
 
-| Type | Purpose |
-|---|---|
-| `IContainer<T>` | `Add`, `Contains`, `Find<U>`, `FindAll<U>`, `Items` — a heterogeneous bag queried by subtype. |
-| `Container<T>` | The in-memory implementation. |
-| `IChannel` | An identity used to partition work into named groups. Requires value `Equals` / `GetHashCode`. |
-| `NamedChannel` | An `IChannel` identified by a string. |
-| `IDedChannel` | An `IChannel` identified by an integer. |
+| Type            | Purpose                                                                                        |
+| --------------- | ---------------------------------------------------------------------------------------------- |
+| `IContainer<T>` | `Add`, `Contains`, `Find<U>`, `FindAll<U>`, `Items` — a heterogeneous bag queried by subtype.  |
+| `Container<T>`  | The in-memory implementation.                                                                  |
+| `IChannel`      | An identity used to partition work into named groups. Requires value `Equals` / `GetHashCode`. |
+| `NamedChannel`  | An `IChannel` identified by a string.                                                          |
+| `IDedChannel`   | An `IChannel` identified by an integer.                                                        |
 
 Namespace `NiceJson` — a bundled third-party JSON parser and serializer (`JsonNode`, `JsonObject`,
 `JsonArray`, `JsonBasic`). MIT licensed; see `Third Party Notices.md`.

@@ -32,10 +32,12 @@ namespace Arman.PersistentDataManagement.Tests
             {
                 manager.Register(serializerA.Object, channel1);
                 manager.Register(serializerA.Object, channel2);
-            }
-            );
+            });
 
-            Assert.That(action, Throws.Exception.InstanceOf<PersistentDataSerializerAlreadyRegisterException>());
+            Assert.That(
+                action,
+                Throws.Exception.InstanceOf<PersistentDataSerializerAlreadyRegisterException>()
+            );
 
             // TODO: Shoud I not assert that serializerA is not registered in channelB?
         }

@@ -12,7 +12,7 @@ read-only archive. It remains a single multi-package repository.
 > `com.arman.presentation.*`, plain `com.arman.*`) were collapsed into one flat namespace and every
 > `snake_case` id converted to `kebab-case`: **`com.arman.<kebab-case-name>`, no exceptions.**
 >
-> This matters most for **`gitTagPrefix`**, which OpenUPM matches as a *literal prefix, not a regex*:
+> This matters most for **`gitTagPrefix`**, which OpenUPM matches as a _literal prefix, not a regex_:
 > the prefix must be the current id verbatim, e.g. `com.arman.service-locating/`. A prefix carrying
 > an old dotted or underscored id would silently match no tags and the package would never build.
 > The `"scopes": ["com.arman"]` registry entry is unaffected — it still matches every package by
@@ -22,7 +22,7 @@ read-only archive. It remains a single multi-package repository.
 
 Exactly one thing, and it is the thing that dominated the first design:
 
-> OpenUPM's requirement is *"The package must be open-source and hosted on GitHub."*
+> OpenUPM's requirement is _"The package must be open-source and hosted on GitHub."_
 
 That single constraint disqualified the purpose-built, free, Unity-native registry and forced the
 first proposal onto npmjs.com. Moving to GitHub removes it. **OpenUPM becomes available, and it is
@@ -33,16 +33,16 @@ list — carries over unchanged and is not repeated here.
 
 ## 2. Registry decision
 
-| | **OpenUPM** | npmjs.com | GitHub Packages |
-|---|---|---|---|
-| Cost | Free | Free (public) | Free |
-| Unity browse tab | Works | Works | **Broken** — no `/-/all` |
-| Unscoped `com.arman.*` names | Yes | Yes | **No** — requires `@scope` |
-| Upload step | **None — builds from git tags** | `npm publish` + token | `npm publish` + token |
-| Secrets in CI | **None** | `NPM_TOKEN` | `GITHUB_TOKEN` |
-| Discoverability | Package listing, search, badges, install CLI | Buried among ~3M npm packages | None |
-| Latency | 15–30 min build | Instant | Instant |
-| Gatekeeping | One-time moderator approval (~24 h) | None | None |
+|                              | **OpenUPM**                                  | npmjs.com                     | GitHub Packages            |
+| ---------------------------- | -------------------------------------------- | ----------------------------- | -------------------------- |
+| Cost                         | Free                                         | Free (public)                 | Free                       |
+| Unity browse tab             | Works                                        | Works                         | **Broken** — no `/-/all`   |
+| Unscoped `com.arman.*` names | Yes                                          | Yes                           | **No** — requires `@scope` |
+| Upload step                  | **None — builds from git tags**              | `npm publish` + token         | `npm publish` + token      |
+| Secrets in CI                | **None**                                     | `NPM_TOKEN`                   | `GITHUB_TOKEN`             |
+| Discoverability              | Package listing, search, badges, install CLI | Buried among ~3M npm packages | None                       |
+| Latency                      | 15–30 min build                              | Instant                       | Instant                    |
+| Gatekeeping                  | One-time moderator approval (~24 h)          | None                          | None                       |
 
 **Selected: OpenUPM.** GitHub Packages is disqualified on the same two technical grounds as before
 (no `/-/all`, and it mandates `@scope/name`, which Unity cannot consume).
@@ -55,7 +55,7 @@ list — carries over unchanged and is not repeated here.
 2. **It is Unity-native.** A real package listing page, search, install instructions, a version
    history, and a `openupm add com.arman.service-locating` CLI path — none of which npm
    gives a Unity audience.
-3. **The consuming game project already trusts it.** Its `Packages/manifest.json` *already* declares an
+3. **The consuming game project already trusts it.** Its `Packages/manifest.json` _already_ declares an
    OpenUPM scoped registry for `com.dbrizov.naughtyattributes`. Consuming these packages becomes a
    one-line change to an existing entry rather than a new registry.
 
@@ -100,27 +100,27 @@ is not at the repo root, which is exactly the `Packages/<Dir>/package.json` layo
 path-quoted. `PackageTemplate` (`com.arman.package-template`) is `"private": true` and is **not**
 submitted.
 
-| Folder | `name` / `gitTagPrefix` base | Version |
-|--|--|--|
-| `Asset Providing` | `com.arman.asset-providing` | 0.1.0 |
-| `ComponentSystem` | `com.arman.component-system` | 0.1.0 |
-| `ConfigurationManagement` | `com.arman.configuration-management` | 0.1.0 |
-| `DevelopmentConsole` | `com.arman.development-console` | 0.1.0 |
-| `EventManagement` | `com.arman.event-management` | 0.1.0 |
-| `HttpConnection` | `com.arman.http-connection` | 0.1.0 |
-| `InGameMessageLogging` | `com.arman.in-game-message-logging` | 0.1.0 |
-| `InventorySystem` | `com.arman.inventory-system` | 0.1.0 |
-| `ObjectPooling` | `com.arman.object-pooling` | 0.1.0 |
-| `PackageBasics` | `com.arman.package-basics` | 0.1.0 |
-| `PersistentDataManagement` | `com.arman.persistent-data-management` | 0.1.0 |
-| `Scene Management` | `com.arman.scene-management` | 0.1.0 |
-| `ServiceLocating` | `com.arman.service-locating` | 0.1.0 |
-| `ShopManagement` | `com.arman.shop-management` | 0.1.0 |
-| `UI Management` | `com.arman.ui-management` | 0.1.0 |
-| `UnityUtilities` | `com.arman.unity-utilities` | 0.1.0 |
-| `UpdateManagement` | `com.arman.update-management` | 0.1.0 |
+| Folder                     | `name` / `gitTagPrefix` base           | Version |
+| -------------------------- | -------------------------------------- | ------- |
+| `Asset Providing`          | `com.arman.asset-providing`            | 0.1.0   |
+| `ComponentSystem`          | `com.arman.component-system`           | 0.1.0   |
+| `ConfigurationManagement`  | `com.arman.configuration-management`   | 0.1.0   |
+| `DevelopmentConsole`       | `com.arman.development-console`        | 0.1.0   |
+| `EventManagement`          | `com.arman.event-management`           | 0.1.0   |
+| `HttpConnection`           | `com.arman.http-connection`            | 0.1.0   |
+| `InGameMessageLogging`     | `com.arman.in-game-message-logging`    | 0.1.0   |
+| `InventorySystem`          | `com.arman.inventory-system`           | 0.1.0   |
+| `ObjectPooling`            | `com.arman.object-pooling`             | 0.1.0   |
+| `PackageBasics`            | `com.arman.package-basics`             | 0.1.0   |
+| `PersistentDataManagement` | `com.arman.persistent-data-management` | 0.1.0   |
+| `Scene Management`         | `com.arman.scene-management`           | 0.1.0   |
+| `ServiceLocating`          | `com.arman.service-locating`           | 0.1.0   |
+| `ShopManagement`           | `com.arman.shop-management`            | 0.1.0   |
+| `UI Management`            | `com.arman.ui-management`              | 0.1.0   |
+| `UnityUtilities`           | `com.arman.unity-utilities`            | 0.1.0   |
+| `UpdateManagement`         | `com.arman.update-management`          | 0.1.0   |
 
-This table duplicates [`.agents/AGENTS.md`](../../.agents/AGENTS.md) § *Package catalogue*, which is
+This table duplicates [`.agents/AGENTS.md`](../../.agents/AGENTS.md) § _Package catalogue_, which is
 the source of truth if the two ever disagree.
 
 > **Amended 2026-08-31 — `configuration-management` reads `0.1.0`.** It was the one package listed at
@@ -130,6 +130,7 @@ the source of truth if the two ever disagree.
 > distinction.
 
 Two other fields worth knowing:
+
 - `gitTagIgnore` — excludes tags from the build pipeline.
 - `minVersion` — makes the pipeline ignore versions before a threshold. This was proposed as the
   clean way to handle the `persistent-data-management` rename: tag the corrected name and set
@@ -186,7 +187,7 @@ jobs:
 > after this workflow lands would create all 17 tags at once, which pre-empts the single-package
 > smoke test that step 4 of §6 exists to run. The implemented `.github/workflows/release.yml`
 > therefore replaces `if: github.event_name == 'push'` with `if: github.event_name ==
-> 'workflow_dispatch'`, plus a boolean `publish` input defaulting to `false` — a manual run does
+'workflow_dispatch'`, plus a boolean `publish` input defaulting to `false` — a manual run does
 > `tag --dry-run` unless `publish` is ticked, in which case it does `tag --push`. `validate` and
 > `pack` are unchanged and still run on every PR and push.
 >
@@ -203,14 +204,14 @@ jobs:
 `Tools/upm-release.mjs` is the same dependency-free Node script from the first design, with
 `validate` and `pack` unchanged. Only the release subcommand differs:
 
-| | GitLab design | **GitHub design** |
-|---|---|---|
-| Compares version against | the npm registry (network) | **existing git tags (local)** |
-| Then | `npm publish`, then tag | **creates the tag; that is the whole release** |
-| Needs network/secrets | Yes | **No** |
+|                          | GitLab design              | **GitHub design**                              |
+| ------------------------ | -------------------------- | ---------------------------------------------- |
+| Compares version against | the npm registry (network) | **existing git tags (local)**                  |
+| Then                     | `npm publish`, then tag    | **creates the tag; that is the whole release** |
+| Needs network/secrets    | Yes                        | **No**                                         |
 
 So `tag` reads each `Packages/*/package.json`, and for any package whose
-`<name>/<version>` tag does not yet exist, creates and pushes it. Pushing the tag *is* publishing —
+`<name>/<version>` tag does not yet exist, creates and pushes it. Pushing the tag _is_ publishing —
 OpenUPM picks it up within 15–30 minutes.
 
 This is fully offline, idempotent, and needs no topological sort: tags are independent, so ordering
@@ -238,23 +239,23 @@ That is a problem for this repo on its face: **all 17 packages are `0.x`.** (Whe
 
 > **Amended 2026-08-31 — the registry half is settled.** `com.arman.service-locating@0.1.0` built and
 > listed on OpenUPM, and on 2026-08-31 the other 16 followed; all 17 resolve at `0.1.0` from
-> `package.openupm.com`, dependencies included. So a `0.x` package from a scoped registry is *served*
+> `package.openupm.com`, dependencies included. So a `0.x` package from a scoped registry is _served_
 > without complaint. What step 4 asked for and this does **not** answer is the second half — whether
 > a `0.x` package appears unprompted in the Package Manager **install list**, which still wants
 > checking in a scratch project. If it turns out not to, option (a) below (add by name) applies;
 > nothing published so far forecloses option (b).
 
-**However** — the same Unity documentation adds that these lifecycle states *"only apply to packages
-that Unity develops internally,"* and in practice third-party packages from a scoped registry do
+**However** — the same Unity documentation adds that these lifecycle states _"only apply to packages
+that Unity develops internally,"_ and in practice third-party packages from a scoped registry do
 generally list. The two statements are in tension, and I could not resolve it from documentation
 alone.
 
 **Therefore this design does not assert an outcome.** The first concrete step below is a
 single-package smoke test whose entire purpose is to answer this empirically before 17 submissions
 are made. If `0.x` packages turn out to be hidden, the options are (a) add packages by name rather
-than by browsing, or (b) revisit the decision to stay below `1.0.0`. *(A third option — enabling
+than by browsing, or (b) revisit the decision to stay below `1.0.0`. _(A third option — enabling
 *Project Settings → Package Manager → Enable Pre-release Packages* in consuming projects — no longer
-applies now that no package carries a `-preview` suffix.)*
+applies now that no package carries a `-preview` suffix.)_
 
 ## 6. Migration and rollout
 
@@ -262,31 +263,31 @@ Ordered so the risky, irreversible steps come after the cheap verification.
 
 1. ✅ **Mirror the repo.** `git push --mirror` to a new public GitHub repo preserves full history and
    all refs. Keep GitLab as a read-only archive initially — nothing is lost if this is reversed.
-   *(Done 2026-08-23.)*
+   _(Done 2026-08-23.)_
 2. ✅ **Land the cleanup** from the first design, unchanged: MIT `LICENSE` + `license` field on all 17
    publishable packages, `"private": true` on `PackageTemplate`, and the
    `com.arman.foundation.persistent_data_managemement` → `com.arman.persistent-data-management`
-   rename. *(Done 2026-08-23, as part of normalising all 18 ids to `com.arman.<kebab-case-name>`.
-   `minVersion` turned out to be unnecessary — see §3.)*
+   rename. _(Done 2026-08-23, as part of normalising all 18 ids to `com.arman.<kebab-case-name>`.
+   `minVersion` turned out to be unnecessary — see §3.)_
 3. ✅ **Add `Tools/upm-release.mjs` and the workflow.** Merge a no-op version bump and confirm the
    `tag` job creates exactly the tags expected.
-   *(Script and `.github/workflows/release.yml` written 2026-08-30 and exercised locally: `validate`
+   _(Script and `.github/workflows/release.yml` written 2026-08-30 and exercised locally: `validate`
    passes 17/17 and fails correctly on seeded defects, `pack` produces 17 tarballs with `.meta` files
    intact, `tag --dry-run` plans the expected tags and the dirty-tree guard fires. `validate` and
    `pack` have since run green in CI on every PR; the `tag` job's own `push` path first runs with the
-   gate removal in step 5.)*
+   gate removal in step 5.)_
 4. ✅ **Smoke test — one package.** Tag `com.arman.service-locating` only, then submit that one
    package to OpenUPM. Confirm: the build succeeds, the version appears on the listing page, and —
    per §5 — that it is actually visible in the Unity Package Manager window of a scratch project.
-   *(Done 2026-08-30: tagged by hand, submitted, and live at `0.1.0` on `package.openupm.com` by
+   _(Done 2026-08-30: tagged by hand, submitted, and live at `0.1.0` on `package.openupm.com` by
    12:11 UTC. The Package Manager **install-list** half of the check is still owed — see the
-   amendment in §5.)*
+   amendment in §5.)_
 5. ✅ **Submit the remaining 16** once step 4 is proven, and **drop the `workflow_dispatch` gate** so
    merges tag automatically from then on.
-   *(Done 2026-08-31: 16 tags pushed from `master`, submitted as one PR to `openupm/openupm`, and all
+   _(Done 2026-08-31: 16 tags pushed from `master`, submitted as one PR to `openupm/openupm`, and all
    17 packages now resolve at `0.1.0` with their `com.arman.*` dependencies intact. The gate is
-   removed — see the amendment in §4.)*
-6. **Repoint the consuming game project.** Add `"com.arman"` to the *existing* OpenUPM scoped registry entry:
+   removed — see the amendment in §4.)_
+6. **Repoint the consuming game project.** Add `"com.arman"` to the _existing_ OpenUPM scoped registry entry:
 
    ```json
    { "name": "OpenUpm", "url": "https://package.openupm.com",
@@ -299,16 +300,16 @@ Ordered so the risky, irreversible steps come after the cheap verification.
 
 ## 7. Comparison to the GitLab proposal
 
-| | GitLab + npmjs | **GitHub + OpenUPM** |
-|---|---|---|
-| Pipeline stages | 4 (`validate/pack/publish/release`) | 3 (`validate/pack/tag`) |
-| Registry secrets | `NPM_TOKEN`, masked + protected | **None** |
-| Release is | `npm publish` | **a git tag** |
-| Topological sort | Required | Not needed |
-| Unity discoverability | npm search only | OpenUPM listing + badges + CLI |
-| Time to publish | Seconds | 15–30 min |
-| External dependency | npm registry | OpenUPM build pipeline **and** GitHub |
-| One-time cost | None | Repo migration + 17 YAML submissions + ~24 h approval |
+|                       | GitLab + npmjs                      | **GitHub + OpenUPM**                                  |
+| --------------------- | ----------------------------------- | ----------------------------------------------------- |
+| Pipeline stages       | 4 (`validate/pack/publish/release`) | 3 (`validate/pack/tag`)                               |
+| Registry secrets      | `NPM_TOKEN`, masked + protected     | **None**                                              |
+| Release is            | `npm publish`                       | **a git tag**                                         |
+| Topological sort      | Required                            | Not needed                                            |
+| Unity discoverability | npm search only                     | OpenUPM listing + badges + CLI                        |
+| Time to publish       | Seconds                             | 15–30 min                                             |
+| External dependency   | npm registry                        | OpenUPM build pipeline **and** GitHub                 |
+| One-time cost         | None                                | Repo migration + 17 YAML submissions + ~24 h approval |
 
 **Recommendation: if the move to GitHub is genuinely on the table, take this design.** It is
 strictly simpler to operate — no secrets, no publish step, no ordering constraints — and it puts the

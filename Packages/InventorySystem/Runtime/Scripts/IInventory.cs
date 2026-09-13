@@ -4,7 +4,8 @@ namespace Arman.InventorySystem
 {
     public delegate void OnItemNumberChanged<T>(T item, int value);
 
-    public interface IInventory<T> where T : IInventoryItem
+    public interface IInventory<T>
+        where T : IInventoryItem
     {
         void SetNumberOf(T item, int number);
         void Increase(T item, int number);

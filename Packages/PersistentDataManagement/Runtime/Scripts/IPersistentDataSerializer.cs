@@ -7,5 +7,4 @@
         void SerializeTo(IWritablePersistentDataWrapper persistentDataWrapper);
         void DeserializeFrom(IReadablePersistentDataWrapper persistentDataWrapper);
     }
-
 }

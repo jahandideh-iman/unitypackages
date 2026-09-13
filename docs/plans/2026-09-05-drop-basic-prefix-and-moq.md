@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Rename the twelve `Basic*` implementations to the name of the interface they implement, then replace the eight hand-written test doubles whose assertion *is* an interaction with Moq, leaving the rest as explicitly named fakes.
+**Goal:** Rename the twelve `Basic*` implementations to the name of the interface they implement, then replace the eight hand-written test doubles whose assertion _is_ an interaction with Moq, leaving the rest as explicitly named fakes.
 
 **Architecture:** Two sequential parts on one branch. Part A is a pure rename — no behaviour changes, driven by Roslyn so generic constraints and cross-package references follow, with each `.cs` and its `.meta` moved together to preserve Unity GUIDs. Part B adds `nuget.moq` at the project level only, then converts test doubles package by package.
 
@@ -13,7 +13,7 @@
 ## Global Constraints
 
 - **Branch from `dev`, never `master`.** Branch for this work: `refactor/drop-basic-prefix-and-moq`. One PR, into `dev`.
-- **This is a refactor, not a feature. Do not write new failing tests first.** The existing suite is the specification. Every task's cycle is: suite green → make the change → suite green, with the *same* set of test names passing before and after unless the task says otherwise. A task that reduces the passing test count has broken something.
+- **This is a refactor, not a feature. Do not write new failing tests first.** The existing suite is the specification. Every task's cycle is: suite green → make the change → suite green, with the _same_ set of test names passing before and after unless the task says otherwise. A task that reduces the passing test count has broken something.
 - **Every `.cs` rename moves its `.cs.meta` in the same commit.** `git mv` both. Never delete and recreate a `.meta` — the GUID inside binds consumer assets and asmdef references.
 - **Never hand-edit `.unity`, `.prefab`, or `.asset` YAML.** Not needed by this plan; if a task appears to need it, stop and report.
 - **Run the Editor named in `ProjectSettings/ProjectVersion.txt`.** No `-e`, no `--allow-install`.
@@ -63,11 +63,13 @@ Write the total/passed/failed counts into the task notes. Every later task compa
 Goes first: `PersistentDataManagement` constructs `BasicContainer<T>` directly, so this rename must land before that package compiles cleanly.
 
 **Files:**
+
 - Rename: `Packages/PackageBasics/Runtime/Scripts/BasicContainer.cs` → `Container.cs` (+ `.meta`)
 - Modify: `Packages/PersistentDataManagement/Runtime/Scripts/BasicPersistentDataManager.cs:24,166`
 - Modify: `Packages/PackageBasics/CHANGELOG.md`
 
 **Interfaces:**
+
 - Consumes: nothing.
 - Produces: `Arman.PackageBasics.Container<T> : IContainer<T>` — the type Task 7 and any later task refers to.
 
@@ -126,6 +128,7 @@ git commit -m "refactor(package-basics): rename BasicContainer to Container"
 ### Task 2: ComponentSystem — three renames
 
 **Files:**
+
 - Rename: `Packages/ComponentSystem/Runtime/Scripts/BasicEntity.cs` → `Entity.cs` (+ `.meta`)
 - Rename: `Packages/ComponentSystem/Runtime/Scripts/BasicSpecializedEntity.cs` → `SpecializedEntity.cs` (+ `.meta`)
 - Rename: `Packages/ComponentSystem/Runtime/Scripts/CacheableBasicEntity.cs` → `CacheableEntity.cs` (+ `.meta`)
@@ -134,12 +137,14 @@ git commit -m "refactor(package-basics): rename BasicContainer to Container"
 - Modify: `Packages/ComponentSystem/CHANGELOG.md`
 
 **Interfaces:**
+
 - Consumes: nothing.
 - Produces: `Arman.ComponentSystem.Entity : IEntity`, `SpecializedEntity<T> : ISpecializedEntity<T>`, `CacheableEntity<T> : Entity where T : ICache`. Task 16 constructs `CacheableEntity<ICache>`.
 
 - [ ] **Step 1: Rename the three runtime symbols with Roslyn**
 
 `mcp__sharplens__rename_symbol`, one call each:
+
 - `BasicEntity` → `Entity`
 - `BasicSpecializedEntity` → `SpecializedEntity`
 - `CacheableBasicEntity` → `CacheableEntity`
@@ -201,11 +206,13 @@ git commit -m "refactor(component-system): drop the Basic prefix from Entity typ
 ### Task 3: ConfigurationManagement — `BasicConfigurationManager` → `ConfigurationManager`
 
 **Files:**
+
 - Rename: `Packages/ConfigurationManagement/Runtime/Scripts/BasicConfigurationManager.cs` → `ConfigurationManager.cs` (+ `.meta`)
 - Rename: `Packages/ConfigurationManagement/Tests/Editor/UnitTests/BasicConfigurationManagerTest.cs` → `ConfigurationManagerTest.cs` (+ `.meta`)
 - Modify: `Packages/ConfigurationManagement/CHANGELOG.md`
 
 **Interfaces:**
+
 - Consumes: nothing.
 - Produces: `Arman.ConfigurationManagement.ConfigurationManager : IConfigurationManager`.
 
@@ -252,15 +259,17 @@ Expected: baseline counts before committing.
 ### Task 4: EventManagement — `BasicEventManager` → `EventManager`
 
 **Files:**
+
 - Rename: `Packages/EventManagement/Runtime/Scripts/BasicEventManager.cs` → `EventManager.cs` (+ `.meta`)
 - Rename: `Packages/EventManagement/Tests/Editor/UnitTests/Foundation/EventManagement/BasicEventManagerTest.cs` → `EventManagerTest.cs` (+ `.meta`)
 - Modify: `Packages/EventManagement/CHANGELOG.md`
 
 **Interfaces:**
+
 - Consumes: nothing.
 - Produces: `Arman.EventManagement.EventManager : IEventManager`. Task 18 rewrites the doubles inside `EventManagerTest.cs`.
 
-**Note:** the test fixture class inside `BasicEventManagerTest.cs` is already called `EventManagerTest` — only the *file* name carries `Basic`. Rename the file; the class needs no change.
+**Note:** the test fixture class inside `BasicEventManagerTest.cs` is already called `EventManagerTest` — only the _file_ name carries `Basic`. Rename the file; the class needs no change.
 
 - [ ] **Step 1: Rename the runtime symbol with Roslyn**
 
@@ -301,11 +310,13 @@ git commit -m "refactor(event-management): rename BasicEventManager to EventMana
 ### Task 5: InventorySystem — `BasicInventory<T>` → `Inventory<T>`
 
 **Files:**
+
 - Rename: `Packages/InventorySystem/Runtime/Scripts/BasicInventory.cs` → `Inventory.cs` (+ `.meta`)
 - Rename: `Packages/InventorySystem/Tests/Editor/UnitTests/Game/InventorySystem/BasicInventoryTest.cs` → `InventoryTest.cs` (+ `.meta`)
 - Modify: `Packages/InventorySystem/CHANGELOG.md`
 
 **Interfaces:**
+
 - Consumes: nothing.
 - Produces: `Arman.InventorySystem.Inventory<T> : IInventory<T> where T : IInventoryItem`. Task 17 rewrites the double used inside `InventoryTest.cs`.
 
@@ -346,12 +357,14 @@ git commit -m "refactor(inventory-system): rename BasicInventory to Inventory"
 ### Task 6: ObjectPooling — `BasicObjectPool<T>` → `ObjectPool<T>`
 
 **Files:**
+
 - Rename: `Packages/ObjectPooling/Runtime/Scripts/BasicObjectPool.cs` → `ObjectPool.cs` (+ `.meta`)
 - Modify: `Packages/ObjectPooling/Runtime/Scripts/UnityComponentObjectPool.cs:6` (its base clause)
 - Rename: `Packages/ObjectPooling/Tests/Editor/UnitTests/ObjectPooling/BasicObjectPoolTest.cs` → `ObjectPoolTest.cs` (+ `.meta`)
 - Modify: `Packages/ObjectPooling/CHANGELOG.md`
 
 **Interfaces:**
+
 - Consumes: nothing.
 - Produces: `Arman.ObjectPooling.ObjectPool<T> : IObjectPool<T> where T : IPoolable` — **abstract**, with `protected abstract T CreateObject()`, `protected abstract void ActivateObject(T)`, `protected abstract void DeactivateObject(T)`. Task 19 subclasses it as `TestableObjectPool`.
 
@@ -394,6 +407,7 @@ git commit -m "refactor(object-pooling): rename BasicObjectPool to ObjectPool"
 ### Task 7: PersistentDataManagement — `BasicPersistentDataManager` → `PersistentDataManager`
 
 **Files:**
+
 - Rename: `Packages/PersistentDataManagement/Runtime/Scripts/BasicPersistentDataManager.cs` → `PersistentDataManager.cs` (+ `.meta`)
 - Rename, all in `Packages/PersistentDataManagement/Tests/Editor/UnitTests/` (each + `.meta`):
   - `BasicPersistentDataManagerTestContext.cs` → `PersistentDataManagerTestContext.cs`
@@ -404,6 +418,7 @@ git commit -m "refactor(object-pooling): rename BasicObjectPool to ObjectPool"
 - Modify: `Packages/PersistentDataManagement/CHANGELOG.md`
 
 **Interfaces:**
+
 - Consumes: `Arman.PackageBasics.Container<T>` from Task 1.
 - Produces: `Arman.PersistentDataManagement.PersistentDataManager : IPersistentDataManager`, and the protected fixture base `PersistentDataManagerTestContext` with members `manager`, `emptyStreamFactory`, `emptyDataWrapper`, `serializerA`, `serializerB`, `channel1`, `channel2`, `CreateManager(...)`, `InternalSetup()`. Task 14 rewrites that base's serializer fields.
 
@@ -444,11 +459,13 @@ git commit -m "refactor(persistent-data-management): rename BasicPersistentDataM
 ### Task 8: ShopManagement — `BasicShopCenter` → `ShopCenter`
 
 **Files:**
+
 - Rename: `Packages/ShopManagement/Runtime/Scripts/BasicShopCenter.cs` → `ShopCenter.cs` (+ `.meta`)
 - Rename: `Packages/ShopManagement/Tests/Editor/UnitTests/Foundation/ShopManagement/BasicShopCenterTest.cs` → `ShopCenterTest.cs` (+ `.meta`)
 - Modify: `Packages/ShopManagement/CHANGELOG.md`
 
 **Interfaces:**
+
 - Consumes: nothing.
 - Produces: `Arman.ShopManagement.ShopCenter : IShopCenter`. Task 15 rewrites the doubles used by `ShopCenterTest.cs`.
 
@@ -483,11 +500,13 @@ git commit -m "refactor(shop-management): rename BasicShopCenter to ShopCenter"
 ### Task 9: UpdateManagement — `BasicUpdateManager` → `UpdateManager`
 
 **Files:**
+
 - Rename: `Packages/UpdateManagement/Runtime/Scripts/BasicUpdateManager.cs` → `UpdateManager.cs` (+ `.meta`)
 - Rename: `Packages/UpdateManagement/Tests/Editor/UnitTests/BasicUpdateManagerTest_ThrowingUpdatables.cs` → `UpdateManagerTest_ThrowingUpdatables.cs` (+ `.meta`)
 - Modify: `Packages/UpdateManagement/CHANGELOG.md`
 
 **Interfaces:**
+
 - Consumes: nothing.
 - Produces: `Arman.UpdateManagement.UpdateManager : IUpdateManager`. Task 13 rewrites the double used by both UpdateManagement fixtures.
 
@@ -528,10 +547,12 @@ git commit -m "refactor(update-management): rename BasicUpdateManager to UpdateM
 The one `ScriptableObject` in the set. It has no interface; it is included so `Basic` does not survive in a public name for no reason.
 
 **Files:**
+
 - Rename: `Packages/Asset Providing/Runtime/Scripts/BasicAssetProviderServiceConfig.cs` → `AssetProviderServiceConfig.cs` (+ `.meta`)
 - Modify: `Packages/Asset Providing/CHANGELOG.md`
 
 **Interfaces:**
+
 - Consumes: nothing.
 - Produces: `AssetProviderServiceConfig : ScriptableObject`.
 
@@ -590,6 +611,7 @@ git commit -m "refactor(asset-providing): rename BasicAssetProviderServiceConfig
 ### Task 11: Part A sweep and verification
 
 **Files:**
+
 - Modify: any file still mentioning a renamed type (READMEs, `.agents/AGENTS.md`, package descriptions)
 
 - [ ] **Step 1: Find every surviving mention**
@@ -598,7 +620,7 @@ git commit -m "refactor(asset-providing): rename BasicAssetProviderServiceConfig
 grep -rn "BasicEntity\|BasicSpecializedEntity\|CacheableBasicEntity\|BasicConfigurationManager\|BasicEventManager\|BasicInventory\|BasicObjectPool\|BasicContainer\|BasicPersistentDataManager\|BasicShopCenter\|BasicUpdateManager\|BasicAssetProviderServiceConfig" --include=*.cs --include=*.md --include=*.json Packages/ Assets/ docs/ .agents/ README.md
 ```
 
-Expected after fixing: hits only in CHANGELOG `### Removed` entries and in `docs/specs/2026-09-05-basic-rename-and-moq-design.md`, both of which *should* name the old types. Update every README or doc hit to the new name.
+Expected after fixing: hits only in CHANGELOG `### Removed` entries and in `docs/specs/2026-09-05-basic-rename-and-moq-design.md`, both of which _should_ name the old types. Update every README or doc hit to the new name.
 
 `JsonBasic` in `Packages/PackageBasics/Runtime/ThirdParties/NiceJson.cs` is vendored third-party code and must not appear in this sweep — the pattern above does not match it.
 
@@ -642,11 +664,13 @@ git commit -m "docs: update references to the renamed implementations"
 The smallest vertical slice that proves the dependency works, before eight conversions depend on it. Do not convert any test in this task.
 
 **Files:**
+
 - Modify: `Packages/manifest.json`
 - Modify: `Packages/UpdateManagement/Tests/Editor/Arman.UpdateManagement.Tests.Editor.asmdef`
 - Create: `Packages/UpdateManagement/Tests/Editor/UnitTests/MoqSmokeTest.cs` (+ `.meta`, generated by Unity) — **deleted again in Step 6**
 
 **Interfaces:**
+
 - Consumes: nothing.
 - Produces: a working `Moq` reference in `Arman.UpdateManagement.Tests.Editor`, and the exact `precompiledReferences` block Tasks 14–18 copy.
 
@@ -732,10 +756,12 @@ No CHANGELOG entry: `Tests/` and the root `Packages/manifest.json` are both exem
 ### Task 13: UpdateManagement — `UpdatableMock` → Moq
 
 **Files:**
+
 - Delete: `Packages/UpdateManagement/Tests/Editor/UnitTests/UpdatableMock.cs` (+ `.meta`)
 - Modify: `Packages/UpdateManagement/Tests/Editor/UnitTests/UpdateManagerTest_ThrowingUpdatables.cs`
 
 **Interfaces:**
+
 - Consumes: `UpdateManager` (Task 9), the Moq reference (Task 12).
 - Produces: nothing later tasks depend on.
 
@@ -898,11 +924,13 @@ git commit -m "test(update-management): replace UpdatableMock with Moq"
 The largest conversion. `PersistentDataWrapperMock` alone is 96 lines, roughly 60 of them `NotImplementedException` stubs Moq supplies for free.
 
 **Files:**
+
 - Modify: `Packages/PersistentDataManagement/Tests/Editor/Arman.PersistentDataManagement.Tests.Editor.asmdef`
 - Delete: `Packages/PersistentDataManagement/Tests/Editor/Mocks/PersistentDataSerializerMock.cs`, `PersistentDataIOStreamFactoryMock.cs`, `PersistentDataWrapperMock.cs` (+ `.meta` each), and the `Mocks/` folder + `Mocks.meta` if it ends up empty
 - Modify: `PersistentDataManagerTestContext.cs`, `PersistentDataManagerTest_Saving.cs`, `PersistentDataManagerTest_Loading.cs`, `PersistentDataManagerTest_Deleting.cs`
 
 **Interfaces:**
+
 - Consumes: `PersistentDataManager` and `PersistentDataManagerTestContext` (Task 7), Moq (Task 12).
 - Produces: a fixture base exposing `Mock<IPersistentDataSerializer> serializerA, serializerB` instead of the old concrete doubles.
 
@@ -978,28 +1006,28 @@ namespace Arman.PersistentDataManagement.Tests
 
 - [ ] **Step 3: Translate the assertions**
 
-Apply these mappings throughout the four fixture files. Every `serializerA` etc. usage becomes `serializerA.Object` when *passed* to the manager, and stays `serializerA` when *verified*.
+Apply these mappings throughout the four fixture files. Every `serializerA` etc. usage becomes `serializerA.Object` when _passed_ to the manager, and stays `serializerA` when _verified_.
 
-| Old | New |
-|---|---|
-| `serializerA.IsSerializedCalledOnce()` is `True` | `serializerA.Verify(s => s.SerializeTo(It.IsAny<IWritablePersistentDataWrapper>()), Times.Once)` |
-| `serializerB.IsSerializedCalledOnce()` is `False` | `serializerB.Verify(s => s.SerializeTo(It.IsAny<IWritablePersistentDataWrapper>()), Times.Never)` |
-| `serializerA.IsSerialized()` is `False` | `serializerA.Verify(s => s.SerializeTo(It.IsAny<IWritablePersistentDataWrapper>()), Times.Never)` |
-| `serializerA.IsDeserializedCalledOnce()` is `True` | `serializerA.Verify(s => s.DeserializeFrom(It.IsAny<IReadablePersistentDataWrapper>()), Times.Once)` |
-| `serializerA.IsDeserialized()` is `False` | `serializerA.Verify(s => s.DeserializeFrom(It.IsAny<IReadablePersistentDataWrapper>()), Times.Never)` |
-| `serializerA.onSerializeAction = w => …` | `serializerA.Setup(s => s.SerializeTo(It.IsAny<IWritablePersistentDataWrapper>())).Callback<IWritablePersistentDataWrapper>(w => …)` |
-| `serializerA.onDeserializeAction = w => …` | `serializerA.Setup(s => s.DeserializeFrom(It.IsAny<IReadablePersistentDataWrapper>())).Callback<IReadablePersistentDataWrapper>(w => …)` |
-| `new PersistentDataWrapperMock()` | `WrapperMock()` — see Step 4 |
-| `wrapper.onClearAction = () => clearCallCounts++` | drop the counter; `wrapper.Verify(w => w.Clear(), Times.Exactly(2))` |
-| `wrapper.onWriteAction = w => writeStep = step` | `wrapper.Setup(w => w.WriteTo(It.IsAny<StreamWriter>())).Callback(() => writeStep = step)` |
-| `wrapper.onReadAction = s => readStep = step` | `wrapper.Setup(w => w.ReadFrom(It.IsAny<StreamReader>())).Callback(() => readStep = step)` |
-| `streamFactory.CreateWriteStreamIsCalledOnceFor(ch)` is `True` | `streamFactory.Verify(f => f.CreateWriteStreamFor(ch), Times.Once)` |
-| `streamFactory.CreateWriteStreamIsCalledOnceFor(ch)` is `False` | `streamFactory.Verify(f => f.CreateWriteStreamFor(ch), Times.Never)` |
-| `streamFactory.CreateReadStreamIsCalledOnceFor(ch)` | `streamFactory.Verify(f => f.CreateReadStreamFor(ch), Times.Once)` |
-| `streamFactory.DeleteIsCalledOnceFor(ch)` is `True` | `streamFactory.Verify(f => f.Delete(ch), Times.Once)` |
-| `new PersistentDataIOStreamFactoryMock()` | `StreamFactoryMock()` — see Step 4 |
+| Old                                                             | New                                                                                                                                      |
+| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `serializerA.IsSerializedCalledOnce()` is `True`                | `serializerA.Verify(s => s.SerializeTo(It.IsAny<IWritablePersistentDataWrapper>()), Times.Once)`                                         |
+| `serializerB.IsSerializedCalledOnce()` is `False`               | `serializerB.Verify(s => s.SerializeTo(It.IsAny<IWritablePersistentDataWrapper>()), Times.Never)`                                        |
+| `serializerA.IsSerialized()` is `False`                         | `serializerA.Verify(s => s.SerializeTo(It.IsAny<IWritablePersistentDataWrapper>()), Times.Never)`                                        |
+| `serializerA.IsDeserializedCalledOnce()` is `True`              | `serializerA.Verify(s => s.DeserializeFrom(It.IsAny<IReadablePersistentDataWrapper>()), Times.Once)`                                     |
+| `serializerA.IsDeserialized()` is `False`                       | `serializerA.Verify(s => s.DeserializeFrom(It.IsAny<IReadablePersistentDataWrapper>()), Times.Never)`                                    |
+| `serializerA.onSerializeAction = w => …`                        | `serializerA.Setup(s => s.SerializeTo(It.IsAny<IWritablePersistentDataWrapper>())).Callback<IWritablePersistentDataWrapper>(w => …)`     |
+| `serializerA.onDeserializeAction = w => …`                      | `serializerA.Setup(s => s.DeserializeFrom(It.IsAny<IReadablePersistentDataWrapper>())).Callback<IReadablePersistentDataWrapper>(w => …)` |
+| `new PersistentDataWrapperMock()`                               | `WrapperMock()` — see Step 4                                                                                                             |
+| `wrapper.onClearAction = () => clearCallCounts++`               | drop the counter; `wrapper.Verify(w => w.Clear(), Times.Exactly(2))`                                                                     |
+| `wrapper.onWriteAction = w => writeStep = step`                 | `wrapper.Setup(w => w.WriteTo(It.IsAny<StreamWriter>())).Callback(() => writeStep = step)`                                               |
+| `wrapper.onReadAction = s => readStep = step`                   | `wrapper.Setup(w => w.ReadFrom(It.IsAny<StreamReader>())).Callback(() => readStep = step)`                                               |
+| `streamFactory.CreateWriteStreamIsCalledOnceFor(ch)` is `True`  | `streamFactory.Verify(f => f.CreateWriteStreamFor(ch), Times.Once)`                                                                      |
+| `streamFactory.CreateWriteStreamIsCalledOnceFor(ch)` is `False` | `streamFactory.Verify(f => f.CreateWriteStreamFor(ch), Times.Never)`                                                                     |
+| `streamFactory.CreateReadStreamIsCalledOnceFor(ch)`             | `streamFactory.Verify(f => f.CreateReadStreamFor(ch), Times.Once)`                                                                       |
+| `streamFactory.DeleteIsCalledOnceFor(ch)` is `True`             | `streamFactory.Verify(f => f.Delete(ch), Times.Once)`                                                                                    |
+| `new PersistentDataIOStreamFactoryMock()`                       | `StreamFactoryMock()` — see Step 4                                                                                                       |
 
-Assertions that check *identity* rather than interaction stay as they are — for example `Assert.That(givenWrappers[serializerA.Object], Is.SameAs(persistentDataWrapper.Object))`, and the `Throws.Exception.InstanceOf<...>` checks.
+Assertions that check _identity_ rather than interaction stay as they are — for example `Assert.That(givenWrappers[serializerA.Object], Is.SameAs(persistentDataWrapper.Object))`, and the `Throws.Exception.InstanceOf<...>` checks.
 
 - [ ] **Step 4: Add the two mock builders to the fixture base**
 
@@ -1046,7 +1074,7 @@ unity command run_tests --mode EditMode --filter Arman.PersistentDataManagement.
 
 Expected: same test names, same count, all passing.
 
-The two call-*ordering* tests (`…ShouldWriteDataToPersistentDataWrapperAfterCallingAllSerializers` and its Loading counterpart) are the ones most likely to fail first. They work by incrementing a shared `step` counter from each serializer callback and snapshotting it from the wrapper callback; that survives the translation as long as every `Callback` is registered *before* the manager is constructed.
+The two call-_ordering_ tests (`…ShouldWriteDataToPersistentDataWrapperAfterCallingAllSerializers` and its Loading counterpart) are the ones most likely to fail first. They work by incrementing a shared `step` counter from each serializer callback and snapshotting it from the wrapper callback; that survives the translation as long as every `Callback` is registered _before_ the manager is constructed.
 
 - [ ] **Step 7: Commit**
 
@@ -1062,16 +1090,18 @@ git commit -m "test(persistent-data-management): replace three hand-written mock
 The one package where both halves of the rule appear together.
 
 **Files:**
+
 - Modify: `Packages/ShopManagement/Tests/Editor/Arman.ShopManagement.Editor.Tests.asmdef`
 - Delete: `Packages/ShopManagement/Tests/Editor/Mocks/PurchaseHandlerMock.cs` (+ `.meta`)
 - Rename: `Packages/ShopManagement/Tests/Editor/Mocks/ShopPackageMock.cs` → `FakeShopPackage.cs` (+ `.meta`)
 - Modify: `Packages/ShopManagement/Tests/Editor/UnitTests/Foundation/ShopManagement/ShopCenterTest.cs`
 
 **Interfaces:**
+
 - Consumes: `ShopCenter` (Task 8), Moq (Task 12).
 - Produces: `Arman.Mocks.Foundation.ShopManagement.Core.FakeShopPackage`, plus `FakeShopPackageA` / `FakeShopPackageB` declared in the test file.
 
-**Why the packages stay fakes:** `ShopCenter.PackagesOfType<T>()` and `AssignPurchaseHandler<T>()` dispatch on the *concrete* type argument. A Moq proxy's runtime type is generated, so `PackagesOfType<Mock<IShopPackage>>()` cannot express what these tests check. They need real, distinct, named types.
+**Why the packages stay fakes:** `ShopCenter.PackagesOfType<T>()` and `AssignPurchaseHandler<T>()` dispatch on the _concrete_ type argument. A Moq proxy's runtime type is generated, so `PackagesOfType<Mock<IShopPackage>>()` cannot express what these tests check. They need real, distinct, named types.
 
 - [ ] **Step 1: Wire the assembly**
 
@@ -1154,13 +1184,13 @@ Add `using Moq;`. `IPurchaseHandler.Purchase` takes `(IShopPackage, Action<IPurc
 
 Then translate:
 
-| Old | New |
-|---|---|
-| `new PurchaseHandlerMock()` | `PurchaseHandler(shouldSucceed: false)` |
-| `handler.ShouldSucceed(true)` | `PurchaseHandler(shouldSucceed: true)` at construction |
+| Old                                              | New                                                                                                                                             |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `new PurchaseHandlerMock()`                      | `PurchaseHandler(shouldSucceed: false)`                                                                                                         |
+| `handler.ShouldSucceed(true)`                    | `PurchaseHandler(shouldSucceed: true)` at construction                                                                                          |
 | `handler.givenShopPackage` is `SameAs(packageA)` | `handler.Verify(h => h.Purchase(packageA, It.IsAny<Action<IPurchaseSuccessResult>>(), It.IsAny<Action<IPurchaseFailureResult>>()), Times.Once)` |
-| `handler.givenShopPackage` is `Null` | same `Verify` with `Times.Never` |
-| `handler.Clear()` then re-assert | drop the `Clear()`; assert with `Times.Once` against each specific package instead |
+| `handler.givenShopPackage` is `Null`             | same `Verify` with `Times.Never`                                                                                                                |
+| `handler.Clear()` then re-assert                 | drop the `Clear()`; assert with `Times.Once` against each specific package instead                                                              |
 
 `AssignPurchaseHandler<FakeShopPackageA>(handler.Object)` — pass `.Object` at the call site.
 
@@ -1191,14 +1221,16 @@ Expected: same test names, same count, all passing.
 ### Task 16: ComponentSystem — `CacheMock` → Moq
 
 **Files:**
+
 - Modify: `Packages/ComponentSystem/Tests/Editor/Arman.ComponentSystem.Editor.Tests.asmdef`
 - Modify: `Packages/ComponentSystem/Tests/Editor/UnitTests/CacheableEntityTest.cs`
 
 **Interfaces:**
+
 - Consumes: `CacheableEntity<T>` (Task 2), Moq (Task 12).
 - Produces: nothing later tasks depend on.
 
-The single test asserts `TryCache` received `ComponentA`, `ComponentB`, `ComponentC` **in that order**. Moq expresses ordering with `MockSequence`, but the clearer translation here is three `Verify` calls plus a recorded list, because the assertion is about order *and* type.
+The single test asserts `TryCache` received `ComponentA`, `ComponentB`, `ComponentC` **in that order**. Moq expresses ordering with `MockSequence`, but the clearer translation here is three `Verify` calls plus a recorded list, because the assertion is about order _and_ type.
 
 - [ ] **Step 1: Wire the assembly**
 
@@ -1257,15 +1289,17 @@ git commit -m "test(component-system): replace CacheMock with Moq"
 ### Task 17: InventorySystem — `MockInventoryItemConstraint` → Moq
 
 **Files:**
+
 - Modify: `Packages/InventorySystem/Tests/Editor/Arman.InventorySystem.Tests.Editor.asmdef`
 - Delete: `Packages/InventorySystem/Tests/Editor/Mocks/MockInventoryItemConstraint.cs` (+ `.meta`), and `Mocks.meta` if the folder empties
 - Modify: `Packages/InventorySystem/Tests/Editor/UnitTests/Game/InventorySystem/InventoryTest.cs`
 
 **Interfaces:**
+
 - Consumes: `Inventory<T>` (Task 5), Moq (Task 12).
 - Produces: nothing later tasks depend on.
 
-`IInventoryItemConstraint.ApplyTo(int)` must both record its argument *and* return it unchanged — the inventory stores whatever comes back, so a mock that returns `default` would zero every value.
+`IInventoryItemConstraint.ApplyTo(int)` must both record its argument _and_ return it unchanged — the inventory stores whatever comes back, so a mock that returns `default` would zero every value.
 
 - [ ] **Step 1: Wire the assembly**
 
@@ -1320,10 +1354,12 @@ git commit -m "test(inventory-system): replace MockInventoryItemConstraint with 
 ### Task 18: EventManagement — `ListenerMock` → Moq, `EventMock` → `FakeGameEvent`
 
 **Files:**
+
 - Modify: `Packages/EventManagement/Tests/Editor/Arman.EventManagement.Editor.Tests.asmdef`
 - Modify: `Packages/EventManagement/Tests/Editor/UnitTests/Foundation/EventManagement/EventManagerTest.cs`
 
 **Interfaces:**
+
 - Consumes: `EventManager` (Task 4), Moq (Task 12).
 - Produces: nothing later tasks depend on.
 
@@ -1441,9 +1477,11 @@ git commit -m "test(event-management): Moq for the listener, a named fake for th
 The one package where the answer is "this was never a mock". The pool constructs its own objects in `CreateObject()` and the tests assert identity across acquire/release, so there is nothing to inject a mock into. Rename it honestly and move on. This asmdef gets **no** Moq reference.
 
 **Files:**
+
 - Modify: `Packages/ObjectPooling/Tests/Editor/UnitTests/ObjectPooling/ObjectPoolTest.cs`
 
 **Interfaces:**
+
 - Consumes: `ObjectPool<T>` (Task 6).
 - Produces: nothing later tasks depend on.
 
@@ -1522,9 +1560,11 @@ git commit -m "test(object-pooling): rename MockObject to FakePoolable, which is
 ### Task 20: Document the convention and verify everything
 
 **Files:**
+
 - Modify: `.agents/AGENTS.md`
 
 **Interfaces:**
+
 - Consumes: everything above.
 - Produces: the written convention.
 
@@ -1532,7 +1572,7 @@ git commit -m "test(object-pooling): rename MockObject to FakePoolable, which is
 
 In `.agents/AGENTS.md`, under the C# coding style section, add:
 
-```markdown
+````markdown
 ### Test doubles
 
 Two kinds, named for what they are:
@@ -1553,16 +1593,17 @@ Two kinds, named for what they are:
       "System.Runtime.CompilerServices.Unsafe.dll",
       "System.Threading.Tasks.Extensions.dll"
   ],
-  ```
+````
 
-* **Fakes** — a small working implementation, asserted on as a value or passed around by identity.
+- **Fakes** — a small working implementation, asserted on as a value or passed around by identity.
   Hand-written, named `Fake<Thing>`. Prefer a fake whenever one will do.
 
 Three cases that must stay fakes, as a guide to the boundary: a double dispatched on its **concrete
 type** (`ShopCenter.PackagesOfType<T>()` — a Moq proxy's type is generated); a double the subject
 **constructs itself** (`ObjectPool<T>.CreateObject()` — nothing to inject); and a double of an
 **empty marker interface** (`IGameEvent` — nothing to verify).
-```
+
+````
 
 - [ ] **Step 2: Note the renamed implementations**
 
@@ -1573,7 +1614,7 @@ In the same file, in the package-anatomy or naming area, add:
 implements `IUpdateManager`, `ShopCenter` implements `IShopCenter`. The old `Basic` prefix was dropped
 on 2026-09-05; it distinguished each type from nothing, since each interface had exactly one
 implementation. See [`docs/specs/2026-09-05-basic-rename-and-moq-design.md`](../docs/specs/2026-09-05-basic-rename-and-moq-design.md).
-```
+````
 
 - [ ] **Step 3: Confirm no hand-written mock survives**
 

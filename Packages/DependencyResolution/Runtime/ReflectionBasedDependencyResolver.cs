@@ -2,13 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-
 namespace Arman.DependencyResolution
 {
     public partial class ReflectionBasedDependencyResolver : IDependencyResolver
     {
         private Dictionary<Type, IInternalEntry> _entries = new();
-
 
         public IResolutionEntry<T> RegisterType<T>()
         {
@@ -24,7 +22,6 @@ namespace Arman.DependencyResolution
         {
             return AddEntry<T>(Entry<T>.FromInstance(instance));
         }
-
 
         private Entry<T> AddEntry<T>(Entry<T> entry)
         {
@@ -48,10 +45,11 @@ namespace Arman.DependencyResolution
             }
 
             return new DictionaryBasedRepository(rollingInstances);
-
         }
 
-        private static IEnumerable<IInternalEntry> TopologicalSort(IEnumerable<IInternalEntry> entries)
+        private static IEnumerable<IInternalEntry> TopologicalSort(
+            IEnumerable<IInternalEntry> entries
+        )
         {
             var providers = new Dictionary<Type, IInternalEntry>();
 
@@ -61,7 +59,9 @@ namespace Arman.DependencyResolution
                 {
                     if (providers.ContainsKey(target))
                     {
-                        throw new InvalidOperationException($"Type {target.Name} is provided by more than one entry");
+                        throw new InvalidOperationException(
+                            $"Type {target.Name} is provided by more than one entry"
+                        );
                     }
 
                     providers.Add(target, entry);
@@ -71,7 +71,6 @@ namespace Arman.DependencyResolution
             var sortedList = new List<IInternalEntry>();
             var visited = new HashSet<IInternalEntry>();
             var visiting = new HashSet<IInternalEntry>();
-
 
             foreach (var entry in entries)
             {
@@ -84,7 +83,9 @@ namespace Arman.DependencyResolution
             {
                 if (visiting.Contains(entry))
                 {
-                    throw new InvalidOperationException($"Circular dependency detected involving types: {string.Join(", ", entry.Targets().Select(target => target.Name))}");
+                    throw new InvalidOperationException(
+                        $"Circular dependency detected involving types: {string.Join(", ", entry.Targets().Select(target => target.Name))}"
+                    );
                 }
 
                 if (visited.Contains(entry))
@@ -98,7 +99,9 @@ namespace Arman.DependencyResolution
                 {
                     if (!providers.TryGetValue(dependency, out var provider))
                     {
-                        throw new InvalidOperationException($"No entry provides {dependency.Name}, required by {string.Join(", ", entry.Targets().Select(target => target.Name))}");
+                        throw new InvalidOperationException(
+                            $"No entry provides {dependency.Name}, required by {string.Join(", ", entry.Targets().Select(target => target.Name))}"
+                        );
                     }
 
                     Visit(provider);
@@ -108,9 +111,6 @@ namespace Arman.DependencyResolution
                 visited.Add(entry);
                 sortedList.Add(entry);
             }
-
-
         }
-
     }
 }

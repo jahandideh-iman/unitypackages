@@ -1,9 +1,7 @@
-﻿
-using Arman.PackageBasics;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Arman.PackageBasics;
 using UnityEngine;
-
 
 // WARNING: Cycles in channel relations are not check. Having cycles may cause infinite lopps.
 // TODO: Add a root channel.
@@ -33,7 +31,6 @@ namespace Arman.UpdateManagement
                 updatables.RemoveAll(u => updatable.Equals(u));
             }
         }
-
 
         Dictionary<IChannel, ChannelData> channelsData = new Dictionary<IChannel, ChannelData>();
 
@@ -80,7 +77,6 @@ namespace Arman.UpdateManagement
             {
                 ChannelDataFor(channel).isPaused = false;
                 ChannelStateChangedEvent.Invoke(channel, false);
-
             }
         }
 
@@ -104,21 +100,20 @@ namespace Arman.UpdateManagement
         {
             foreach (var data in channelsData.Values)
                 AdvanceTimeFor(data, amount);
-
         }
 
         private void AdvanceTimeFor(ChannelData data, float amount)
         {
             if (IsChannelDataGloballyPaused(data))
-                return ;
+                return;
 
-            // WARNING: This is costly. This is a fast (and hacky) soloution to handle 
+            // WARNING: This is costly. This is a fast (and hacky) soloution to handle
             // changes to updatables while iterating (due to unregistering).
             updatablesTemp.Clear();
-            updatablesTemp.AddRange(data.updatables); 
+            updatablesTemp.AddRange(data.updatables);
 
             var count = updatablesTemp.Count;
-            for (int i = count-1; i >= 0; --i)
+            for (int i = count - 1; i >= 0; --i)
             {
                 try
                 {
@@ -140,7 +135,7 @@ namespace Arman.UpdateManagement
         {
             var current = data;
 
-            while(current!= null)
+            while (current != null)
             {
                 if (current.isPaused)
                     return true;
@@ -184,9 +179,8 @@ namespace Arman.UpdateManagement
                 isPaused = false,
                 timeScale = 1f,
                 updatables = new List<IUpdatable>(),
-                channel = channel
+                channel = channel,
             };
         }
-
     }
 }

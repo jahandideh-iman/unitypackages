@@ -2,7 +2,6 @@ using NUnit.Framework;
 
 namespace Arman.DependencyResolution.Tests
 {
-
     public class DependencyResolverTest_BasicRegistration
     {
         public class A
@@ -13,12 +12,14 @@ namespace Arman.DependencyResolution.Tests
         public class B
         {
             public B(A a) { }
+
             public static B Create(A a) => new B(a);
         }
 
         public class C
         {
             public C(A a, B b) { }
+
             public static C Create(A a, B b) => new C(a, b);
         }
 

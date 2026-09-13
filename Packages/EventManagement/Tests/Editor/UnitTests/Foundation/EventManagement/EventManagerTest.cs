@@ -8,10 +8,7 @@ namespace Arman.EventManagement.Tests
     {
         // IGameEvent is an empty marker, so a real instance says more than a proxy:
         // the tests care about which object came back, not about calls made on it.
-        class FakeGameEvent : IGameEvent
-        {
-
-        }
+        class FakeGameEvent : IGameEvent { }
 
         IEventManager manager;
 
@@ -36,7 +33,6 @@ namespace Arman.EventManagement.Tests
             Assert.That(manager.Has(listener1.Object));
             Assert.That(manager.Has(listener2.Object));
         }
-
 
         [Test]
         public void UnregisteringListenrerShouldRemoveThemFromManager()
@@ -73,7 +69,8 @@ namespace Arman.EventManagement.Tests
 
             listener1.Verify(
                 listener => listener.OnEvent(It.IsAny<IGameEvent>(), It.IsAny<object>()),
-                Times.Never);
+                Times.Never
+            );
         }
 
         [Test]
@@ -88,5 +85,4 @@ namespace Arman.EventManagement.Tests
             Assert.That(manager.Has(listener2.Object), Is.False);
         }
     }
-
 }

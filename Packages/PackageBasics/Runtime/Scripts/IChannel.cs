@@ -1,5 +1,4 @@
-﻿
-namespace Arman.PackageBasics
+﻿namespace Arman.PackageBasics
 {
     public interface IChannel
     {

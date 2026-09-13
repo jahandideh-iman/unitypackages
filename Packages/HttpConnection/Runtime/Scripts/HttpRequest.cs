@@ -3,24 +3,30 @@ using System.Collections.Generic;
 
 namespace Arman.HttpConnection
 {
-    public enum HttpRequestType { GET, POST }
+    public enum HttpRequestType
+    {
+        GET,
+        POST,
+    }
 
-    
     struct RequestSession
     {
         public readonly HttpRequest request;
         public readonly Action<string> onSuccess;
         public readonly Action<string> onFailure;
 
-        public RequestSession(HttpRequest request, Action<string> onSuccess, Action<string> onFailure)
+        public RequestSession(
+            HttpRequest request,
+            Action<string> onSuccess,
+            Action<string> onFailure
+        )
         {
             this.request = request;
             this.onSuccess = onSuccess;
             this.onFailure = onFailure;
         }
     }
-    
-    
+
     public struct HttpRequest
     {
         public readonly HttpRequestType requestType;
@@ -31,12 +37,13 @@ namespace Arman.HttpConnection
         public readonly float? timeOut;
 
         public HttpRequest(
-            HttpRequestType requestType, 
+            HttpRequestType requestType,
             string url,
             string body,
-            Dictionary<string, string> headers, 
+            Dictionary<string, string> headers,
             Dictionary<string, string> parameters,
-            float? timeOut)
+            float? timeOut
+        )
         {
             this.requestType = requestType;
             this.url = url;
