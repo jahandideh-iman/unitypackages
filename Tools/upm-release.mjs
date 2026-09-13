@@ -478,7 +478,11 @@ export function addChangedEntries(text, bullets) {
         let at = headings.findIndex((match, i) => i > existing && match !== null);
         if (at === -1) at = body.length;
         while (at > existing + 1 && body[at - 1].trim() === "") at -= 1;
-        body.splice(at, 0, ...bullets);
+        // Markdown wants a blank line on both sides of a list: under an empty
+        // heading, and before a heading that directly follows.
+        const before = at === existing + 1 ? [""] : [];
+        const after = at < body.length && body[at].trim() !== "" ? [""] : [];
+        body.splice(at, 0, ...before, ...bullets, ...after);
     } else {
         // Insert the whole sub-section, in Keep a Changelog's order among
         // whatever sub-headings the section already carries.
