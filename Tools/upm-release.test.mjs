@@ -190,6 +190,23 @@ test("addChangedEntries appends to an existing Changed section", () => {
     );
 });
 
+test("addChangedEntries keeps a blank line under an empty Changed heading", () => {
+    const text = "# Changelog\n\n## [Unreleased]\n\n### Changed\n\n## [0.1.0] - 2026-08-29\n";
+    assert.equal(
+        addChangedEntries(text, [BULLET]),
+        `# Changelog\n\n## [Unreleased]\n\n### Changed\n\n${BULLET}\n\n## [0.1.0] - 2026-08-29\n`,
+    );
+});
+
+test("addChangedEntries separates the bullets from a heading directly below them", () => {
+    const text =
+        "# Changelog\n\n## [Unreleased]\n\n### Changed\n### Fixed\n\n- A leak.\n\n## [0.1.0] - 2026-08-29\n";
+    assert.equal(
+        addChangedEntries(text, [BULLET]),
+        `# Changelog\n\n## [Unreleased]\n\n### Changed\n\n${BULLET}\n\n### Fixed\n\n- A leak.\n\n## [0.1.0] - 2026-08-29\n`,
+    );
+});
+
 test("addChangedEntries files a new Changed section in Keep a Changelog order", () => {
     const text =
         "# Changelog\n\n## [Unreleased]\n\n### Added\n\n- A thing.\n\n### Fixed\n\n- A leak.\n\n## [0.1.0] - 2026-08-29\n";
