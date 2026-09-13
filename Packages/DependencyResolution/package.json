@@ -8,8 +8,5 @@
   "author": {
     "name": "Iman Jahandideh",
     "email": "jahandidehk.iman@gmail.com"
-  },
-  "dependencies": {
-    "com.cysharp.unitask": "2.5.11"
   }
 }
