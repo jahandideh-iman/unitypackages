@@ -78,8 +78,7 @@ animationPlayer.Stop();
 
 ## Things to know
 
-- **The namespace is `Arman.UnityUtilities`** — it was renamed from `Arman.Utilty.Unity` (which
-  carried a "Utilty" typo), so any out-of-tree `using` referring to the old name needs updating.
+- **The namespace is `Arman.UnityUtilities`.**
 - **`DelayHandler` calls `StopAllCoroutines()`** when a timer starts or stops. If you run other
   coroutines on the same GameObject, they will be cancelled too — give the handler its own object.
 - **`UnityAnimationPlayer` wraps the legacy `Animation` component**, not `Animator`. It is for

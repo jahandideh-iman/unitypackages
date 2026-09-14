@@ -105,5 +105,5 @@ foreach (CoinPackage coins in shop.PackagesOfType<CoinPackage>())
   the previous delegate.
 - **`AddPackage` does not deduplicate**, and `Packages()` returns the live internal list — copy it
   before mutating the shop while iterating.
-- **Flat namespace.** The runtime lives in `Arman.ShopManagement` (formerly
-  `Arman.Foundation.ShopManagement.Core`); the scripts are flat under `Runtime/Scripts`.
+- **Flat namespace.** The runtime lives in `Arman.ShopManagement`; the scripts are flat under
+  `Runtime/Scripts`.

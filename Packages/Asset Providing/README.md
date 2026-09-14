@@ -76,4 +76,4 @@ ChainedAssetProviderService service = serviceConfig.CreateAssetProviderService()
   `service.ISyncUnityAssetProvider` / `service.IAsyncUnityAssetProvider` to load.
 - **`TableBasedAssetProvider` takes its table at construction**; the `TableBasedAssetProviderConfig`
   asset builds that dictionary from a serialized id/asset list.
-- **Flat namespace.** The runtime lives in `Arman.AssetProviding` (formerly `Arman.AssetProviding.Utility`, `Arman.AssetProviding.Foundation` [including its `.Service` and `.AssetProviders` subnamespaces], and `Arman.AssetProviding.Data`); the scripts are flat under `Runtime/Scripts`.
+- **Flat namespace.** The runtime lives in `Arman.AssetProviding`; the scripts are flat under `Runtime/Scripts`.
