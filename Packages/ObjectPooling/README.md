@@ -89,5 +89,5 @@ bulletPoolAsset.Setup(poolRoot);
   same object twice, is not detected.
 - **`ScriptableObjectPool<T>` is an asset and outlives play mode.** Its `Setup(Transform)` must be
   called again with a live container each time a scene loads.
-- **Flat namespace.** The runtime lives in `Arman.ObjectPooling` (formerly
-  `Arman.ObjectPooling.Core` and `Arman.ObjectPooling.Unity`); the scripts are flat under `Runtime/Scripts`.
+- **Flat namespace.** The runtime lives in `Arman.ObjectPooling`; the scripts are flat under
+  `Runtime/Scripts`.

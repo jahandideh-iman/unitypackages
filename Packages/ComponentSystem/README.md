@@ -82,7 +82,7 @@ Dash dash = abilities.GetComponent<Dash>();
 
 ## Things to know
 
-- **Namespace simplification.** The runtime namespace is now `Arman.ComponentSystem`; the former `Arman.Foundation.ComponentSystem.Core` namespace is gone. Update any `using` directives (and test namespaces, now `Arman.ComponentSystem.Tests`) to match.
+- **One namespace.** The runtime lives in `Arman.ComponentSystem`, and its tests in `Arman.ComponentSystem.Tests`.
 - **`GetComponent<T>()` returns the first assignable match** by linear scan, and `default(T)` — `null`
   for a class — when there is none. It does not throw. `GetComponentFromEnd<T>()` scans backwards and
   returns the last, which is how you pick the most recently added of a duplicated type.

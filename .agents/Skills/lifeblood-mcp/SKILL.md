@@ -1,6 +1,6 @@
 ---
 name: lifeblood-mcp
-description: "Use for the Unity-aware and whole-project-impact questions SharpLens cannot answer: Unity asmdef checks across this repo's 34 asmdefs, multi-define-profile (#if UNITY_EDITOR vs player) analysis, Unity-reflection-aware dead code, and blast-radius/file-impact/test-impact analysis. For ordinary C# navigation, inspection, and refactoring use the sharplens-mcp skill instead."
+description: "Use for the Unity-aware and whole-project-impact questions SharpLens cannot answer: Unity asmdef checks across this repo's packages, multi-define-profile (#if UNITY_EDITOR vs player) analysis, Unity-reflection-aware dead code, and blast-radius/file-impact/test-impact analysis. For ordinary C# navigation, inspection, and refactoring use the sharplens-mcp skill instead."
 ---
 
 # Lifeblood MCP
@@ -14,8 +14,8 @@ description: "Use for the Unity-aware and whole-project-impact questions SharpLe
 > "prefer Lifeblood over text search" posture below is upstream prose and still holds
 > *against grep* — it is not a claim of precedence over `sharplens`.
 >
-> `asmdef_check` earns its keep here: this repo is 18 embedded packages over 34 asmdefs,
-> and an asmdef whose `references` don't match the real cross-package edges is a broken
+> `asmdef_check` earns its keep here: this repo is many embedded packages, each with its
+> own asmdefs, and an asmdef whose `references` don't match the real cross-package edges is a broken
 > published package. It has no `sharplens` equivalent.
 >
 > Two upstream capabilities **do not apply to this repo**: `invariant_check` has no

@@ -87,7 +87,7 @@ unityConfigurationManager.Configure(newEnemy);
 
 ## Things to know
 
-- **Namespace simplification.** The runtime namespace is now `Arman.ConfigurationManagement`; the former `Arman.Foundation.Core.ConfigurationManagement` and `Arman.Foundation.Unity.Configuration` namespaces are gone. Update any `using` directives (and test namespaces, now `Arman.ConfigurationManagement.Tests`) to match.
+- **One namespace.** The runtime lives in `Arman.ConfigurationManagement`, and its tests in `Arman.ConfigurationManagement.Tests`.
 - **`UnityConfigurationManager.Init()` is not implicit.** It is what walks the assigned
   `configurationMaster` and registers every configurer under it.
 - **One configurer per target type.** `Register<T>` keys a dictionary on `typeof(T)`, so registering

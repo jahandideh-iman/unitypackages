@@ -130,13 +130,13 @@ test("release-flow rejects any argument with exit code 2", () => {
 
 // ------------------------------------------------------------------- the bat
 //
-// release.bat was twice committed with its `Tools\release.bat` usage comments
-// mangled — once into `Tools<CR>elease.bat` (harmless, still one `rem` line),
-// once into a bare `release.bat validate` on its own line, which cmd runs. That
-// second form recurses forever when the working directory is Tools/. The file
-// now contains no backslash at all, which is what this test pins.
+// Tooling that eats backslashes can turn a `Tools\release.bat` usage comment
+// into `Tools<CR>elease.bat` (harmless, still one `rem` line) or into a bare
+// `release.bat validate` on its own line, which cmd runs and which recurses
+// forever when the working directory is Tools/. The file contains no backslash
+// at all, and these tests pin that and the shape that makes it safe.
 
-test("release.bat contains no backslash, the character that mangled it before", () => {
+test("release.bat contains no backslash", () => {
     assert.equal(fs.readFileSync(BAT, "utf8").includes("\\"), false);
 });
 

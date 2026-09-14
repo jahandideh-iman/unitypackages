@@ -24,12 +24,9 @@ Read back what GitHub actually stored, which is the only way to catch drift:
 gh api repos/:owner/:repo/rulesets/<id> -q '.rules[] | select(.type=="required_status_checks") | .parameters.required_status_checks[].context'
 ```
 
-Drift is not hypothetical. On 2026-09-06 the live `Master` ruleset was found
-requiring only `promotion-guard`, while this directory and `.agents/AGENTS.md`
-both claimed it also required `validate` and `pack`; its merge methods and
-unattributed-changes setting had diverged too. When the divergence began is not
-recorded — which is the point. Edits made in the web UI do not come back here on
-their own, so read the live ruleset back rather than trusting these files.
+Edits made in the web UI do not come back here on their own, and nothing
+records when the live ruleset stops matching these files. Read the live ruleset
+back rather than trusting them.
 
 ## Which checks are required
 

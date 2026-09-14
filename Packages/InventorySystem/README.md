@@ -77,5 +77,5 @@ foreach (Currency item in inventory.Items())
   every `SetNumberOf`, including one that clamps to an unchanged value.
 - **`Items()` allocates.** It copies the key set into a new `List<T>` on each call — keep it out of
   per-frame code.
-- **Flat namespace.** The runtime lives in `Arman.InventorySystem` (formerly
-  `Arman.Game.InventorySystem.Core`); the scripts are flat under `Runtime/Scripts`.
+- **Flat namespace.** The runtime lives in `Arman.InventorySystem`; the scripts are flat under
+  `Runtime/Scripts`.

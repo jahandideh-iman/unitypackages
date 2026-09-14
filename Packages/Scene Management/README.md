@@ -52,9 +52,8 @@ public class LevelInitializer : SceneInitilizer
 - **`Init()` runs from `Awake`, at execution order -100.** `[DefaultExecutionOrder(-100)]` puts it
   ahead of ordinary components, so anything the scene needs registered is ready before their `Awake`.
   Components with a more negative order of their own still run first.
-- **The namespace is `Arman.SceneManagement`** — it was renamed from `Arman.SceneMangement` (which
-  carried a "Mangement" typo), so any out-of-tree `using` referring to the old name needs updating.
-  The class name `SceneInitilizer` keeps its separate misspelling for compatibility.
+- **The namespace is `Arman.SceneManagement`.** The class name `SceneInitilizer` is misspelled, and
+  the spelling is kept for compatibility.
 - **`SceneManager` shadows Unity's own `SceneManager`.** In a file that has both `using` directives you
   will need to qualify one of them.
 - **`Open` is a single-scene, synchronous `LoadScene`.** There is no additive load, no async load and

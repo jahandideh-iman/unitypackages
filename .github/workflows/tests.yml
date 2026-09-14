@@ -1,6 +1,6 @@
 name: tests
 
-# Runs the repo's own tooling tests on ubuntu, then its 9 Unity test assemblies
+# Runs the repo's own tooling tests on ubuntu, then its Unity test assemblies
 # on a self-hosted Windows runner.
 # See docs/specs/2026-08-30-pr-test-ci-design.md.
 #
@@ -30,9 +30,7 @@ permissions:
 jobs:
   # One job for every test the repo's own tooling has: the PowerShell CI
   # helpers, plus the Node scripts behind the changelog check and the release
-  # flow. These were three separate jobs in three workflows, which put three
-  # near-identical rows in every PR's check list and forced the awkward
-  # `release-script-tests` name on one of them to dodge a name collision.
+  # flow. One job keeps them to a single row in every PR's check list.
   #
   # Runs everywhere, including on forks: it needs no Unity and no self-hosted
   # runner, so the logic gating CI is itself tested on every PR.
@@ -200,15 +198,13 @@ jobs:
             Write-Host "::error::PlayMode suite is red. Open the test report."
             exit 8
           }
-          # There are no PlayMode test assemblies yet -- all 9 are
-          # includePlatforms: ["Editor"]. This step is here so the first
-          # PlayMode test written is covered automatically rather than silently
-          # unrun. Measured on the first green run: an empty PlayMode suite
-          # exits 0 and writes a well-formed <testsuites tests="0"/>, so it
-          # needs no special case. An earlier draft treated "nonzero but a
-          # results file exists" as an empty suite; that is now known to be
-          # unreachable, and keeping it would let a genuine failure that left a
-          # stale results file report green. Any nonzero exit is a real failure.
+          # Every test assembly is includePlatforms: ["Editor"], so the
+          # PlayMode suite is empty. This step is here so the first PlayMode
+          # test written is covered automatically rather than silently unrun.
+          # An empty PlayMode suite exits 0 and writes a well-formed
+          # <testsuites tests="0"/>, so it needs no special case. Any nonzero
+          # exit is a real failure, even if a results file exists: a stale
+          # results file must not turn a failed run green.
           if ($code -ne 0)
           {
             Write-Host "::error::PlayMode run produced no results (exit $code) -- build or environment failure. Open the editor log artefact."
@@ -262,9 +258,9 @@ jobs:
           report_paths: "artifacts/TestResults/*-junit.xml"
           # No separate check run. The Checks API has no way to say which check
           # suite a created run belongs to, so GitHub files it under an
-          # arbitrary one of this commit's github-actions suites -- in practice
-          # changelog's, which meant a red Unity suite surfaced under the
-          # changelog workflow and sent the reader to the wrong place.
+          # arbitrary one of this commit's github-actions suites, such as the
+          # changelog workflow's, where a red Unity suite would send the reader
+          # to the wrong place.
           # Annotations still land on the changed lines, job_summary still
           # publishes the results table, and fail_on_failure still fails this
           # job, so nothing is lost but the misfiled check.

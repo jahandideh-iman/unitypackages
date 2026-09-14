@@ -61,7 +61,7 @@ events.UnRegister(scoreBoard);
 
 ## Things to know
 
-- **Namespace simplification.** The runtime namespace is now `Arman.EventManagement`; the former `Arman.Foundation.EventManagement` namespace is gone. Update any `using` directives (and test namespaces, now `Arman.EventManagement.Tests`) to match.
+- **One namespace.** The runtime lives in `Arman.EventManagement`, and its tests in `Arman.EventManagement.Tests`.
 - **This is a broadcast bus, not a subscription-by-type bus.** Every listener is called for every
   event; type filtering happens inside `OnEvent`. That keeps the manager trivial, and costs a virtual
   call per listener per event — fine for gameplay events, wrong for per-frame traffic.
