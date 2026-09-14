@@ -35,8 +35,8 @@ const RELEASE_BRANCH = "master";
 
 const NPM = process.platform === "win32" ? "npm.cmd" : "npm";
 
-// Package ids are one flat namespace: com.arman.<kebab-case-name>. Normalised
-// 2026-08-23; see .agents/AGENTS.md § Naming. A published id is permanent.
+// Package ids are one flat namespace: com.arman.<kebab-case-name>. See
+// .agents/AGENTS.md § Naming. A published id is permanent.
 const NAME_PATTERN = /^com\.arman\.[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 const SEMVER_PATTERN =
@@ -119,8 +119,8 @@ function publishable(packages) {
     return packages.filter((p) => !p.private && !p.parseError);
 }
 
-// `--only <name-or-folder>`, repeatable. Rollout step 4 is a single-package
-// smoke test, so tagging exactly one package has to be a first-class operation.
+// `--only <name-or-folder>`, repeatable. Releasing exactly one package is a
+// first-class operation.
 function applyOnly(packages, only) {
     if (!only) return packages;
     const wanted = (Array.isArray(only) ? only : [only]).map((s) => s.trim());

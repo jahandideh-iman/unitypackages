@@ -13,6 +13,7 @@ kept in a separate namespace. Each package documents its own API in its `README.
 | [Asset Providing](Packages/Asset%20Providing)                   | `com.arman.asset-providing`            | Load assets by id through sync or async providers.                  |
 | [Component System](Packages/ComponentSystem)                    | `com.arman.component-system`           | Composition over inheritance — entities as bags of components.      |
 | [Configuration Management](Packages/ConfigurationManagement)    | `com.arman.configuration-management`   | Apply configuration to objects by type, via registered configurers. |
+| [Dependency Resolution](Packages/DependencyResolution)          | `com.arman.dependency-resolution`      | Reflection-based dependency resolution for types and factories.     |
 | [Development Console](Packages/DevelopmentConsole)              | `com.arman.development-console`        | In-game cheat menu driven by a `[DevOption]` attribute.             |
 | [Event Management](Packages/EventManagement)                    | `com.arman.event-management`           | A broadcast event bus for decoupling gameplay systems.              |
 | [Http Connection](Packages/HttpConnection)                      | `com.arman.http-connection`            | A builder and service over `UnityWebRequest`.                       |
@@ -64,8 +65,8 @@ Releases follow the OpenUPM model: a git tag `<package-id>/<version>` _is_ the r
 handled by `Tools/upm-release.mjs` (`validate`, `pack`, `tag`) and the `release` workflow.
 
 ```
-node Tools/upm-release.mjs validate    # check every package
-node Tools/upm-release.mjs pack        # npm pack --dry-run per package
+node Tools/upm-release.mjs validate    # check every package, including an npm pack --dry-run
+node Tools/upm-release.mjs pack        # write each package's tarball to PackageExports/
 ```
 
 ## Contributing

@@ -18,7 +18,7 @@ It is a pure .NET server with **no Unity knowledge**. See "Hand off to lifeblood
 
 1. `health_check` — see whether a solution is loaded, and *which* one. On a machine with
    several Unity projects open, a shared server may be pointed somewhere else entirely.
-2. `load_solution` at `unitypackages.slnx` in the repo root (29 projects — every asmdef's
+2. `load_solution` at `unitypackages.slnx` in the repo root (a project for every asmdef's
    generated `.csproj`). There is no `.sln`; `.slnx` is the only solution file.
 3. `sync_documents` after edits made outside the server's view (a `Write`/`Edit`, a Unity
    reimport, a `git checkout`).
@@ -32,7 +32,7 @@ will fail or load nothing. Either:
 * regenerate them in the worktree — `unity command menu --path "Assets/Open C# Project"`
   (see [`unity-cli`](../unity-cli/SKILL.md)), or
 * `load_solution` against the **main checkout's** `unitypackages.slnx` and accept that
-  results describe `master`'s code, not your worktree edits. Say which you did.
+  results describe the main checkout's code, not your worktree edits. Say which you did.
 
 The same applies to any clean clone. Do not report "symbol not found" until you have
 confirmed a solution is actually loaded.
@@ -86,8 +86,8 @@ regenerate project files and `load_solution` again before concluding it doesn't 
 
 ## What this repo uses it for that a game repo doesn't
 
-This is a **host for 18 publishable UPM packages**, not a game — 148 `.cs` files across
-34 asmdefs, and a throwaway `Assets/` sandbox. That shifts which tools matter:
+This is a **host for publishable UPM packages**, not a game — each package with its own
+asmdefs, and a throwaway `Assets/` sandbox. That shifts which tools matter:
 
 | Repo-specific need | Tool |
 |---|---|

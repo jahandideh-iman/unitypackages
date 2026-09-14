@@ -13,14 +13,8 @@ name: release
 # ⚠️ Merging a release PR into `master` PUBLISHES. The `tag` job runs on that
 # push and tags every package whose version is not tagged yet; OpenUPM picks the
 # tags up and the resulting name/version is permanent. Bump versions on `dev`
-# and let them sit there until you mean to release.
-#
-# The `workflow_dispatch` gate this job used to carry was rollout step 4's
-# safeguard — a single-package smoke test (com.arman.service-locating) had to
-# settle the Package Manager visibility question in §5 before the rest were
-# submitted. That test passed and all 17 packages went out on 2026-08-31, so the
-# gate was dropped per rollout step 5 and merging the release PR is now the whole
-# release flow, as designed.
+# and let them sit there until you mean to release. Merging the release PR is
+# the whole release flow; there is no manual gate.
 
 on:
   pull_request:
@@ -78,7 +72,7 @@ jobs:
   tag:
     needs: [validate, pack]
     # The ref condition is the one thing standing between a routine push to
-    # `dev` and publishing 17 packages — `master` is the release branch, so a tag
+    # `dev` and publishing every package — `master` is the release branch, so a tag
     # can never be cut from `dev`. Keep it. (`Tools/upm-release.mjs tag` refuses
     # to run off `master` too, deliberately belt and braces.)
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'

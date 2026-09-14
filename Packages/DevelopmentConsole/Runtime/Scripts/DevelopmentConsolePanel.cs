@@ -27,7 +27,6 @@ namespace Arman.DevelopmentConsole
         private void Awake()
         {
             toolsPanel.gameObject.SetActive(false);
-            //reporter.gameObject.SetActive(false);
             Init();
         }
 

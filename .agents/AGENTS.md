@@ -34,9 +34,14 @@ unitypackages/
 │   └── workflows/           # tests, release, changelog, format
 ├── .config/
 │   └── dotnet-tools.json    # pins CSharpier
-├── Assets/                  # scratch sandbox only — Scenes/, StreamingAssets/
-├── Tools/
-│   └── upm-release.mjs      # release tooling, dependency-free Node
+├── .qwen/                   # Qwen Code settings
+├── Assets/                  # scratch sandbox only — Scenes/, Settings/, StreamingAssets/
+├── Tools/                   # dependency-free Node, each script with its *.test.mjs
+│   ├── upm-release.mjs      # release tooling — validate, pack, tag, prepare
+│   ├── release-flow.mjs     # a whole release in one go, wrapped by release.bat
+│   ├── changelog-check.mjs  # the changelog CI check
+│   ├── promotion-check.mjs  # release PRs into master come from dev only
+│   └── ci/                  # PowerShell helpers for the Unity test workflow
 ├── docs/
 │   ├── plans/               # dated implementation plans
 │   └── specs/               # dated design docs
@@ -49,6 +54,7 @@ unitypackages/
 ├── ProjectSettings/
 ├── UserSettings/
 ├── .editorconfig            # editor defaults + C# naming warnings
+├── CLAUDE.md, QWEN.md       # per-agent pointers to this file
 ├── package.json             # root tooling only (Prettier) — not a UPM package
 └── LICENSE                  # MIT, repo-level
 ```
@@ -130,6 +136,8 @@ Unity tests run through the official [Unity CLI](https://unity.com/blog/meet-the
   unity test --mode PlayMode --output Library/playmode-results.xml
   ```
 
+  **Fails with "another Unity instance is running with this project open" if the Editor is already open** — Unity refuses to open the same project twice. Use the next option instead.
+
   `unity test` auto-detects the project (current directory) and editor version (`ProjectVersion.txt`); pass `--editor-version`/`-e <path>` to override, `--allow-install` to fetch a missing editor version, and `--timeout <seconds>` to cap a hung run. Add `--json` for machine-parseable output.
 
   **Exit codes (CLI 1.0.0-beta.3):** `0` success, **`8` tests ran and failed**, **`6` the run never produced results** (compiler errors, a missing `--execute-method` target, a dead Editor). Check that distinction before treating a nonzero exit as "couldn't run" — `6` genuinely means "couldn't run," `8` means the suite is red.
@@ -142,8 +150,6 @@ Unity tests run through the official [Unity CLI](https://unity.com/blog/meet-the
   unity command run_tests --mode PlayMode
   ```
   Returns structured JSON with per-test results inline (`Summary.{Total,Passed,Failed}`, `Results[].{FullName,Status,Duration}`) — no XML file to parse. `--filter`/`--filter_type` narrow to specific tests; see `unity command` (no args) for the full parameter list.
-
-**Fails with "another Unity instance is running with this project open" if you already have the Editor open** — Unity refuses to open the same project twice. Use the next option instead.
 
 ### Test doubles — Moq for interactions, hand-written fakes for state
 
@@ -268,7 +274,6 @@ SharpLens has no Unity knowledge whatsoever. Use `lifeblood` for:
 | Does this asmdef actually declare its dependencies?            | `lifeblood_asmdef_check`                                                   |
 | Does this hold in player builds as well as `#if UNITY_EDITOR`? | `lifeblood_analyze` with `defineProfiles:["Editor","Player","Standalone"]` |
 | Is this MonoBehaviour / UnityEvent-wired code genuinely dead?  | `lifeblood_dead_code`                                                      |
-| Which architectural invariant governs this area?               | `lifeblood_invariant_check`, then read `docs/invariants/*.md`              |
 | What's the blast radius, and which tests should I run?         | `lifeblood_blast_radius`, `lifeblood_file_impact`, `lifeblood_test_impact` |
 
 > **Unity-blindness warning.** SharpLens ships near-equivalents — `analyze_change_impact`, `check_architecture`, `find_unused_code`, `find_untested_code`, `find_dead_branches` — that know nothing about Unity. They will report MonoBehaviour message methods (`Awake`, `Start`, `OnEnable`, `Update`), `[SerializeField]` targets, and UnityEvent-wired handlers as unused or unreachable, because nothing in C# source calls them. **Never delete Unity-facing code on a SharpLens unused/dead-code result alone** — confirm with `lifeblood_dead_code`, which resolves MonoBehaviour and Editor reflection entry points and UnityEvent persistent calls from scene/prefab YAML.
@@ -329,7 +334,7 @@ Six steps, stopping at the first failure: preflight (`git` and `gh` present and 
 
 Passing it any argument is an error (exit 2) that points back at `upm-release.mjs` — that script is where single steps, `--dry-run`, `--only` and `--bump` live. Nothing forwards sub-commands; spell those `node Tools/upm-release.mjs <command>`. The flow's own tests are `Tools/release-flow.test.mjs`, run by `tooling-tests` in `tests.yml`.
 
-> `release.bat` contains **no backslash at all**, and three tests pin that. Tooling that eats backslashes turns a `Tools\release.bat` usage line into a bare `release.bat` command line, which cmd executes and which recurses forever when the working directory is `Tools/`. Keep it that way.
+> `release.bat` contains **no backslash at all**. One test pins that; two more pin that the `node` invocation is its only executable line and that it is CRLF. Tooling that eats backslashes turns a `Tools\release.bat` usage line into a bare `release.bat` command line, which cmd executes and which recurses forever when the working directory is `Tools/`. Keep it that way.
 
 `--only` takes a package id or a folder name (`--only "UI Management"` works), is repeatable, and errors if it matches nothing. It is the way to release one package by hand without touching the others. Under `--only`, `validate` still resolves dependencies against _every_ package, not just the selected ones.
 
