@@ -7,7 +7,7 @@ obj/
 *.csproj
 
 # Vendored. Reformatting third-party code makes it harder to compare with upstream.
-.agents/Skills/
+.agents/skills/
 .claude/
 .qwen/
 Packages/PackageBasics/Runtime/ThirdParties/

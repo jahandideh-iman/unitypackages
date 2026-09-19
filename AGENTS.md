@@ -1,6 +1,6 @@
 # UnityPackages — Agent Guide
 
-This is the single source of truth for developers and AI agents working on the **UnityPackages** repo. `CLAUDE.md` at the repo root is a pointer to this file.
+This is the single source of truth for developers and AI agents working on the **UnityPackages** repo. OpenCode and other `AGENTS.md`-aware tools load it directly; `CLAUDE.md` imports it for Claude Code, and `QWEN.md` points to it.
 
 Read it before making changes.
 
@@ -25,10 +25,9 @@ Consumers get these packages from a registry, **not** by copying folders. See [D
 ```
 unitypackages/
 ├── .agents/
-│   ├── AGENTS.md            # this file
-│   └── Skills/              # vendored agent skills (canonical, tool-agnostic copy)
+│   └── skills/              # vendored agent skills (canonical, tool-agnostic copy; OpenCode reads it)
 ├── .claude/
-│   └── skills/              # mirror of .agents/Skills/ — the copy Claude Code discovers
+│   └── skills/              # mirror of .agents/skills/ — the copy Claude Code discovers
 ├── .github/
 │   ├── rulesets/            # dev.json, master.json — applied with gh api
 │   └── workflows/           # tests, release, changelog, format
@@ -54,6 +53,7 @@ unitypackages/
 ├── ProjectSettings/
 ├── UserSettings/
 ├── .editorconfig            # editor defaults + C# naming warnings
+├── AGENTS.md                # this file
 ├── CLAUDE.md, QWEN.md       # per-agent pointers to this file
 ├── package.json             # root tooling only (Prettier) — not a UPM package
 └── LICENSE                  # MIT, repo-level
@@ -180,7 +180,7 @@ Do **not** fix a duplicate-assembly error by turning `overrideReferences` off �
 
 ## CI
 
-`.github/workflows/tests.yml` runs the test suites on every same-repo pull request and on pushes to `dev` and `master` — both the Unity suites and, in a single `tooling-tests` job, the tests for the repo's own scripts. Every job that needs Node reads the version from `.nvmrc` via `node-version-file`, so a bump is one edit rather than seven. `.github/workflows/release.yml` separately runs `validate` and `pack`, and `.github/workflows/changelog.yml` enforces [the changelog rules](#changelogs--four-rules-enforced-in-ci). `.github/workflows/format.yml` runs the [formatters](#formatting) in check mode. Design notes: [`docs/specs/2026-08-30-pr-test-ci-design.md`](../docs/specs/2026-08-30-pr-test-ci-design.md).
+`.github/workflows/tests.yml` runs the test suites on every same-repo pull request and on pushes to `dev` and `master` — both the Unity suites and, in a single `tooling-tests` job, the tests for the repo's own scripts. Every job that needs Node reads the version from `.nvmrc` via `node-version-file`, so a bump is one edit rather than seven. `.github/workflows/release.yml` separately runs `validate` and `pack`, and `.github/workflows/changelog.yml` enforces [the changelog rules](#changelogs--four-rules-enforced-in-ci). `.github/workflows/format.yml` runs the [formatters](#formatting) in check mode. Design notes: [`docs/specs/2026-08-30-pr-test-ci-design.md`](./docs/specs/2026-08-30-pr-test-ci-design.md).
 
 | Job             | Runner              | Notes                                                                                                                            |
 | --------------- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
@@ -221,9 +221,13 @@ Two MCP servers are available, with a deliberate division of labour:
 
 For the Editor — console, scenes, GameObjects, assets, eval, tests, builds — use the official `unity` CLI directly (see below); it isn't registered as an MCP server. Prefer all of these over generic file tools and over guessing.
 
+Both servers are registered per user, not in this repo: in Claude Code with `claude mcp add`, in OpenCode under `mcp` in `~/.config/opencode/opencode.json` (`"type": "local"`, `"command": ["sharplens"]` / `["lifeblood-mcp", "--shared"]`). Tool names below use Claude Code's `mcp__<server>__<tool>` form; OpenCode names the same tool `<server>_<tool>` (`sharplens_find_references`).
+
 ### Skills
 
-Vendored under `.agents/Skills/` (canonical) and mirrored to `.claude/skills/` (what Claude Code discovers). **Edit one, copy to the other** — they must stay identical.
+Vendored under `.agents/skills/` (canonical) and mirrored to `.claude/skills/` (what Claude Code discovers). **Edit one, copy to the other** — they must stay identical.
+
+OpenCode reads both folders, so it finds each skill twice and logs a "duplicate skill name" warning; the copies are identical, so this is harmless, and `OPENCODE_DISABLE_CLAUDE_CODE_SKILLS=1` silences it. The folder name is lowercase `skills`, and each skill's `name:` is lowercase-hyphenated and equal to its folder name — OpenCode rejects any other name, and on Linux and macOS it does not find a capitalised folder.
 
 | Skill                      | Use it for                                                                                                                                                                                                                       |
 | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -296,7 +300,7 @@ Common commands (see `unity command` for the full ~140-command surface — GameO
 
 ### Permissions
 
-No `.claude/settings.json` is committed. If you want the usual allow-list (`git`, `gh`, and the `lifeblood` tools, with `lifeblood_execute` denied — it runs arbitrary code), add one yourself; `.claude/settings.local.json` is git-ignored for per-machine additions.
+No `.claude/settings.json` is committed. If you want the usual allow-list (`git`, `gh`, and the `lifeblood` tools, with `lifeblood_execute` denied — it runs arbitrary code), add one yourself; `.claude/settings.local.json` is git-ignored for per-machine additions. In OpenCode the same deny is `"permission": { "lifeblood_lifeblood_execute": "deny" }` in your own `opencode.json`.
 
 ## Distribution and releases
 
@@ -358,12 +362,12 @@ Why bump the dependent at all, when `validate` accepts a dependency at a version
 
 **Keep the `github.ref == 'refs/heads/master'` condition:** it is the only thing stopping a routine push to `dev` from publishing.
 
-The registry-hosting design is specced in [`docs/specs/`](../docs/specs/):
+The registry-hosting design is specced in [`docs/specs/`](./docs/specs/):
 
-| Document                                                                                                                        | Contents                                                                                               |
-| ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| [`docs/specs/2026-08-22-upm-package-registry-design.md`](../docs/specs/2026-08-22-upm-package-registry-design.md)               | GitLab + npmjs.com variant. Superseded, but still holds the shared problem statement and cleanup list. |
-| [`docs/specs/2026-08-23-upm-package-registry-github-design.md`](../docs/specs/2026-08-23-upm-package-registry-github-design.md) | **Current direction** — GitHub + OpenUPM.                                                              |
+| Document                                                                                                                       | Contents                                                                                               |
+| ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| [`docs/specs/2026-08-22-upm-package-registry-design.md`](./docs/specs/2026-08-22-upm-package-registry-design.md)               | GitLab + npmjs.com variant. Superseded, but still holds the shared problem statement and cleanup list. |
+| [`docs/specs/2026-08-23-upm-package-registry-github-design.md`](./docs/specs/2026-08-23-upm-package-registry-github-design.md) | **Current direction** — GitHub + OpenUPM.                                                              |
 
 The GitHub spec's §3 carries the OpenUPM submission table (ids and `gitTagPrefix` bases). The [package catalogue](#package-catalogue) and each `package.json` are the source of truth if the two disagree.
 
@@ -433,7 +437,7 @@ This split is enforced in two places, and both are deliberate belt-and-braces: `
 
 The _source_ of a release PR is enforced separately, by `promotion-guard` in `release.yml` (`Tools/promotion-check.mjs`): a pull request into `master` from anything other than `dev` fails. A GitHub ruleset cannot express this — rulesets target a destination ref and say nothing about a pull request's source — so the ruleset's job is to make `promotion-guard` a **required** check. Run it by hand with `node Tools/promotion-check.mjs --event pull_request --base master --head my-branch`.
 
-Both branches carry a ruleset, checked in under [`.github/rulesets/`](../.github/rulesets/): `master.json` and `dev.json`. Each requires a pull request and blocks force pushes and branch deletion. **Neither has bypass actors, repository owner included.** Merging into `master` publishes permanently; a bypass is the door this flow exists to close.
+Both branches carry a ruleset, checked in under [`.github/rulesets/`](./.github/rulesets/): `master.json` and `dev.json`. Each requires a pull request and blocks force pushes and branch deletion. **Neither has bypass actors, repository owner included.** Merging into `master` publishes permanently; a bypass is the door this flow exists to close.
 
 | Required check      | `dev`  | `master` |
 | ------------------- | :----: | :------: |
@@ -485,7 +489,7 @@ The root `package.json` exists only to pin Prettier. It is `private`, Unity igno
 **Excluded, and why.** Each exclusion has a reason; don't remove one without replacing the reason:
 
 - **Unity-written files** — `.meta`, `.asset`, `.prefab`, `.unity`, `.anim`, `.asmdef`, `ProjectSettings/`, `Packages/manifest.json`, `Packages/packages-lock.json`. Unity's next save would undo the formatting. `.asmdef` in particular is written with no final newline, and Prettier always adds one.
-- **Vendored code** — `.agents/Skills/`, `.claude/`, `.qwen/`, `Packages/PackageBasics/Runtime/ThirdParties/`. Reformatting makes it harder to compare with upstream.
+- **Vendored code** — `.agents/skills/`, `.claude/`, `.qwen/`, `Packages/PackageBasics/Runtime/ThirdParties/`. Reformatting makes it harder to compare with upstream.
 - **`Tools/ci/Tests/fixtures/`** — read byte for byte by the tests.
 - **Line endings and BOMs are left alone.** Both formatters use `endOfLine: auto`, and `.editorconfig` sets neither `end_of_line` nor `charset`. Git stores LF, and most C# files carry a BOM.
 

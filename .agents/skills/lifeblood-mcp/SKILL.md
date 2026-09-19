@@ -7,7 +7,7 @@ description: "Use for the Unity-aware and whole-project-impact questions SharpLe
 
 > **UnityPackages scoping note (local modification, not upstream).** `sharplens` is this
 > repo's default for ordinary C# navigation, inspection, and refactoring — see
-> [`sharplens-mcp`](../sharplens-mcp/SKILL.md) and [`AGENTS.md`](../../AGENTS.md).
+> [`sharplens-mcp`](../sharplens-mcp/SKILL.md) and [`AGENTS.md`](../../../AGENTS.md).
 > Reach for `lifeblood` when the question is **Unity-aware** (`asmdef_check`,
 > `defineProfiles`, `dead_code` over MonoBehaviour/UnityEvent entry points) or about
 > **project-wide impact** (`blast_radius`, `file_impact`, `test_impact`). The
