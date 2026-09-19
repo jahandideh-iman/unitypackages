@@ -32,7 +32,7 @@ trim_trailing_whitespace = false
 insert_final_newline = false
 
 [*.cs]
-# Naming, from "C# coding style" in .agents/AGENTS.md. These are IDE1006
+# Naming, from "C# coding style" in AGENTS.md. These are IDE1006
 # warnings in Rider, Visual Studio and VS Code only; neither Unity's compiler
 # nor CI reports them.
 dotnet_diagnostic.IDE1006.severity = warning

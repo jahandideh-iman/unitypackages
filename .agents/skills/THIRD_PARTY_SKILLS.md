@@ -3,7 +3,7 @@
 Most skills here are vendored from external repos rather than authored in this project.
 Re-sync manually by re-cloning the source and copying over the relevant `skills/<name>/` folder.
 
-Each skill lives twice on purpose: `.agents/Skills/<name>/` is the tool-agnostic canonical
+Each skill lives twice on purpose: `.agents/skills/<name>/` is the tool-agnostic canonical
 copy, and `.claude/skills/<name>/` is the mirror Claude Code actually discovers. **Keep the
 two in sync** — edit one, copy to the other.
 
@@ -44,7 +44,7 @@ two in sync** — edit one, copy to the other.
   published `<name>/<version>` tags are permanent, so a public-API break has to drive the
   semver bump.
 - `lifeblood-mcp` documents tool routing for the `lifeblood` MCP server — see
-  [`AGENTS.md`](../AGENTS.md)'s agent-tooling section. It is **not the primary Roslyn
+  [`AGENTS.md`](../../AGENTS.md)'s agent-tooling section. It is **not the primary Roslyn
   code-navigation tool**; `sharplens` is. `lifeblood` is used for what SharpLens cannot do:
   Unity asmdef checks, multi-define-profile analysis, Unity-reflection-aware dead code, and
   blast-radius/file-impact/test-impact analysis. **Locally modified:** its frontmatter
