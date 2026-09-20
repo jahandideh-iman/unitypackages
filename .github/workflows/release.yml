@@ -49,6 +49,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          # validate accepts a com.arman.* dependency pinned to a version that
+          # is either current or already tagged, and the tag half of that needs
+          # the tags present. Still depth 1: only the tag refs are added.
+          fetch-tags: true
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
