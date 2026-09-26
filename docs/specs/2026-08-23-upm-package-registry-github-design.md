@@ -120,7 +120,7 @@ submitted.
 | `UnityUtilities`           | `com.arman.unity-utilities`            | 0.1.0   |
 | `UpdateManagement`         | `com.arman.update-management`          | 0.1.0   |
 
-This table duplicates [`.agents/AGENTS.md`](../../.agents/AGENTS.md) § _Package catalogue_, which is
+This table duplicates the [package catalogue](../../.agents/rules/packages.md#package-catalogue), which is
 the source of truth if the two ever disagree.
 
 > **Amended 2026-08-31 — `configuration-management` reads `0.1.0`.** It was the one package listed at

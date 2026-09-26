@@ -2,7 +2,7 @@ name: format
 
 # CSharpier (C#) and Prettier (JSON, YAML, JS, Markdown) in check mode. See
 # docs/specs/2026-09-13-auto-formatting-design.md and "Formatting" in
-# AGENTS.md.
+# .agents/rules/code-style.md.
 #
 # Its own workflow rather than a job in tests.yml: it has nothing to do with the
 # Unity suites, and tests.yml's concurrency group cancels in-progress runs.
@@ -21,7 +21,7 @@ permissions:
 
 jobs:
   # A required check on dev and master. The name is unique across workflows;
-  # see "CI" in AGENTS.md for why that matters.
+  # see "CI" in .agents/rules/ci.md for why that matters.
   format:
     runs-on: ubuntu-latest
     steps:

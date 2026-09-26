@@ -36,7 +36,7 @@ const RELEASE_BRANCH = "master";
 const NPM = process.platform === "win32" ? "npm.cmd" : "npm";
 
 // Package ids are one flat namespace: com.arman.<kebab-case-name>. See
-// AGENTS.md § Naming. A published id is permanent.
+// .agents/rules/packages.md § Naming. A published id is permanent.
 const NAME_PATTERN = /^com\.arman\.[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 const SEMVER_PATTERN =

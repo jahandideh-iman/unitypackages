@@ -1,5 +1,5 @@
 # UnityPackages
 
-All developer and AI-agent guidance for this repo lives in [`AGENTS.md`](./AGENTS.md), imported below so Claude Code loads it at session start.
+Developer and AI-agent guidance starts at [`AGENTS.md`](./AGENTS.md), imported below so Claude Code loads it at session start. It routes to the file that holds each area in full.
 
 @AGENTS.md
