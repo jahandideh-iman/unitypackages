@@ -25,3 +25,5 @@ Git and hosting	.agents/rules/git-workflow.md
 Branching	.agents/rules/git-workflow.md
 Formatting	.agents/rules/code-style.md
 C# coding style	.agents/rules/code-style.md
+Unity `.meta` files	.agents/skills/unity-asset-editing/SKILL.md
+Adding a new package	.agents/skills/adding-a-package/SKILL.md
