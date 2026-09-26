@@ -52,6 +52,6 @@ To preview or release one package by hand: `node Tools/upm-release.mjs prepare -
 | `missing-entry`         | A package's shipped code changed with no `## [Unreleased]` entry       | Add the entry; the label is for a change no consumer can observe                                 | `no-changelog`      |
 | `frozen-section`        | A version section whose tag exists was edited or deleted               | Revert the edit, and record the correction under `## [Unreleased]`                               | `changelog-rewrite` |
 | `empty-unreleased`      | A `## [Unreleased]` heading has no bullet under it                     | Delete the heading or fill it in                                                                 | _none_              |
-| `unpromoted-unreleased` | A pull request into `master` still carries a `## [Unreleased]` heading | Run `node Tools/upm-release.mjs prepare` on `dev`, commit, push — or re-run `Tools/release.bat` | _none_              |
+| `unpromoted-unreleased` | A pull request into `master` still carries a `## [Unreleased]` heading | Run `node Tools/upm-release.mjs prepare` on a branch off `dev` and merge it into `dev` through a pull request (steps 2 and 3) | _none_              |
 
 The full rules, and which files count as shipped code, are in [`releases.md` § Changelogs](../../../.agents/rules/releases.md#changelogs--four-rules-enforced-in-ci).
