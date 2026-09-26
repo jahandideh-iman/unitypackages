@@ -1,14 +1,13 @@
 # Consistent auto-formatting: CSharpier, Prettier and `.editorconfig`
 
 **Date:** 2026-09-13
-**Status:** **Accepted.** Design approved 2026-09-13. One branch off `dev`, `chore/auto-formatting`,
-landed as one pull request.
+**Status:** Implemented
 
 ## 1. The problem
 
 The repo has no formatter. There is no `.editorconfig`, no formatter config and no CI check, so
 layout is whatever each contributor's editor produced. The only written style rules are the
-naming and brace conventions in [C# coding style](../../.agents/AGENTS.md#c-coding-style), and
+naming and brace conventions in [C# coding style](../../.agents/rules/code-style.md#c-coding-style), and
 nothing checks those either.
 
 The goal is a single command that formats the repo identically on every machine, and a required
@@ -141,7 +140,7 @@ with the Unity suites, and `tests.yml`'s concurrency group cancels in-progress r
   is first-party (`actions/*`), so tag pins meet the repo's rule that only third-party actions need
   SHA pins.
 - **The job name `format` must be unique** across all workflows, for the reason given in
-  [CI](../../.agents/AGENTS.md#ci). The workflow must pass `actionlint`.
+  [CI](../../.agents/rules/ci.md#ci). The workflow must pass `actionlint`.
 
 ### 5.2 Required checks
 

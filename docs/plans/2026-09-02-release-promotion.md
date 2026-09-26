@@ -1,5 +1,7 @@
 # Release Promotion Implementation Plan
 
+**Status:** Implemented
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Make `master` reachable only from `dev`, turn each package's accumulated `## [Unreleased]` entries into a semver version with one command, and stop empty `## [Unreleased]` headings from existing at all.
@@ -162,7 +164,7 @@ with:
 
 And rewrite step 6 of _Adding a new package_:
 
-> 6. Write a `README.md` and a `CHANGELOG.md` with **no `## [Unreleased]` heading** — add one when you have an entry to put under it. See [the changelog rules](#changelogs--two-rules-enforced-in-ci).
+> 6. Write a `README.md` and a `CHANGELOG.md` with **no `## [Unreleased]` heading** — add one when you have an entry to put under it. See [the changelog rules](../../.agents/rules/releases.md#changelogs--four-rules-enforced-in-ci).
 
 - [ ] **Step 7: Commit**
 

@@ -1,8 +1,7 @@
 # Dropping the `Basic` prefix, and Moq for the interaction tests
 
 **Date:** 2026-09-05
-**Status:** **Accepted.** Design approved 2026-09-05. Two independent parts, executed in order as two
-branches off `dev`.
+**Status:** Implemented
 
 ## 1. The problem
 
@@ -38,7 +37,7 @@ explicitly-named fakes.
 
 - **Releasing.** Both parts land on `dev` with CHANGELOG entries under `## [Unreleased]`. Running
   `Tools/upm-release.mjs prepare`, promoting to `master`, and tagging stay a separate, deliberate
-  human decision — see [Distribution and releases](../../.agents/AGENTS.md#distribution-and-releases).
+  human decision — see [Distribution and releases](../../.agents/rules/releases.md#distribution-and-releases).
 - **Assembly names.** `Arman.X.Tests.Editor` vs `Arman.X.Editor.Tests` stays inconsistent. AGENTS.md
   is explicit that assembly renames break consumer asmdef references and should not be tidied
   opportunistically.

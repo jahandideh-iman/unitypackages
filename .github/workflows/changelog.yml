@@ -1,6 +1,6 @@
 name: changelog
 
-# Four rules, all in Tools/changelog-check.mjs — see AGENTS.md:
+# Four rules, all in Tools/changelog-check.mjs — see .agents/rules/releases.md:
 #
 #   missing-entry          A change to a package's shipped code must be
 #                          recorded under that package's `## [Unreleased]`

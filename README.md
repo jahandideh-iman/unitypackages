@@ -71,8 +71,9 @@ node Tools/upm-release.mjs pack        # write each package's tarball to Package
 
 ## Contributing
 
-Read [`AGENTS.md`](AGENTS.md) first. It covers the package anatomy, the asmdef and
-`.meta` conventions, the release flow, and the deliberate inconsistencies that must be left alone.
+Read [`AGENTS.md`](AGENTS.md) first. It holds the rules that are expensive to break and routes to
+[`.agents/rules/`](.agents/rules) for package anatomy, asmdef and `.meta` conventions, the release
+flow, and the deliberate inconsistencies that must be left alone.
 
 ## License
 

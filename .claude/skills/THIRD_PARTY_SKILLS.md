@@ -1,6 +1,6 @@
 # Skills
 
-Most skills here are vendored from external repos rather than authored in this project.
+Some skills here are vendored from external repos and some are authored in this project; each row says which.
 Re-sync manually by re-cloning the source and copying over the relevant `skills/<name>/` folder.
 
 Each skill lives twice on purpose: `.agents/skills/<name>/` is the tool-agnostic canonical
@@ -12,6 +12,7 @@ two in sync** — edit one, copy to the other.
 | `unity-cli`, `unity-package-management` | [Unity-Technologies/skills](https://github.com/Unity-Technologies/skills) | Unity Companion License |
 | `lifeblood-mcp` | [user-hash/Lifeblood](https://github.com/user-hash/Lifeblood/tree/main/skills/lifeblood-mcp) | AGPL-3.0 |
 | `sharplens-mcp` | **Authored in-repo** | — |
+| `releasing-packages`, `adding-a-package`, `unity-asset-editing`, `feature-worktree` | **Authored in-repo** | — |
 
 ## Notes for this repo
 
@@ -44,7 +45,7 @@ two in sync** — edit one, copy to the other.
   published `<name>/<version>` tags are permanent, so a public-API break has to drive the
   semver bump.
 - `lifeblood-mcp` documents tool routing for the `lifeblood` MCP server — see
-  [`AGENTS.md`](../../AGENTS.md)'s agent-tooling section. It is **not the primary Roslyn
+  [`code-navigation.md`](../../.agents/rules/code-navigation.md). It is **not the primary Roslyn
   code-navigation tool**; `sharplens` is. `lifeblood` is used for what SharpLens cannot do:
   Unity asmdef checks, multi-define-profile analysis, Unity-reflection-aware dead code, and
   blast-radius/file-impact/test-impact analysis. **Locally modified:** its frontmatter

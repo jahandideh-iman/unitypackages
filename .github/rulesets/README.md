@@ -30,7 +30,7 @@ back rather than trusting them.
 
 ## Which checks are required
 
-See [the ruleset table in `AGENTS.md`](../../AGENTS.md#branching) for
+See [the ruleset table in `git-workflow.md`](../../.agents/rules/git-workflow.md#branching) for
 the full list and the reasoning. The one rule to keep in mind when adding a
 check: **a skipped required check blocks the merge.** A job that any legitimate
 pull request can skip — `unity-tests` on a fork, `tag` on a pull request,

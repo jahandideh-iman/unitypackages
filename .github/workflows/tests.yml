@@ -61,6 +61,14 @@ jobs:
         if: always()
         run: node --test Tools/upm-release.test.mjs Tools/upm-release.prepare.test.mjs Tools/promotion-check.test.mjs Tools/release-flow.test.mjs
 
+      - name: Test the docs check
+        if: always()
+        run: node --test Tools/docs-check.test.mjs
+
+      - name: Check the docs
+        if: always()
+        run: node Tools/docs-check.mjs
+
   # Job names are unique across every workflow on purpose: two rows sharing a
   # name in a PR's check list cannot be told apart, and which one branch
   # protection requires becomes a coin flip. Hence `unity-tests`, not `test`.

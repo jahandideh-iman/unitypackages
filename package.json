@@ -4,7 +4,8 @@
   "description": "Repo tooling only (the formatters). Not a UPM package: Unity reads Packages/manifest.json, and the release tooling globs Packages/*/package.json.",
   "scripts": {
     "format": "dotnet csharpier format . && prettier --write .",
-    "format:check": "dotnet csharpier check . && prettier --check ."
+    "format:check": "dotnet csharpier check . && prettier --check .",
+    "check:docs": "node Tools/docs-check.mjs"
   },
   "devDependencies": {
     "prettier": "3.9.6"

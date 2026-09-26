@@ -128,7 +128,7 @@ SharpLens knows nothing about Unity. Route these to `lifeblood` instead — see
 - `check_architecture` is generic .NET layering validation. This repo has no
   `docs/invariants/*.md` for it or for `lifeblood_invariant_check` to read — `docs/` holds
   registry-hosting and release-flow specs only. Package-boundary rules live in
-  [`AGENTS.md`](../../../AGENTS.md)'s catalogue and dependency graph, and are enforced by
+  the [package catalogue](../../../.agents/rules/packages.md#package-catalogue) and its dependency graph, and are enforced by
   `Tools/upm-release.mjs validate`, not by either MCP server.
 - **Three package directories contain spaces** (`Asset Providing`, `Scene Management`,
   `UI Management`). Quote every path you hand to a tool.
