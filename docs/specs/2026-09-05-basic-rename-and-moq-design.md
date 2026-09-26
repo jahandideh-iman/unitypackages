@@ -1,8 +1,7 @@
 # Dropping the `Basic` prefix, and Moq for the interaction tests
 
 **Date:** 2026-09-05
-**Status:** **Accepted.** Design approved 2026-09-05. Two independent parts, executed in order as two
-branches off `dev`.
+**Status:** Implemented
 
 ## 1. The problem
 

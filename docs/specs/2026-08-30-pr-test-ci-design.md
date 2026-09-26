@@ -1,9 +1,7 @@
 # Running Unity tests on pull requests
 
 **Date:** 2026-08-30
-**Status:** **Accepted.** Blocked on two things before it can go green — a self-hosted runner must be
-registered (§3), and the Smart App Control block in §8 must be resolved. The workflow is correct and
-committable before either happens; it will simply queue, then fail loudly and truthfully.
+**Status:** Implemented
 
 ## 1. The problem
 

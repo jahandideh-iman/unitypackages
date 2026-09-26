@@ -1,5 +1,7 @@
 # Dropping the `Basic` prefix, and Moq for the interaction tests — Implementation Plan
 
+**Status:** Implemented
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Rename the twelve `Basic*` implementations to the name of the interface they implement, then replace the eight hand-written test doubles whose assertion _is_ an interaction with Moq, leaving the rest as explicitly named fakes.

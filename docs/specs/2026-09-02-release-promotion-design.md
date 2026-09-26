@@ -1,9 +1,7 @@
 # Promoting to `master`: an enforced source branch and an automated version bump
 
 **Date:** 2026-09-02
-**Status:** **Accepted.** Nothing here is blocked. The three code changes (§4, §5, §6) are
-independent and can land in any order; §7 is a one-off cleanup that §6 depends on, and §8 is the
-first release run under the new flow.
+**Status:** Implemented
 
 ## 1. The problem
 

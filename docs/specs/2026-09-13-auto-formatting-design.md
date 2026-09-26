@@ -1,8 +1,7 @@
 # Consistent auto-formatting: CSharpier, Prettier and `.editorconfig`
 
 **Date:** 2026-09-13
-**Status:** **Accepted.** Design approved 2026-09-13. One branch off `dev`, `chore/auto-formatting`,
-landed as one pull request.
+**Status:** Implemented
 
 ## 1. The problem
 

@@ -1,7 +1,7 @@
 # Hosting the Arman UPM packages on a real registry
 
 **Date:** 2026-08-22
-**Status:** **Superseded** by [`2026-08-23-upm-package-registry-github-design.md`](./2026-08-23-upm-package-registry-github-design.md) (GitHub + OpenUPM). Retained for its problem statement, packaging facts, and pre-publish cleanup list, which carry over unchanged.
+**Status:** Superseded — replaced by the GitHub + OpenUPM design, [`2026-08-23-upm-package-registry-github-design.md`](./2026-08-23-upm-package-registry-github-design.md). Retained for its problem statement, packaging facts, and pre-publish cleanup list, which carry over unchanged.
 **Repos affected:** `unitypackages` (now GitHub: `jahandideh-iman/unitypackages`; the GitLab remote `jahandideh-iman-indie/public/unitypackages` is a read-only archive). A separate, private game project consumes them.
 
 > **Amended 2026-08-30 — package-id normalisation.** Every package id in this document has been

@@ -1,7 +1,7 @@
 # Hosting the Arman UPM packages — GitHub variant
 
 **Date:** 2026-08-23
-**Status:** **Accepted — current direction.** Rollout in progress; see §6.
+**Status:** Implemented
 **Assumption (now satisfied):** the `unitypackages` repo can move from GitLab to GitHub. The move
 happened on 2026-08-23 — `origin` is `github.com/jahandideh-iman/unitypackages`, GitLab is kept as a
 read-only archive. It remains a single multi-package repository.
