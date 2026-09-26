@@ -26,4 +26,5 @@ Every package starts as a copy of `Packages/PackageTemplate/`. A package id is p
 ## Before the pull request
 
 - The package has its row in the [package catalogue](../../../.agents/rules/packages.md#package-catalogue).
+- The package has its row in the Packages table in [`README.md`](../../../README.md), and if it depends on another package in this repo, the README sentence that lists the packages with dependencies names it.
 - `node Tools/upm-release.mjs validate` and `npm run format:check` pass.

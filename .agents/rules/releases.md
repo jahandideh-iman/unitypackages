@@ -36,6 +36,8 @@ Six steps, stopping at the first failure: preflight (`git` and `gh` present and 
 
 **It stops there deliberately.** Merging that pull request is the publish, and an OpenUPM tag is permanent, so the irreversible step stays a human click on a green PR. If no package has a populated `## [Unreleased]` section it says so and exits 0, having changed nothing. Re-running while a release PR is already open updates that PR rather than failing.
 
+It commits and pushes `dev` itself, so an agent does not run it: an agent prepares the release on a branch and opens pull requests — the [`releasing-packages`](../skills/releasing-packages/SKILL.md) skill.
+
 Passing it any argument is an error (exit 2) that points back at `upm-release.mjs` — that script is where single steps, `--dry-run`, `--only` and `--bump` live. Nothing forwards sub-commands; spell those `node Tools/upm-release.mjs <command>`. The flow's own tests are `Tools/release-flow.test.mjs`, run by `tooling-tests` in `tests.yml`.
 
 > `release.bat` contains **no backslash at all**. One test pins that; two more pin that the `node` invocation is its only executable line and that it is CRLF. Tooling that eats backslashes turns a `Tools\release.bat` usage line into a bare `release.bat` command line, which cmd executes and which recurses forever when the working directory is `Tools/`. Keep it that way.

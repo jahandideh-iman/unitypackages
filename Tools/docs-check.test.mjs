@@ -169,6 +169,21 @@ test("a query string is not part of the path", () => {
     assert.deepEqual(found, []);
 });
 
+test("a reference-style link definition is checked like an inline link", () => {
+    const found = findings(
+        {
+            "docs/exists.md": "# Exists\n",
+            "docs/a.md":
+                "[ok][ok]\n[bad][bad]\n\n[ok]: ./exists.md\n[bad]: ./missing.md\n" +
+                "[ext]: https://example.com\n",
+        },
+        "link",
+    );
+    assert.deepEqual(found, [
+        { check: "link", file: "docs/a.md", line: 5, message: "./missing.md does not exist" },
+    ]);
+});
+
 test("an untracked Markdown file is not scanned", () => {
     const root = repo({ "docs/a.md": "# A\n" });
     fs.writeFileSync(path.join(root, "docs/c.md"), "[x](./nowhere.md)\n");
@@ -202,6 +217,20 @@ test("a fragment matches regardless of case and percent-encoding", () => {
     assert.deepEqual(
         found.map((finding) => finding.message),
         ["./a.md?plain=1#nope: no heading #nope in docs/a.md"],
+    );
+});
+
+test("a reference-style link definition's anchor is checked like an inline link", () => {
+    const found = findings(
+        {
+            "docs/exists.md": "# Exists\n",
+            "docs/a.md": "[a][a]\n\n[a]: ./exists.md#no-such-heading\n",
+        },
+        "anchor",
+    );
+    assert.deepEqual(
+        found.map((finding) => finding.file),
+        ["docs/a.md"],
     );
 });
 
@@ -265,10 +294,10 @@ test("a manifest heading must still be a heading in its file", () => {
     const found = findings(
         {
             ".agents/rules/area.md":
-                "# Area\n\nSection One is mentioned only in prose.\n\n```md\n## Section One\n```\n\n## Dup A\n\n## Dup B\n",
+                "# Area\n\nSection One is mentioned only in prose.\n\n```md\n## Section One\n```\n\n## Dup\n\n## Dup\n\n## Section Two and more\n",
             ".agents/rules/MANIFEST.tsv":
                 "# heading / destination\nSection One\t.agents/rules/area.md\nDup\t.agents/rules/area.md\n" +
-                "Gone\t.agents/rules/nowhere.md\nno tab here\n",
+                "Section Two\t.agents/rules/area.md\nGone\t.agents/rules/nowhere.md\nno tab here\n",
         },
         "heading",
     );
@@ -277,8 +306,9 @@ test("a manifest heading must still be a heading in its file", () => {
         [
             '2: "Section One" is not a heading in .agents/rules/area.md',
             '3: "Dup" matches 2 headings in .agents/rules/area.md',
-            "4: .agents/rules/nowhere.md does not exist",
-            "5: a row needs a heading, a tab, and a file",
+            '4: "Section Two" is not a heading in .agents/rules/area.md',
+            "5: .agents/rules/nowhere.md does not exist",
+            "6: a row needs a heading, a tab, and a file",
         ],
     );
 });

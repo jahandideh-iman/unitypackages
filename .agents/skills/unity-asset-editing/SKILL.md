@@ -1,6 +1,6 @@
 ---
 name: unity-asset-editing
-description: Use when a change touches a Unity scene, prefab, ScriptableObject .asset or any .meta file in this repo — creating, moving, renaming or deleting an asset, or when editing Unity YAML by hand looks like the quick fix.
+description: Use when a change touches a Unity scene, prefab, ScriptableObject .asset or any .meta file in this repo, or adds, moves, renames or deletes any file or folder inside a package under Packages/ — or when editing Unity YAML by hand looks like the quick fix.
 ---
 
 # Unity asset editing
@@ -13,7 +13,7 @@ Only modify Unity assets (`.unity` scenes, `.prefab` files, `.asset` ScriptableO
 
 ## Unity `.meta` files
 
-⚠️ **Never delete, ignore, or hand-create a `.meta` file carelessly.** In this repo the rule is stricter than in a game project, because these files ship to consumers:
+⚠️ **Never delete, ignore, or hand-create a `.meta` file.** In this repo the rule is stricter than in a game project, because these files ship to consumers:
 
 - Every file _and folder_ in a package has a `.meta` carrying a GUID.
 - Asmdef GUIDs are referenced by other asmdefs (`"references": ["GUID:..."]`). Losing one silently breaks compilation in dependent packages.

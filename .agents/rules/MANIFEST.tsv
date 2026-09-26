@@ -1,4 +1,4 @@
-# Every heading carved out of AGENTS.md and the file that holds it: heading, a tab, the file.
+# Each rules-file or skill heading the routing depends on, and the file that holds it: heading, a tab, the file.
 What this repo is	AGENTS.md
 Writing documentation	.agents/rules/documentation-voice.md
 Repo layout	.agents/rules/packages.md

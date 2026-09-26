@@ -35,10 +35,15 @@ const AUTHORED_IN_REPO = "Authored in-repo";
 const SCHEME = /^[a-z][a-z0-9+.-]*:/i;
 // [text](target) and [text](<target with spaces>).
 const LINK = /\]\(\s*(?:<([^>]+)>|([^)\s]+))/g;
+// [label]: target and [label]: <target with spaces> "optional title", one per line.
+const REFLINK = /^ {0,3}\[[^\]]+\]:\s*(?:<([^>]*)>|(\S+))/;
 const HEADING = /^ {0,3}#{1,6}\s/;
 
 function git(root, ...args) {
     const result = spawnSync("git", ["-C", root, ...args], { encoding: "utf8" });
+    if (result.error) {
+        throw new Error(`git failed: ${result.error.message}`);
+    }
     if (result.status !== 0) {
         throw new Error(`git ${args.join(" ")} failed: ${result.stderr || result.stdout}`);
     }
@@ -141,7 +146,10 @@ export function anchors(text) {
     return result;
 }
 
-/** Every link in a document, with its 1-based line number. */
+/**
+ * Every link in a document, with its 1-based line number: an inline
+ * `[text](target)` and a reference-style definition `[label]: target` alike.
+ */
 export function links(text) {
     const blanked = blankCode(text.replace(/\r\n/g, "\n"));
     const result = [];
@@ -150,6 +158,10 @@ export function links(text) {
         const line = blanked.slice(0, match.index).split("\n").length;
         result.push({ target, line });
     }
+    blanked.split("\n").forEach((lineText, index) => {
+        const match = REFLINK.exec(lineText);
+        if (match !== null) result.push({ target: match[1] ?? match[2], line: index + 1 });
+    });
     return result;
 }
 
@@ -316,7 +328,7 @@ function checkManifest(root) {
         }
         // Still a heading, not merely a phrase in a sentence: a deleted section
         // whose name survives in prose is exactly the loss this check catches.
-        const hits = headings(read(root, destination)).filter((text) => text.includes(heading));
+        const hits = headings(read(root, destination)).filter((text) => text === heading);
         if (hits.length === 0) {
             findings.push({
                 check: "heading",

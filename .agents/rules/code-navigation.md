@@ -15,17 +15,18 @@ Both servers are registered per user, not in this repo: in Claude Code with `cla
 
 ### Skills
 
-Vendored under `.agents/skills/` (canonical) and mirrored to `.claude/skills/` (what Claude Code discovers). **Edit one, copy to the other** — they must stay identical.
+Kept under `.agents/skills/` (canonical) and mirrored to `.claude/skills/` (what Claude Code discovers). **Edit one, copy to the other** — they must stay identical.
 
 OpenCode reads both folders, so it finds each skill twice and logs a "duplicate skill name" warning; the copies are identical, so this is harmless, and `OPENCODE_DISABLE_CLAUDE_CODE_SKILLS=1` silences it. The folder name is lowercase `skills`, and each skill's `name:` is lowercase-hyphenated and equal to its folder name — OpenCode rejects any other name, and on Linux and macOS it does not find a capitalised folder.
 
 | Skill                      | Use it for                                                                                                                                                                                                                       |
 | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sharplens-mcp`            | How to use the `sharplens` MCP tools for C# navigation and refactoring, and when to prefer them over `Grep`.                                                                                                                     |
 | `lifeblood-mcp`            | Routing between the `lifeblood` MCP tools; read before a multi-step refactor.                                                                                                                                                    |
 | `unity-package-management` | Add/remove/upgrade UPM packages via `UnityEditor.PackageManager.Client` instead of hand-editing `Packages/manifest.json`. Applies to this project's _external_ deps — the packages it hosts are embedded, not registry-resolved. |
 | `releasing-packages`       | Preparing and running a release, and fixing a failed changelog check.                                                                                                                                                            |
 | `adding-a-package`         | Creating a package from `PackageTemplate`.                                                                                                                                                                                       |
-| `unity-asset-editing`      | Any change to a scene, prefab, `.asset` or `.meta` file.                                                                                                                                                                         |
+| `unity-asset-editing`      | Any change to a scene, prefab, `.asset` or `.meta` file, and adding, moving or deleting a file in a package.                                                                                                                     |
 | `feature-worktree`         | Starting a branch in a worktree from `origin/dev`, and finishing at the pull request.                                                                                                                                            |
 | `unity-cli`                | Editor install, project creation, headless build/test.                                                                                                                                                                           |
 
@@ -61,7 +62,7 @@ Useful beyond navigation: `mcp__sharplens__get_project_health`, `find_god_object
 | Eyeballing asmdef wiring                | `lifeblood_asmdef_check`, `lifeblood_cycles`                               |
 | A cross-package symbol rename           | `lifeblood_rename`                                                         |
 
-⚠️ **`lifeblood` needs a solution** If there is no `.sln`/`.slnx` or `.csproj`, **generate the solution first, then analyze.** . Runs `unity command menu --path "Assets/Open C# Project"`) to generate.
+⚠️ **`lifeblood` needs a solution.** If there is no `.sln`/`.slnx` or `.csproj`, **generate the solution first, then analyze** — `unity command menu --path "Assets/Open C# Project"` generates it.
 
 ### What belongs to `lifeblood`
 

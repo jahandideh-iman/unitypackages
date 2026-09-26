@@ -1,6 +1,6 @@
 ---
 name: releasing-packages
-description: Use when preparing, running or recovering a package release in this repo — filling a CHANGELOG's Unreleased section, running Tools/release.bat or upm-release.mjs prepare/tag, opening the dev → master release pull request, or fixing a failed changelog check.
+description: Use when preparing, running or recovering a package release in this repo — filling a CHANGELOG's Unreleased section, running upm-release.mjs prepare on a release branch or tag on master, opening the release pull requests (branch → dev, then dev → master), or fixing a failed changelog check.
 ---
 
 # Releasing packages
@@ -14,21 +14,32 @@ Two actions publish, and a published package name and version are **permanent** 
 1. **Merging the release pull request into `master`.** The `tag` job in `release.yml` runs on that push and tags every package whose version is not tagged yet. There is no confirmation step.
 2. **`node Tools/upm-release.mjs tag --push`.** Without `--push` the tags stay local, and `git tag -d` removes them.
 
-An agent does neither. It prepares the release, opens the pull request, and stops; a human merges.
+An agent does neither, and never pushes to `dev`. It prepares the release on a branch, opens each pull request, and stops; a human merges.
 
 ## Procedure
 
 1. **Record the changes.** On a feature branch, each package whose `Runtime/`, `Editor/` or `package.json` changed gets a bullet under `## [Unreleased]` in its `CHANGELOG.md`, filed under `### Added`, `### Changed`, `### Deprecated`, `### Removed`, `### Fixed` or `### Security`. Create the heading if it is absent. The branch merges into `dev` as usual.
-2. **Run the flow from a clean, up-to-date `dev`:**
+2. **Prepare on a branch off `dev`.** In a worktree cut from an up-to-date `origin/dev` (the [`feature-worktree`](../feature-worktree/SKILL.md) skill), on a branch such as `chore/prepare-release`:
 
    ```powershell
-   Tools/release.bat            # or: node Tools/release-flow.mjs
+   node Tools/upm-release.mjs validate
+   node Tools/upm-release.mjs prepare
    ```
 
-   It takes no arguments. It checks `git` and `gh`, runs `validate`, runs `prepare` (each `## [Unreleased]` becomes `## [X.Y.Z] - YYYY-MM-DD`, `package.json` is bumped, and dependents get a cascaded patch bump), commits, pushes `dev`, opens the pull request `dev` → `master`, **prints its URL and stops**. With no populated `## [Unreleased]` anywhere it changes nothing and exits 0.
+   `prepare` turns each `## [Unreleased]` into `## [X.Y.Z] - YYYY-MM-DD`, bumps `package.json`, and gives dependents a cascaded patch bump; with no populated `## [Unreleased]` anywhere it changes nothing. Commit the result as `chore(release): promote <n> packages` (or `chore(release): <package>@<version>` for one package), push the branch, open its pull request into `dev`, report the URL and stop. A human merges it.
 
-3. **Check the pull request.** Every required check passes, `unity-tests` included. Read the version headings and bumps `prepare` produced; while a package's major is `0`, a breaking change lands on the minor.
-4. **Hand over.** Report the pull request URL. A human merges it with a true merge, never a squash, and that merge is the publish.
+3. **Open the release pull request.** Once the prepare pull request is merged, open `dev` → `master`:
+
+   ```powershell
+   gh pr create --base master --head dev --title "Release: <n> packages" --body "<the packages and versions prepare bumped>"
+   ```
+
+   `promotion-check` accepts a pull request into `master` only from `dev`.
+
+4. **Check the pull request.** Every required check passes, `unity-tests` included. Read the version headings and bumps `prepare` produced; while a package's major is `0`, a breaking change lands on the minor.
+5. **Hand over.** Report the pull request URL. A human merges it with a true merge, never a squash, and that merge is the publish.
+
+`Tools/release.bat` (`node Tools/release-flow.mjs`) runs the same steps in one go from a local `dev` checkout and pushes `dev` itself, so it is a maintainer's tool: an agent does not run it.
 
 To preview or release one package by hand: `node Tools/upm-release.mjs prepare --dry-run`, `prepare --only "<folder or id>"`, `prepare --bump <package>=<major|minor|patch>`, and `tag --dry-run` on `master`.
 

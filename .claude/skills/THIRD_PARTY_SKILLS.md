@@ -1,6 +1,6 @@
 # Skills
 
-Most skills here are vendored from external repos rather than authored in this project.
+Some skills here are vendored from external repos and some are authored in this project; each row says which.
 Re-sync manually by re-cloning the source and copying over the relevant `skills/<name>/` folder.
 
 Each skill lives twice on purpose: `.agents/skills/<name>/` is the tool-agnostic canonical

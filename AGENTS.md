@@ -49,21 +49,21 @@ Each agent tool reads its own folders, so some files exist twice. When you chang
 
 ## Where the rules live
 
-| Touching                                                            | Read first                                                                       |
-| ------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| Repo layout, package anatomy, asmdef names, the package catalogue   | [`.agents/rules/packages.md`](./.agents/rules/packages.md)                       |
-| Unity tests, test doubles, Moq in a test asmdef                     | [`.agents/rules/testing.md`](./.agents/rules/testing.md)                         |
-| `.github/workflows/`, `Tools/ci/`, the self-hosted runner           | [`.agents/rules/ci.md`](./.agents/rules/ci.md)                                   |
-| C# navigation, refactoring, `sharplens`/`lifeblood`/`unity command` | [`.agents/rules/code-navigation.md`](./.agents/rules/code-navigation.md)         |
-| `Tools/upm-release.mjs`, `Tools/release.bat`, changelogs, OpenUPM   | [`.agents/rules/releases.md`](./.agents/rules/releases.md)                       |
-| Branches, rulesets, required checks, `gh`                           | [`.agents/rules/git-workflow.md`](./.agents/rules/git-workflow.md)               |
-| C# naming and style, CSharpier, Prettier, `.editorconfig`           | [`.agents/rules/code-style.md`](./.agents/rules/code-style.md)                   |
-| Any document, README, skill or code comment                         | [`.agents/rules/documentation-voice.md`](./.agents/rules/documentation-voice.md) |
-| Preparing or running a release                                      | [`releasing-packages`](./.agents/skills/releasing-packages/SKILL.md)             |
-| A new package under `Packages/`                                     | [`adding-a-package`](./.agents/skills/adding-a-package/SKILL.md)                 |
-| A scene, prefab, `.asset` or `.meta`                                | [`unity-asset-editing`](./.agents/skills/unity-asset-editing/SKILL.md)           |
-| Starting or finishing a branch                                      | [`feature-worktree`](./.agents/skills/feature-worktree/SKILL.md)                 |
-| Any feature's design or plan                                        | [`docs/INDEX.md`](./docs/INDEX.md)                                               |
+| Touching                                                                 | Read first                                                                       |
+| ------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| Repo layout, package anatomy, asmdef names, the package catalogue        | [`.agents/rules/packages.md`](./.agents/rules/packages.md)                       |
+| Unity tests, test doubles, Moq in a test asmdef                          | [`.agents/rules/testing.md`](./.agents/rules/testing.md)                         |
+| `.github/workflows/`, `Tools/ci/`, the self-hosted runner                | [`.agents/rules/ci.md`](./.agents/rules/ci.md)                                   |
+| C# navigation, refactoring, `sharplens`/`lifeblood`/`unity command`      | [`.agents/rules/code-navigation.md`](./.agents/rules/code-navigation.md)         |
+| `Tools/upm-release.mjs`, `Tools/release.bat`, changelogs, OpenUPM        | [`.agents/rules/releases.md`](./.agents/rules/releases.md)                       |
+| Branches, rulesets, required checks, `gh`                                | [`.agents/rules/git-workflow.md`](./.agents/rules/git-workflow.md)               |
+| C# naming and style, CSharpier, Prettier, `.editorconfig`                | [`.agents/rules/code-style.md`](./.agents/rules/code-style.md)                   |
+| Any document, README, skill or code comment                              | [`.agents/rules/documentation-voice.md`](./.agents/rules/documentation-voice.md) |
+| Preparing or running a release                                           | [`releasing-packages`](./.agents/skills/releasing-packages/SKILL.md)             |
+| A new package under `Packages/`                                          | [`adding-a-package`](./.agents/skills/adding-a-package/SKILL.md)                 |
+| A scene, prefab, `.asset`, `.meta`, or adding/moving a file in a package | [`unity-asset-editing`](./.agents/skills/unity-asset-editing/SKILL.md)           |
+| Starting or finishing a branch                                           | [`feature-worktree`](./.agents/skills/feature-worktree/SKILL.md)                 |
+| Any feature's design or plan                                             | [`docs/INDEX.md`](./docs/INDEX.md)                                               |
 
 ## Commands
 
@@ -79,7 +79,7 @@ Each agent tool reads its own folders, so some files exist twice. When you chang
 - **Unity tests, Editor already open** — runs in the live instance and returns per-test results as JSON: `unity command run_tests --mode EditMode`, `unity command run_tests --mode PlayMode`.
 - **Tooling tests** — `node --test Tools/*.test.mjs`, and `powershell -NoProfile -File Tools/ci/Tests/Test-CiScripts.ps1` for the CI helpers.
 - **Formatting** — `npm run format` rewrites every in-scope file; `npm run format:check` is the required `format` check.
-- **Documentation** — `npm run check:docs` verifies that every cross-file link and heading anchor resolves, that `.claude/skills/` matches `.agents/skills/`, and that this file stays inside its byte budget. Run it after editing anything under `.agents/` or `docs/`.
+- **Documentation** — `npm run check:docs` verifies that every cross-file link and heading anchor resolves, that `.claude/skills/` matches `.agents/skills/`, and that this file stays inside its byte budget. Run it after editing anything under `.agents/` or `docs/`. It reads tracked and staged files only, so `git add` a new file before running it.
 
 ## Documentation
 

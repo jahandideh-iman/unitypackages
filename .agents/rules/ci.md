@@ -6,12 +6,12 @@ The GitHub Actions workflows, what each job checks, and the self-hosted runner.
 
 `.github/workflows/tests.yml` runs the test suites on every same-repo pull request and on pushes to `dev` and `master` — both the Unity suites and, in a single `tooling-tests` job, the tests for the repo's own scripts. Every job that needs Node reads the version from `.nvmrc` via `node-version-file`, so a bump is one edit rather than seven. `.github/workflows/release.yml` separately runs `validate` and `pack`, and `.github/workflows/changelog.yml` enforces [the changelog rules](./releases.md#changelogs--four-rules-enforced-in-ci). `.github/workflows/format.yml` runs the [formatters](./code-style.md#formatting) in check mode. Design notes: [`docs/specs/2026-08-30-pr-test-ci-design.md`](../../docs/specs/2026-08-30-pr-test-ci-design.md).
 
-| Job             | Runner              | Notes                                                                                                                            |
-| --------------- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `tooling-tests` | `ubuntu-latest`     | The repo's own tooling tests — the `Tools/ci/` PowerShell helpers, the changelog check, and the release flow. Runs on forks too. |
-| `unity-tests`   | self-hosted Windows | EditMode + PlayMode. **Never runs on fork PRs** — see below.                                                                     |
-| `report`        | `ubuntu-latest`     | Turns the JUnit XML into PR annotations.                                                                                         |
-| `format`        | `ubuntu-latest`     | `npm run format:check`: CSharpier and Prettier. Runs on forks too.                                                               |
+| Job             | Runner              | Notes                                                                                                                                            |
+| --------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `tooling-tests` | `ubuntu-latest`     | The repo's own tooling tests — the `Tools/ci/` PowerShell helpers, the changelog check, the release flow, and the docs check. Runs on forks too. |
+| `unity-tests`   | self-hosted Windows | EditMode + PlayMode. **Never runs on fork PRs** — see below.                                                                                     |
+| `report`        | `ubuntu-latest`     | Turns the JUnit XML into PR annotations.                                                                                                         |
+| `format`        | `ubuntu-latest`     | `npm run format:check`: CSharpier and Prettier. Runs on forks too.                                                                               |
 
 Job names are unique across all four workflows on purpose: two identically named entries in a PR's check list cannot be told apart, which matters the moment either becomes a required check. Hence `unity-tests` rather than `test`, and one `tooling-tests` job rather than one per tool. For the same reason the report step runs with `annotate_only: true`: creating a check run gives GitHub no way to say which check suite it belongs to, so it can file the result under another workflow, such as _changelog_, and a red Unity suite would point the reader at the wrong place.
 
