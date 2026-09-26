@@ -1,7 +1,7 @@
 # Agent documentation: a lean `AGENTS.md`, rules by area, and a docs index
 
 **Date:** 2026-09-26
-**Status:** Designed
+**Status:** Implemented
 **Branch:** `docs/agent-docs-restructure`, cut from `origin/dev`, landing as one pull request into
 `dev`.
 

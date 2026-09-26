@@ -304,3 +304,8 @@ test("a root that is not a git repository is exit 2, not a finding", () => {
 test("an unknown argument is a usage error", () => {
     assert.equal(run(repo(), "--nope").status, 2);
 });
+
+test("the repository itself passes", () => {
+    const { status, report } = run(path.dirname(HERE));
+    assert.equal(status, 0, JSON.stringify(report.findings, null, 2));
+});
