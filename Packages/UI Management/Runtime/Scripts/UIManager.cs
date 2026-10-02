@@ -130,7 +130,11 @@ namespace Arman.UIManagement
         {
             // It is assumed that Main Window will be destroyed on its own.
             while (windowsStack.Count > 1)
-                DestroyWindow(windowsStack.Last());
+            {
+                var window = windowsStack.Last();
+                windowsStack.RemoveAt(windowsStack.Count - 1);
+                DestroyWindow(window);
+            }
 
             windowsStack.Clear();
             HidePopupPanel();

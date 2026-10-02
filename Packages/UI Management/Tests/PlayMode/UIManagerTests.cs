@@ -202,6 +202,23 @@ namespace Arman.UIManagement.Tests
             Assert.AreEqual(popup.SortingOrder() - 1, backgroundPanel.SortingOrder());
         }
 
+        [UnityTest]
+        public IEnumerator SetMainWindow_WithPopupsStillOpen_DestroysThePopupsAndHidesThePanel()
+        {
+            manager.SetMainWindow(CreateWindow("Main"));
+            var lower = manager.OpenPopUp(CreateWindow("Lower"));
+            var upper = manager.OpenPopUp(CreateWindow("Upper"));
+            var newMain = CreateWindow("NewMain");
+
+            manager.SetMainWindow(newMain);
+            yield return null;
+
+            Assert.IsTrue(lower == null);
+            Assert.IsTrue(upper == null);
+            Assert.AreSame(newMain, manager.MainWindow());
+            Assert.IsFalse(backgroundPanel.gameObject.activeSelf);
+        }
+
         private TestWindow CreateWindow(string name)
         {
             return Track(new GameObject(name)).AddComponent<TestWindow>();
