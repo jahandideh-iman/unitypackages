@@ -16,8 +16,9 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - `UIManager.Close` to allow closing windows that are not focused
-- `Window` is abstract.
-- `UIManager.OpenPopUp` and `UIManager.Close` take a `PopupWindow` instead of any `Window`.
+- `Window` is abstract. **Breaking** — replace a bare `Window` component with `MainWindow` or a subclass of your own.
+- `UIManager.OpenPopUp` and `UIManager.Close` take a `PopupWindow` instead of any `Window`. **Breaking** — pass a `PopupWindow`; the main window is set only through `SetMainWindow`.
+- `UIManager.Close` on a popup that is not on the stack destroys it and leaves the focused window alone, without calling its `OnFocused` again.
 - The package depends on `com.cysharp.unitask` 2.5.11.
 
 ## [0.2.0] - 2026-09-02
