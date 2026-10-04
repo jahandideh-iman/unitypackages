@@ -81,7 +81,7 @@ namespace Arman.UIManagement.Tests
         {
             _manager.SetMainWindow(CreateWindow("Main"));
 
-            var popup = _manager.OpenPopUp(CreateWindow("Popup"));
+            var popup = _manager.OpenPopUp(CreatePopup("Popup"));
 
             Assert.That(popup.transform.parent, Is.SameAs(_manager.MainTransform()));
         }
@@ -92,8 +92,8 @@ namespace Arman.UIManagement.Tests
             var main = CreateWindow("Main");
             _manager.SetMainWindow(main);
 
-            var first = _manager.OpenPopUp(CreateWindow("First"));
-            var second = _manager.OpenPopUp(CreateWindow("Second"));
+            var first = _manager.OpenPopUp(CreatePopup("First"));
+            var second = _manager.OpenPopUp(CreatePopup("Second"));
 
             Assert.That(
                 first.SortingOrder(),
@@ -110,7 +110,7 @@ namespace Arman.UIManagement.Tests
         {
             _manager.SetMainWindow(CreateWindow("Main"));
 
-            var popup = _manager.OpenPopUp(CreateWindow("Popup"));
+            var popup = _manager.OpenPopUp(CreatePopup("Popup"));
 
             Assert.That(_backgroundPanel.gameObject.activeSelf, Is.True);
             Assert.That(_backgroundPanel.SortingOrder(), Is.EqualTo(popup.SortingOrder() - 1));
@@ -121,7 +121,7 @@ namespace Arman.UIManagement.Tests
         public IEnumerator CloseingAFocusedPopup_DestroysItAndHidesThePanel()
         {
             _manager.SetMainWindow(CreateWindow("Main"));
-            var popup = _manager.OpenPopUp(CreateWindow("Popup"));
+            var popup = _manager.OpenPopUp(CreatePopup("Popup"));
 
             _manager.Close(popup);
             yield return null;
@@ -133,8 +133,8 @@ namespace Arman.UIManagement.Tests
         public IEnumerator ClosingAFocusedPopup_FocusesThePopupBelowIt()
         {
             _manager.SetMainWindow(CreateWindow("Main"));
-            var lower = _manager.OpenPopUp(CreateWindow("Lower"));
-            var upper = _manager.OpenPopUp(CreateWindow("Upper"));
+            var lower = _manager.OpenPopUp(CreatePopup("Lower"));
+            var upper = _manager.OpenPopUp(CreatePopup("Upper"));
             var lowerFocusedBefore = lower.FocusedCount;
 
             _manager.Close(upper);
@@ -150,8 +150,8 @@ namespace Arman.UIManagement.Tests
         public IEnumerator ClosingANonFocusedPopup_DestroysItAndKeepsTheFocusedPopup()
         {
             _manager.SetMainWindow(CreateWindow("Main"));
-            var lower = _manager.OpenPopUp(CreateWindow("Lower"));
-            var upper = _manager.OpenPopUp(CreateWindow("Upper"));
+            var lower = _manager.OpenPopUp(CreatePopup("Lower"));
+            var upper = _manager.OpenPopUp(CreatePopup("Upper"));
 
             _manager.Close(lower);
             yield return null;
@@ -166,8 +166,8 @@ namespace Arman.UIManagement.Tests
         public IEnumerator ClosingNonFocusedPopup_ThenFocusedPopup_HidesThePanel()
         {
             _manager.SetMainWindow(CreateWindow("Main"));
-            var lower = _manager.OpenPopUp(CreateWindow("Lower"));
-            var upper = _manager.OpenPopUp(CreateWindow("Upper"));
+            var lower = _manager.OpenPopUp(CreatePopup("Lower"));
+            var upper = _manager.OpenPopUp(CreatePopup("Upper"));
 
             _manager.Close(lower);
             _manager.Close(upper);
@@ -180,9 +180,9 @@ namespace Arman.UIManagement.Tests
         public IEnumerator ClosingPopupsInOpeningOrder_HidesThePanelOnlyAfterTheLast()
         {
             _manager.SetMainWindow(CreateWindow("Main"));
-            var first = _manager.OpenPopUp(CreateWindow("First"));
-            var second = _manager.OpenPopUp(CreateWindow("Second"));
-            var third = _manager.OpenPopUp(CreateWindow("Third"));
+            var first = _manager.OpenPopUp(CreatePopup("First"));
+            var second = _manager.OpenPopUp(CreatePopup("Second"));
+            var third = _manager.OpenPopUp(CreatePopup("Third"));
 
             _manager.Close(first);
             _manager.Close(second);
@@ -197,8 +197,8 @@ namespace Arman.UIManagement.Tests
         public IEnumerator ClosingAWindowThatIsNotOnTheStack_LeavesTheStackIntact()
         {
             _manager.SetMainWindow(CreateWindow("Main"));
-            var popup = _manager.OpenPopUp(CreateWindow("Popup"));
-            var stranger = CreateWindow("Stranger");
+            var popup = _manager.OpenPopUp(CreatePopup("Popup"));
+            var stranger = CreatePopup("Stranger");
 
             _manager.Close(stranger);
             yield return null;
@@ -213,8 +213,8 @@ namespace Arman.UIManagement.Tests
         public IEnumerator SetMainWindow_WithPopupsStillOpen_DestroysThePopupsAndHidesThePanel()
         {
             _manager.SetMainWindow(CreateWindow("Main"));
-            var lower = _manager.OpenPopUp(CreateWindow("Lower"));
-            var upper = _manager.OpenPopUp(CreateWindow("Upper"));
+            var lower = _manager.OpenPopUp(CreatePopup("Lower"));
+            var upper = _manager.OpenPopUp(CreatePopup("Upper"));
             var newMain = CreateWindow("NewMain");
 
             _manager.SetMainWindow(newMain);
@@ -231,6 +231,11 @@ namespace Arman.UIManagement.Tests
             return CreateGameObject(name).AddComponent<TestWindow>();
         }
 
+        private TestPopup CreatePopup(string name)
+        {
+            return CreateGameObject(name).AddComponent<TestPopup>();
+        }
+
         private static void SetField(object target, string name, object value)
         {
             var field = target
@@ -244,6 +249,16 @@ namespace Arman.UIManagement.Tests
         }
 
         private class TestWindow : Window
+        {
+            public int FocusedCount { get; private set; }
+
+            public override void OnFocused()
+            {
+                FocusedCount++;
+            }
+        }
+
+        private class TestPopup : PopupWindow
         {
             public int FocusedCount { get; private set; }
 

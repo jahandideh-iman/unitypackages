@@ -52,7 +52,7 @@ namespace Arman.UIManagement
         }
 
         public T OpenPopUp<T>(T popup)
-            where T : Window
+            where T : PopupWindow
         {
             System.Diagnostics.Debug.Assert(mainWindow != null, "Main window must not be null");
             AttachToSelf(popup);
@@ -85,7 +85,7 @@ namespace Arman.UIManagement
             window.OnFocused();
         }
 
-        public void Close(Window window)
+        public void Close(PopupWindow window)
         {
             windowsStack.Remove(window);
             DestroyWindow(window);
