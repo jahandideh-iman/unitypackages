@@ -7,6 +7,11 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `PopupTransition`, an optional component that animates a popup in when `UIManager.OpenPopUp` opens it and out before `UIManager.Close` destroys it.
+- A transparent input blocker that `UIManager` places above every popup while any transition runs, and `UIManager.IsInputBlocked`. Escape is ignored while input is blocked.
+
 ### Changed
 
 - `UIManager.Close` to allow closing windows that are not focused

@@ -11,14 +11,15 @@ knows what is on top.
 
 Everything lives in the `Arman.UIManagement` namespace.
 
-| Type          | Purpose                                                                                                                         |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `UIManager`   | `MonoBehaviour` on a `Canvas`. Owns the stack: `Init`, `SetMainWindow`, `OpenPopUp<T>`, `Close`, `MainWindow`, `SetMainCamera`. |
-| `UIElement`   | Base `MonoBehaviour` with an `InternalOnDestroy` hook.                                                                          |
-| `Window`      | `UIElement` on its own `Canvas` + `GraphicRaycaster`; overridable `InternalInit`, `OnBackButtonPressed`, `OnFocused`.           |
-| `MainWindow`  | The bottom-of-stack window.                                                                                                     |
-| `PopupWindow` | A window with `Close()` and a `closeOnBackButtonPressed` toggle.                                                                |
-| `Panel`       | A `Window` with a `CanvasGroup` and background image — `SetVisible`, `SetAlpha`, `RestoreAlpha`. Used for the popup dimmer.     |
+| Type              | Purpose                                                                                                                                           |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `UIManager`       | `MonoBehaviour` on a `Canvas`. Owns the stack: `Init`, `SetMainWindow`, `OpenPopUp<T>`, `Close`, `MainWindow`, `SetMainCamera`, `IsInputBlocked`. |
+| `UIElement`       | Base `MonoBehaviour` with an `InternalOnDestroy` hook.                                                                                            |
+| `Window`          | `UIElement` on its own `Canvas` + `GraphicRaycaster`; overridable `InternalInit`, `OnBackButtonPressed`, `OnFocused`.                             |
+| `MainWindow`      | The bottom-of-stack window.                                                                                                                       |
+| `PopupWindow`     | A window with `Close()` and a `closeOnBackButtonPressed` toggle.                                                                                  |
+| `Panel`           | A `Window` with a `CanvasGroup` and background image — `SetVisible`, `SetAlpha`, `RestoreAlpha`. Used for the popup dimmer.                       |
+| `PopupTransition` | Optional component on a popup's root that animates it in and out: implement `PlayIn` and `PlayOut`.                                               |
 
 ## Usage
 
@@ -46,6 +47,51 @@ underneath:
 uiManager.Close(popup);   // or, from inside a PopupWindow: this.Close();
 ```
 
+### Transitions
+
+A popup animates in and out when its root GameObject carries a `PopupTransition`; without one it
+appears and disappears at once. Subclass it with whatever drives the animation — a coroutine, an
+`Animator`, a tween library — and call `onComplete` when the animation ends:
+
+```csharp
+[RequireComponent(typeof(CanvasGroup))]
+public class FadeTransition : PopupTransition
+{
+    [SerializeField] float duration = 0.2f;
+
+    public override void PlayIn(Action onComplete) => Fade(0f, 1f, onComplete);
+
+    public override void PlayOut(Action onComplete) => Fade(1f, 0f, onComplete);
+
+    void Fade(float from, float to, Action onComplete)
+    {
+        StopAllCoroutines();   // PlayOut can arrive while PlayIn is still running
+        StartCoroutine(Run());
+
+        IEnumerator Run()
+        {
+            var group = GetComponent<CanvasGroup>();
+            for (float t = 0f; t < duration; t += Time.unscaledDeltaTime)
+            {
+                group.alpha = Mathf.Lerp(from, to, t / duration);
+                yield return null;
+            }
+            group.alpha = to;
+            onComplete();
+        }
+    }
+}
+```
+
+`OpenPopUp` starts `PlayIn` after the popup is on the stack and focused, so `PlayIn` must put the
+popup in its starting pose straight away. `Close` takes the popup off the stack and focuses the window
+below at once, then starts `PlayOut` and destroys the popup when it completes; the dimmer stays until
+then.
+
+While any transition runs, the manager shows a transparent, full-screen image sorted above every
+popup, so no click or tap reaches the UI, and it ignores Escape. `IsInputBlocked()` reports whether
+that is the case.
+
 Windows react to being shown or dismissed by overriding the hooks:
 
 ```csharp
@@ -70,12 +116,17 @@ uiManager.SetMainCamera(Camera.main);
 
 ## Things to know
 
-- **`Close` only works on the focused window.** Closing anything that is not on top of the stack is
-  silently ignored — popups come off in the order they went on.
-- **`Close` destroys the window GameObject.** Popups are instantiate-and-discard, not show/hide; keep
-  state outside the popup or reload it in `InternalInit`.
-- **`SetMainWindow` destroys every popup above the previous main window**, but assumes the outgoing
-  main window destroys itself — typically because the scene unloaded.
+- **`Close` works on any popup in the stack**, not only the focused one. Closing a popup further down
+  leaves focus where it is.
+- **`Close` destroys the window GameObject**, after its out transition if it has one. Popups are
+  instantiate-and-discard, not show/hide; keep state outside the popup or reload it in `InternalInit`.
+- **A transition must always call `onComplete`.** Input stays blocked until it does. Calling it more
+  than once is harmless, and a `PlayIn` that `PlayOut` interrupted may skip its call.
+- **Transitions should run on unscaled time** — popups such as a pause menu often open while
+  `Time.timeScale` is 0.
+- **`SetMainWindow` destroys every popup above the previous main window** at once, including popups
+  mid-transition, but assumes the outgoing main window destroys itself — typically because the scene
+  unloaded.
 - **Every `Window` needs its own `Canvas` and `GraphicRaycaster`** (`[RequireComponent]`), because
   sorting is done per-window with `overrideSorting`.
 - **Popup spacing comes from `sortingOffsetBetweenPopups`** on the manager. Leave it at 0 and popups
