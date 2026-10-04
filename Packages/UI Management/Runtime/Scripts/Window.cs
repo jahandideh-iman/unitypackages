@@ -6,7 +6,7 @@ namespace Arman.UIManagement
 {
     [RequireComponent(typeof(Canvas))]
     [RequireComponent(typeof(GraphicRaycaster))]
-    public class Window : UIElement
+    public abstract class Window : UIElement
     {
         protected UIManager uiManager;
 
