@@ -19,7 +19,7 @@ What belongs to `lifeblood`	.agents/rules/code-navigation.md
 Permissions	.agents/rules/code-navigation.md
 Distribution and releases	.agents/rules/releases.md
 Release tooling — `Tools/upm-release.mjs`	.agents/rules/releases.md
-The whole flow in one go — `Tools/release.bat`	.agents/rules/releases.md
+The release flow — `Tools/release.bat`	.agents/rules/releases.md
 Changelogs — four rules, enforced in CI	.agents/rules/releases.md
 Git and hosting	.agents/rules/git-workflow.md
 Branching	.agents/rules/git-workflow.md
