@@ -36,12 +36,12 @@ namespace Arman.UIManagement
         {
             popupBackgroundPanel.Init(this);
             HidePopupPanel();
-            CreateInputBlocker();
+            _inputBlocker = CreateInputBlocker(MainTransform());
         }
 
         public void SetMainWindow(Window window)
         {
-            System.Diagnostics.Debug.Assert(window != null, "Main window must not be null");
+            Assert(window != null, "Main window must not be null");
 
             this.mainWindow = window;
             ClearLingeringWindows();
@@ -72,13 +72,16 @@ namespace Arman.UIManagement
         public T OpenPopUp<T>(T popup)
             where T : PopupWindow
         {
-            System.Diagnostics.Debug.Assert(mainWindow != null, "Main window must not be null");
+            Assert(mainWindow != null, "Main window must not be null");
             AttachToSelf(popup);
             popup.Init(this);
             SetPopupSortingOrder(popup);
             PushOnStack(popup);
             FocusPopupPanelOn(popup);
-            PlayTransition(popup, popup.InTransition).Forget();
+            if (popup.InTransition != null)
+            {
+                PlayTransition(popup, popup.InTransition).Forget();
+            }
             return popup;
         }
 
@@ -106,50 +109,31 @@ namespace Arman.UIManagement
 
         public void Close(PopupWindow window)
         {
-            if (!windowsStack.Contains(window))
+            Assert(windowsStack.Contains(window), "Window must be in the stack to close it");
+            Assert(!_closingPopups.Contains(window), "Window is already closing");
+
+            InternalClose().Forget();
+
+            async UniTask InternalClose()
             {
+                if (window.OutTransition != null)
+                {
+                    _closingPopups.Add(window);
+                    await PlayTransition(window, window.OutTransition);
+                }
+
+                windowsStack.Remove(window);
                 DestroyWindow(window);
-                return;
+                if (FocusedWindowIsMainWindow())
+                    HidePopupPanel();
+                else
+                    FocusPopupPanelOn(CurrentFocusedWindow());
             }
-
-            if (!_closingPopups.Add(window))
-                return;
-
-            CloseAfterOutTransition(window).Forget();
         }
 
-        private async UniTaskVoid CloseAfterOutTransition(PopupWindow window)
+        private async UniTask PlayTransition(PopupWindow popup, Transition transition)
         {
-            CancelTransitionOf(window);
-            var popupDestroyed = window.GetCancellationTokenOnDestroy();
-            await PlayTransition(window, window.OutTransition);
-
-            // A popup destroyed mid-transition ends it from inside its destroy callback, where the
-            // manager may itself be mid-destruction yet not compare equal to null. A frame later it does.
-            if (popupDestroyed.IsCancellationRequested)
-                await UniTask.Yield();
-
-            // SetMainWindow empties the closing set when it clears lingering popups,
-            // and a destroyed manager has nothing left to refocus.
-            if (!_closingPopups.Remove(window) || this == null)
-                return;
-
-            windowsStack.Remove(window);
-            DestroyWindow(window);
-
-            if (FocusedWindowIsMainWindow())
-                HidePopupPanel();
-            else
-                FocusPopupPanelOn(CurrentFocusedWindow());
-        }
-
-        // Completes synchronously when there is no transition or it is already finished,
-        // so a popup without one opens and closes exactly as it would without this step.
-        private async UniTask PlayTransition(PopupWindow popup, Transition? transition)
-        {
-            if (transition == null)
-                return;
-
+            CancelTransitionOf(popup);
             // Not disposed: its only registration is on the popup's destroy token, which goes
             // away with the popup, and the source may be disposed from inside its own Cancel.
             var source = CancellationTokenSource.CreateLinkedTokenSource(
@@ -190,25 +174,6 @@ namespace Arman.UIManagement
                 source.Cancel();
             _runningTransitions.Clear();
             RefreshInputBlocker();
-        }
-
-        private void CreateInputBlocker()
-        {
-            var blocker = new GameObject("PopupInputBlocker", typeof(RectTransform));
-            var rect = (RectTransform)blocker.transform;
-            rect.SetParent(MainTransform(), false);
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = Vector2.one;
-            rect.offsetMin = Vector2.zero;
-            rect.offsetMax = Vector2.zero;
-
-            _inputBlocker = blocker.AddComponent<Canvas>();
-            blocker.AddComponent<GraphicRaycaster>();
-            var image = blocker.AddComponent<Image>();
-            image.color = Color.clear;
-            image.raycastTarget = true;
-
-            blocker.SetActive(false);
         }
 
         private void RefreshInputBlocker()
@@ -262,17 +227,22 @@ namespace Arman.UIManagement
 
         private void ClearLingeringWindows()
         {
-            // It is assumed that Main Window will be destroyed on its own.
-            var lingering = windowsStack.Skip(1).ToList();
-            windowsStack.Clear();
-
             // Emptied before cancelling, so the cancelled closes find nothing left to do.
             _closingPopups.Clear();
             CancelAllTransitions();
 
-            foreach (var window in lingering)
-                DestroyWindow(window);
+            // It is assumed that Main Window will be destroyed on its own.
+            for (int i = 1; i < windowsStack.Count; i++)
+                DestroyWindow(windowsStack[i]);
+            //var lingering = windowsStack.Skip(1).ToList();
+            windowsStack.Clear();
+
             HidePopupPanel();
+        }
+
+        private void OnDestroy()
+        {
+            CancelAllTransitions();
         }
 
         private void DestroyWindow(Window window)
@@ -289,6 +259,34 @@ namespace Arman.UIManagement
         public Panel BackgroundPanel()
         {
             return popupBackgroundPanel;
+        }
+
+        private static Canvas CreateInputBlocker(Transform parent)
+        {
+            var blocker = new GameObject("PopupInputBlocker", typeof(RectTransform));
+            var rect = (RectTransform)blocker.transform;
+            rect.SetParent(parent, false);
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+
+            var canvas = blocker.AddComponent<Canvas>();
+            blocker.AddComponent<GraphicRaycaster>();
+            var image = blocker.AddComponent<Image>();
+            image.color = Color.clear;
+            image.raycastTarget = true;
+
+            blocker.SetActive(false);
+
+            return canvas;
+        }
+
+        [System.Diagnostics.Conditional("DEBUG")]
+        private static void Assert(bool condition, string message)
+        {
+            if (!condition)
+                throw new InvalidOperationException(message);
         }
     }
 }
