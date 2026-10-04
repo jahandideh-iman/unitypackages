@@ -1,55 +1,63 @@
 using System.Collections;
-using System.Collections.Generic;
 using System.Reflection;
 using NUnit.Framework;
-using UnityEngine;
 using UnityEngine.TestTools;
 using UnityEngine.UI;
+using static Arman.UIManagement.Tests.UnityComponentCreationExtensions;
 
 namespace Arman.UIManagement.Tests
 {
     public class UIManagerTests
     {
-        private const int PopupSortingOffset = 10;
+        private const int _popupSortingOffset = 10;
 
-        private readonly List<GameObject> createdObjects = new();
-
-        private UIManager manager = null!;
-        private Panel backgroundPanel = null!;
+        private UIManager _manager = null!;
+        private Panel _backgroundPanel = null!;
 
         [SetUp]
         public void SetUp()
         {
-            // Serialized fields are filled while the objects are inactive, because
-            // Awake reads them and runs as soon as the object is activated.
-            var panelObject = Track(new GameObject("PopupBackgroundPanel"));
-            panelObject.SetActive(false);
-            backgroundPanel = panelObject.AddComponent<Panel>();
-            SetField(backgroundPanel, "backgroundImage", panelObject.AddComponent<Image>());
-
-            var managerObject = Track(new GameObject("UIManager"));
-            managerObject.SetActive(false);
-            manager = managerObject.AddComponent<UIManager>();
-            SetField(manager, "popupBackgroundPanel", backgroundPanel);
-            SetField(manager, "sortingOffsetBetweenPopups", PopupSortingOffset);
-            panelObject.transform.SetParent(managerObject.transform, false);
-
-            managerObject.SetActive(true);
-            panelObject.SetActive(true);
-            manager.Init();
+            CreateGameObject(
+                "UIManager",
+                go =>
+                {
+                    go.Child(
+                        "PopupBackgroundPanel",
+                        go =>
+                        {
+                            go.AddComponent<Panel>(preAwake: panel =>
+                                {
+                                    SetField(panel, "backgroundImage", go.AddComponent<Image>());
+                                })
+                                .Out(out _backgroundPanel);
+                        }
+                    );
+                    go.AddComponent<UIManager>(preAwake: manager =>
+                        {
+                            SetField(manager, "popupBackgroundPanel", _backgroundPanel);
+                            SetField(manager, "sortingOffsetBetweenPopups", _popupSortingOffset);
+                        })
+                        .Out(out _manager);
+                }
+            );
+            _manager.Init();
 
             // Update polls the legacy Input class, which throws when the project uses
             // the Input System package. Escape handling is not under test, so keep
             // Update from running across the frames the Close tests wait for.
-            manager.enabled = false;
+            _manager.enabled = false;
         }
 
         [TearDown]
-        public void TearDown()
+        public void Teardown()
         {
-            foreach (var created in createdObjects)
-                Object.Destroy(created);
-            createdObjects.Clear();
+            CleanUpScene();
+        }
+
+        [Test]
+        public void Init_HidesThePopupBackgroundPanel()
+        {
+            Assert.That(_backgroundPanel.gameObject.activeSelf, Is.False);
         }
 
         [Test]
@@ -57,177 +65,170 @@ namespace Arman.UIManagement.Tests
         {
             var main = CreateWindow("Main");
 
-            manager.SetMainWindow(main);
+            _manager.SetMainWindow(main);
 
-            Assert.AreSame(main, manager.MainWindow());
-        }
-
-        [Test]
-        public void Init_HidesThePopupBackgroundPanel()
-        {
-            Assert.IsFalse(backgroundPanel.gameObject.activeSelf);
+            Assert.That(_manager.MainWindow(), Is.SameAs(main));
         }
 
         [Test]
         public void BackgroundPanel_ReturnsThePanelItWasConfiguredWith()
         {
-            Assert.AreSame(backgroundPanel, manager.BackgroundPanel());
+            Assert.That(_manager.BackgroundPanel(), Is.SameAs(_backgroundPanel));
         }
 
         [Test]
         public void OpenPopUp_ParentsThePopupUnderTheManager()
         {
-            manager.SetMainWindow(CreateWindow("Main"));
+            _manager.SetMainWindow(CreateWindow("Main"));
 
-            var popup = manager.OpenPopUp(CreateWindow("Popup"));
+            var popup = _manager.OpenPopUp(CreateWindow("Popup"));
 
-            Assert.AreSame(manager.MainTransform(), popup.transform.parent);
+            Assert.That(popup.transform.parent, Is.SameAs(_manager.MainTransform()));
         }
 
         [Test]
         public void OpenPopUp_SortsEachPopupAboveTheFocusedWindow()
         {
             var main = CreateWindow("Main");
-            manager.SetMainWindow(main);
+            _manager.SetMainWindow(main);
 
-            var first = manager.OpenPopUp(CreateWindow("First"));
-            var second = manager.OpenPopUp(CreateWindow("Second"));
+            var first = _manager.OpenPopUp(CreateWindow("First"));
+            var second = _manager.OpenPopUp(CreateWindow("Second"));
 
-            Assert.AreEqual(main.SortingOrder() + PopupSortingOffset, first.SortingOrder());
-            Assert.AreEqual(first.SortingOrder() + PopupSortingOffset, second.SortingOrder());
+            Assert.That(
+                first.SortingOrder(),
+                Is.EqualTo(main.SortingOrder() + _popupSortingOffset)
+            );
+            Assert.That(
+                second.SortingOrder(),
+                Is.EqualTo(first.SortingOrder() + _popupSortingOffset)
+            );
         }
 
         [Test]
         public void OpenPopUp_ShowsTheBackgroundPanelJustBehindThePopupAndFocusesIt()
         {
-            manager.SetMainWindow(CreateWindow("Main"));
+            _manager.SetMainWindow(CreateWindow("Main"));
 
-            var popup = manager.OpenPopUp(CreateWindow("Popup"));
+            var popup = _manager.OpenPopUp(CreateWindow("Popup"));
 
-            Assert.IsTrue(backgroundPanel.gameObject.activeSelf);
-            Assert.AreEqual(popup.SortingOrder() - 1, backgroundPanel.SortingOrder());
-            Assert.AreEqual(1, popup.FocusedCount);
+            Assert.That(_backgroundPanel.gameObject.activeSelf, Is.True);
+            Assert.That(_backgroundPanel.SortingOrder(), Is.EqualTo(popup.SortingOrder() - 1));
+            Assert.That(popup.FocusedCount, Is.EqualTo(1));
         }
 
         [UnityTest]
-        public IEnumerator Close_FocusedPopup_DestroysItAndHidesThePanel()
+        public IEnumerator CloseingAFocusedPopup_DestroysItAndHidesThePanel()
         {
-            manager.SetMainWindow(CreateWindow("Main"));
-            var popup = manager.OpenPopUp(CreateWindow("Popup"));
+            _manager.SetMainWindow(CreateWindow("Main"));
+            var popup = _manager.OpenPopUp(CreateWindow("Popup"));
 
-            manager.Close(popup);
+            _manager.Close(popup);
             yield return null;
-
-            Assert.IsTrue(popup == null);
-            Assert.IsFalse(backgroundPanel.gameObject.activeSelf);
+            Assert.That(popup == null, Is.True);
+            Assert.That(_backgroundPanel.gameObject.activeSelf, Is.False);
         }
 
         [UnityTest]
-        public IEnumerator Close_FocusedPopup_FocusesThePopupBelowIt()
+        public IEnumerator ClosingAFocusedPopup_FocusesThePopupBelowIt()
         {
-            manager.SetMainWindow(CreateWindow("Main"));
-            var lower = manager.OpenPopUp(CreateWindow("Lower"));
-            var upper = manager.OpenPopUp(CreateWindow("Upper"));
+            _manager.SetMainWindow(CreateWindow("Main"));
+            var lower = _manager.OpenPopUp(CreateWindow("Lower"));
+            var upper = _manager.OpenPopUp(CreateWindow("Upper"));
             var lowerFocusedBefore = lower.FocusedCount;
 
-            manager.Close(upper);
+            _manager.Close(upper);
             yield return null;
 
-            Assert.IsTrue(upper == null);
-            Assert.IsTrue(backgroundPanel.gameObject.activeSelf);
-            Assert.AreEqual(lower.SortingOrder() - 1, backgroundPanel.SortingOrder());
-            Assert.AreEqual(lowerFocusedBefore + 1, lower.FocusedCount);
+            Assert.That(upper == null, Is.True);
+            Assert.That(_backgroundPanel.gameObject.activeSelf, Is.True);
+            Assert.That(_backgroundPanel.SortingOrder(), Is.EqualTo(lower.SortingOrder() - 1));
+            Assert.That(lower.FocusedCount, Is.EqualTo(lowerFocusedBefore + 1));
         }
 
         [UnityTest]
-        public IEnumerator Close_NonFocusedPopup_DestroysItAndKeepsTheFocusedPopup()
+        public IEnumerator ClosingANonFocusedPopup_DestroysItAndKeepsTheFocusedPopup()
         {
-            manager.SetMainWindow(CreateWindow("Main"));
-            var lower = manager.OpenPopUp(CreateWindow("Lower"));
-            var upper = manager.OpenPopUp(CreateWindow("Upper"));
+            _manager.SetMainWindow(CreateWindow("Main"));
+            var lower = _manager.OpenPopUp(CreateWindow("Lower"));
+            var upper = _manager.OpenPopUp(CreateWindow("Upper"));
 
-            manager.Close(lower);
+            _manager.Close(lower);
             yield return null;
 
-            Assert.IsTrue(lower == null);
-            Assert.IsFalse(upper == null);
-            Assert.IsTrue(backgroundPanel.gameObject.activeSelf);
-            Assert.AreEqual(upper.SortingOrder() - 1, backgroundPanel.SortingOrder());
+            Assert.That(lower == null, Is.True);
+            Assert.That(upper == null, Is.False);
+            Assert.That(_backgroundPanel.gameObject.activeSelf, Is.True);
+            Assert.That(_backgroundPanel.SortingOrder(), Is.EqualTo(upper.SortingOrder() - 1));
         }
 
         [UnityTest]
-        public IEnumerator Close_NonFocusedPopup_ThenFocusedPopup_HidesThePanel()
+        public IEnumerator ClosingNonFocusedPopup_ThenFocusedPopup_HidesThePanel()
         {
-            manager.SetMainWindow(CreateWindow("Main"));
-            var lower = manager.OpenPopUp(CreateWindow("Lower"));
-            var upper = manager.OpenPopUp(CreateWindow("Upper"));
+            _manager.SetMainWindow(CreateWindow("Main"));
+            var lower = _manager.OpenPopUp(CreateWindow("Lower"));
+            var upper = _manager.OpenPopUp(CreateWindow("Upper"));
 
-            manager.Close(lower);
-            manager.Close(upper);
+            _manager.Close(lower);
+            _manager.Close(upper);
             yield return null;
 
-            Assert.IsFalse(backgroundPanel.gameObject.activeSelf);
+            Assert.That(_backgroundPanel.gameObject.activeSelf, Is.False);
         }
 
         [UnityTest]
-        public IEnumerator Close_PopupsInOpeningOrder_HidesThePanelOnlyAfterTheLast()
+        public IEnumerator ClosingPopupsInOpeningOrder_HidesThePanelOnlyAfterTheLast()
         {
-            manager.SetMainWindow(CreateWindow("Main"));
-            var first = manager.OpenPopUp(CreateWindow("First"));
-            var second = manager.OpenPopUp(CreateWindow("Second"));
-            var third = manager.OpenPopUp(CreateWindow("Third"));
+            _manager.SetMainWindow(CreateWindow("Main"));
+            var first = _manager.OpenPopUp(CreateWindow("First"));
+            var second = _manager.OpenPopUp(CreateWindow("Second"));
+            var third = _manager.OpenPopUp(CreateWindow("Third"));
 
-            manager.Close(first);
-            manager.Close(second);
-            Assert.IsTrue(backgroundPanel.gameObject.activeSelf);
-            manager.Close(third);
+            _manager.Close(first);
+            _manager.Close(second);
+            Assert.That(_backgroundPanel.gameObject.activeSelf, Is.True);
+            _manager.Close(third);
             yield return null;
 
-            Assert.IsFalse(backgroundPanel.gameObject.activeSelf);
+            Assert.That(_backgroundPanel.gameObject.activeSelf, Is.False);
         }
 
         [UnityTest]
-        public IEnumerator Close_AWindowThatIsNotOnTheStack_LeavesTheStackIntact()
+        public IEnumerator ClosingAWindowThatIsNotOnTheStack_LeavesTheStackIntact()
         {
-            manager.SetMainWindow(CreateWindow("Main"));
-            var popup = manager.OpenPopUp(CreateWindow("Popup"));
+            _manager.SetMainWindow(CreateWindow("Main"));
+            var popup = _manager.OpenPopUp(CreateWindow("Popup"));
             var stranger = CreateWindow("Stranger");
 
-            manager.Close(stranger);
+            _manager.Close(stranger);
             yield return null;
 
-            Assert.IsTrue(stranger == null);
-            Assert.IsFalse(popup == null);
-            Assert.IsTrue(backgroundPanel.gameObject.activeSelf);
-            Assert.AreEqual(popup.SortingOrder() - 1, backgroundPanel.SortingOrder());
+            Assert.That(stranger == null, Is.True);
+            Assert.That(popup == null, Is.False);
+            Assert.That(_backgroundPanel.gameObject.activeSelf, Is.True);
+            Assert.That(_backgroundPanel.SortingOrder(), Is.EqualTo(popup.SortingOrder() - 1));
         }
 
         [UnityTest]
         public IEnumerator SetMainWindow_WithPopupsStillOpen_DestroysThePopupsAndHidesThePanel()
         {
-            manager.SetMainWindow(CreateWindow("Main"));
-            var lower = manager.OpenPopUp(CreateWindow("Lower"));
-            var upper = manager.OpenPopUp(CreateWindow("Upper"));
+            _manager.SetMainWindow(CreateWindow("Main"));
+            var lower = _manager.OpenPopUp(CreateWindow("Lower"));
+            var upper = _manager.OpenPopUp(CreateWindow("Upper"));
             var newMain = CreateWindow("NewMain");
 
-            manager.SetMainWindow(newMain);
+            _manager.SetMainWindow(newMain);
             yield return null;
 
-            Assert.IsTrue(lower == null);
-            Assert.IsTrue(upper == null);
-            Assert.AreSame(newMain, manager.MainWindow());
-            Assert.IsFalse(backgroundPanel.gameObject.activeSelf);
+            Assert.That(lower == null, Is.True);
+            Assert.That(upper == null, Is.True);
+            Assert.That(_manager.MainWindow(), Is.SameAs(newMain));
+            Assert.That(_backgroundPanel.gameObject.activeSelf, Is.False);
         }
 
         private TestWindow CreateWindow(string name)
         {
-            return Track(new GameObject(name)).AddComponent<TestWindow>();
-        }
-
-        private GameObject Track(GameObject created)
-        {
-            createdObjects.Add(created);
-            return created;
+            return CreateGameObject(name).AddComponent<TestWindow>();
         }
 
         private static void SetField(object target, string name, object value)
@@ -238,7 +239,7 @@ namespace Arman.UIManagement.Tests
                     name,
                     BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public
                 );
-            Assert.IsNotNull(field, $"{target.GetType().Name} has no field '{name}'");
+            Assert.That(field, Is.Not.Null, $"{target.GetType().Name} has no field '{name}'");
             field!.SetValue(target, value);
         }
 
