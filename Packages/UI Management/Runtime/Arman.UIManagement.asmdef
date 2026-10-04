@@ -1,6 +1,6 @@
 {
     "name": "Arman.UIManagement",
-    "references": [],
+    "references": ["UniTask"],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

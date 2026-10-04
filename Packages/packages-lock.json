@@ -104,7 +104,9 @@
       "version": "file:UI Management",
       "depth": 0,
       "source": "embedded",
-      "dependencies": {}
+      "dependencies": {
+        "com.cysharp.unitask": "2.5.11"
+      }
     },
     "com.arman.unity-utilities": {
       "version": "file:UnityUtilities",
@@ -119,6 +121,13 @@
       "dependencies": {
         "com.arman.package-basics": "0.3.0"
       }
+    },
+    "com.cysharp.unitask": {
+      "version": "2.5.11",
+      "depth": 1,
+      "source": "registry",
+      "dependencies": {},
+      "url": "https://package.openupm.com"
     },
     "com.unity.2d.animation": {
       "version": "15.1.0",

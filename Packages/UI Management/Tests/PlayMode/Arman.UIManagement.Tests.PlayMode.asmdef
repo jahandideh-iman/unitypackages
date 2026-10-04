@@ -4,7 +4,8 @@
     "references": [
         "Arman.UIManagement",
         "UnityEngine.TestRunner",
-        "UnityEngine.UI"
+        "UnityEngine.UI",
+        "UniTask"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

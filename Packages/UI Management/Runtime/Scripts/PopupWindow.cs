@@ -7,6 +7,12 @@ namespace Arman.UIManagement
         [SerializeField]
         bool closeOnBackButtonPressed;
 
+        [field: SerializeField]
+        public Transition? InTransition { get; private set; }
+
+        [field: SerializeField]
+        public Transition? OutTransition { get; private set; }
+
         protected override void InternalInit(UIManager manager) { }
 
         public override void OnBackButtonPressed()
