@@ -1,7 +1,7 @@
 # Popup in and out transitions
 
 **Date:** 2026-10-04
-**Status:** Planned
+**Status:** Implemented
 
 ## 1. The problem
 

@@ -7,9 +7,18 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `Transition`, an abstract component whose `Play(CancellationToken)` returns a `UniTask`, for animating a popup in or out.
+- `PopupWindow.InTransition` and `PopupWindow.OutTransition`, optional transitions that `UIManager` plays when the popup opens and before it destroys the popup on close.
+- `UIManager.IsTransitioning`, and a transparent input blocker above all popups that swallows pointer input and the back button while a transition plays.
+
 ### Changed
 
 - `UIManager.Close` to allow closing windows that are not focused
+- `Window` is abstract.
+- `UIManager.OpenPopUp` and `UIManager.Close` take a `PopupWindow` instead of any `Window`.
+- The package depends on `com.cysharp.unitask` 2.5.11.
 
 ## [0.2.0] - 2026-09-02
 
