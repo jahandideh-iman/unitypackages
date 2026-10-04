@@ -1,7 +1,7 @@
 # Popup in and out transitions
 
 **Date:** 2026-10-04
-**Status:** Designed
+**Status:** Planned
 
 ## 1. The problem
 
@@ -107,9 +107,13 @@ exactly as today, and the input blocker never appears.
 | The popup is destroyed mid-transition by other code | The transition is cancelled through the popup's destroy token and the blocker is released.                                                   |
 | `Play` throws                                       | The exception is logged with `Debug.LogException` and treated as the transition ending: the blocker is released and a close still completes. |
 
-Each transition gets a token linked from three sources: a source the manager owns per popup (cancelled
-by `Close` during an in transition and by `SetMainWindow`), the popup's
-`GetCancellationTokenOnDestroy()`, and the manager's own. The manager awaits
+Each transition gets the token of a `CancellationTokenSource` the manager creates for it, linked to the
+popup's `GetCancellationTokenOnDestroy()`. The manager cancels the source itself on `Close` during an in
+transition and on `SetMainWindow`; the link cancels it when the popup is destroyed. The manager's own
+destruction needs no separate link: popups are parented under the manager, so destroying it destroys
+them. The source is not disposed after the transition: its only registration is on the popup's destroy
+token, which goes away with the popup, and disposing a source from inside its own `Cancel` call is
+unsafe. The manager awaits
 `Play(token).AttachExternalCancellation(token)`, so it stops waiting on cancellation even when an
 implementation ignores the token. A transition that never completes and is never cancelled keeps input
 blocked; that is the implementation's bug, and the README says so.
@@ -136,11 +140,12 @@ UI Management becomes the first `com.arman.*` package with a dependency outside 
 - `Packages/UI Management/package.json` adds `"com.cysharp.unitask": "2.5.11"`, the current OpenUPM
   release. UniTask's minimum Unity is 2018.4, below the package's `2019.1`.
 - The runtime asmdef and the PlayMode test asmdef reference `UniTask`.
-- `Packages/manifest.json` gains an OpenUPM scoped registry for the `com.cysharp` scope and the
-  `com.cysharp.unitask` dependency, so the project resolves it.
+- `Packages/manifest.json` gains an OpenUPM scoped registry with the scope `com.cysharp.unitask`. The
+  project resolves UniTask through the embedded package's own dependency, so the manifest does not list
+  it again.
 
-Consumers installing through the openupm CLI get the `com.cysharp` scope added for them; anyone editing
-`manifest.json` by hand needs the scope too, which the README states.
+Consumers installing through the openupm CLI get the `com.cysharp.unitask` scope added for them; anyone
+editing `manifest.json` by hand needs the scope too, which the README states.
 
 ## 4. Testing
 
