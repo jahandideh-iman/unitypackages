@@ -1,10 +1,11 @@
 // Checks this repo's own Markdown, so the routing from AGENTS.md to the files
-// that hold each rule cannot rot unnoticed. Five checks:
+// that hold each rule cannot rot unnoticed. Six checks:
 //
 //   link     every relative Markdown link resolves to a file or folder
 //   anchor   every #fragment matches a heading in its target
 //   mirror   .agents/skills/ and .claude/skills/ hold the same files, byte for byte
-//   heading  every heading in .agents/rules/MANIFEST.tsv exists in the file it names
+//   agents   .claude/agents/ and .opencode/agents/ pair up, same description and body
+//   heading every heading in .agents/rules/MANIFEST.tsv exists in the file it names
 //   budget   AGENTS.md is between 6,000 and 12,000 bytes, LF-normalised
 //
 //     node Tools/docs-check.mjs            # human-readable, exit 0 clean / 1 findings
@@ -29,6 +30,8 @@ const MANIFEST = ".agents/rules/MANIFEST.tsv";
 const SKILLS = ".agents/skills";
 const SKILLS_MIRROR = ".claude/skills";
 const SKILL_SOURCES = ".agents/skills/THIRD_PARTY_SKILLS.md";
+const AGENTS = ".claude/agents";
+const AGENTS_MIRROR = ".opencode/agents";
 const AUTHORED_IN_REPO = "Authored in-repo";
 
 // A link target with a URL scheme (https:, mailto:, ...) is not a repo path.
@@ -296,6 +299,71 @@ function checkMirror(root) {
     return findings;
 }
 
+/** Splits a Markdown file into its `key: value` frontmatter and the body after it. */
+function frontmatter(text) {
+    const match = /^---\n([\s\S]*?)\n---\n/.exec(text.replace(/\r\n/g, "\n"));
+    if (!match) return { fields: {}, body: text.replace(/\r\n/g, "\n") };
+    const fields = {};
+    for (const line of match[1].split("\n")) {
+        const colon = line.indexOf(":");
+        if (colon > 0) fields[line.slice(0, colon).trim()] = line.slice(colon + 1).trim();
+    }
+    return { fields, body: text.replace(/\r\n/g, "\n").slice(match[0].length) };
+}
+
+// The two copies of a subagent differ only in frontmatter: Claude Code keys it by
+// `name:`, OpenCode by file name and needs `mode: subagent`.
+function checkAgents(root) {
+    const findings = [];
+    const names = (folder) =>
+        new Set(tracked(root, `${folder}/*.md`).map((file) => file.slice(folder.length + 1)));
+    const claude = names(AGENTS);
+    const opencode = names(AGENTS_MIRROR);
+    for (const file of claude) {
+        if (!opencode.has(file)) {
+            findings.push({
+                check: "agents",
+                file: `${AGENTS}/${file}`,
+                message: `missing from ${AGENTS_MIRROR}/`,
+            });
+            continue;
+        }
+        const ours = frontmatter(read(root, `${AGENTS}/${file}`));
+        const theirs = frontmatter(read(root, `${AGENTS_MIRROR}/${file}`));
+        if (ours.fields.description !== theirs.fields.description) {
+            findings.push({
+                check: "agents",
+                file: `${AGENTS}/${file}`,
+                message: `description differs from ${AGENTS_MIRROR}/${file}`,
+            });
+        }
+        if (ours.body !== theirs.body) {
+            findings.push({
+                check: "agents",
+                file: `${AGENTS}/${file}`,
+                message: `body differs from ${AGENTS_MIRROR}/${file}`,
+            });
+        }
+    }
+    for (const file of opencode) {
+        if (!claude.has(file)) {
+            findings.push({
+                check: "agents",
+                file: `${AGENTS_MIRROR}/${file}`,
+                message: `missing from ${AGENTS}/`,
+            });
+        }
+        if (frontmatter(read(root, `${AGENTS_MIRROR}/${file}`)).fields.mode !== "subagent") {
+            findings.push({
+                check: "agents",
+                file: `${AGENTS_MIRROR}/${file}`,
+                message: "needs mode: subagent",
+            });
+        }
+    }
+    return findings;
+}
+
 function checkManifest(root) {
     const manifest = path.join(root, MANIFEST);
     if (!fs.existsSync(manifest)) {
@@ -371,6 +439,7 @@ export function check(root) {
         ...checkLinks(root, markdown),
         ...checkAnchors(root, markdown, vendored),
         ...checkMirror(root),
+        ...checkAgents(root),
         ...checkManifest(root),
         ...checkBudget(root),
     ];
@@ -384,7 +453,7 @@ function render(report) {
     );
     lines.push(
         report.ok
-            ? "docs-check: all five checks pass."
+            ? "docs-check: all six checks pass."
             : `docs-check: ${report.findings.length} problem(s). Fix them, or see .agents/rules/documentation-voice.md.`,
     );
     return lines;

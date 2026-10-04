@@ -3,6 +3,10 @@
 .claude/
 .qwen/
 
+# Paired with .claude/agents/, which the line above keeps Prettier out of;
+# formatting only this copy would split the pair docs-check compares.
+.opencode/
+
 # Written by Unity. Its next save would undo any formatting; .asmdef files in
 # particular are written with no final newline, which Prettier always adds.
 ProjectSettings/

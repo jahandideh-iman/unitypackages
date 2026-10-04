@@ -18,14 +18,14 @@ npm run format:check    # what the required `format` check runs
 | CSharpier 1.3.0 | `*.cs`                                         | `.csharpierrc.json`, `.csharpierignore` |
 | Prettier 3.9.6  | JSON, YAML, JS, Markdown — changelogs included | `.prettierrc.json`, `.prettierignore`   |
 
-`.editorconfig` covers the rest: editor defaults, and the naming rules from [C# coding style](#c-coding-style) as IDE1006 warnings. Those show in Rider, Visual Studio and VS Code only; neither Unity nor CI reports them. Code blocks inside Markdown are left as written (`embeddedLanguageFormatting: "off"`): docs quote exact file contents and fragments, and reformatting them would change what they show.
+`.editorconfig` covers the rest: editor defaults, and the naming rules from [C# coding style](#c-coding-style) as IDE1006 warnings. Those show in Rider, Visual Studio and VS Code only; neither Unity nor CI reports them. `.editorconfig` cannot tell a serialized field from a plain one, so its `_camelCase` check covers `readonly` fields only. Code blocks inside Markdown are left as written (`embeddedLanguageFormatting: "off"`): docs quote exact file contents and fragments, and reformatting them would change what they show.
 
 The root `package.json` exists only to pin Prettier. It is `private`, Unity ignores it (Unity reads `Packages/manifest.json`), and the release tooling globs `Packages/*/package.json`, which does not match it. The `Tools/` scripts stay dependency-free.
 
 **Excluded, and why.** Each exclusion has a reason; don't remove one without replacing the reason:
 
 - **Unity-written files** — `.meta`, `.asset`, `.prefab`, `.unity`, `.anim`, `.asmdef`, `ProjectSettings/`, `Packages/manifest.json`, `Packages/packages-lock.json`. Unity's next save would undo the formatting. `.asmdef` in particular is written with no final newline, and Prettier always adds one.
-- **Vendored code** — `.agents/skills/`, `.claude/`, `.qwen/`, `Packages/PackageBasics/Runtime/ThirdParties/`. Reformatting makes it harder to compare with upstream.
+- **Vendored code** — `.agents/skills/`, `.claude/`, `.qwen/`, `Packages/PackageBasics/Runtime/ThirdParties/`. Reformatting makes it harder to compare with upstream. `.opencode/` is excluded with them: its subagents pair with `.claude/agents/`, and formatting one copy alone would split the pair.
 - **`Tools/ci/Tests/fixtures/`** — read byte for byte by the tests.
 - **Line endings and BOMs are left alone.** Both formatters use `endOfLine: auto`, and `.editorconfig` sets neither `end_of_line` nor `charset`. Git stores LF, and most C# files carry a BOM.
 
@@ -50,7 +50,8 @@ Layout — indentation, wrapping, brace placement — is CSharpier's; see [Forma
 - **Interfaces are `I`-prefixed**, file names included. Anything without the prefix is a class or struct — don't add an interface that breaks this.
 - **The sole implementation of an interface takes the interface's name without the `I`.** `IUpdateManager` is implemented by `UpdateManager`, `IShopCenter` by `ShopCenter`. Do **not** reach for a `Basic` prefix: it distinguishes the type from nothing. Introduce a qualifier only when a second implementation actually exists and the name has to say which one it is — the way `UnityUpdateManager` and `UnityConfigurationManager` (MonoBehaviour adapters over the plain types) already do.
 - **camelCase:** locals and parameters.
-- **`_camelCase`:** private/protected fields, including `[SerializeField]` ones.
-- **`[SerializeField]` on private fields** rather than making them public.
+- **`_camelCase`:** private/protected fields that are not serialized.
+- **`[SerializeField]` on private fields** rather than making them public, and **PascalCase** whatever their accessibility: `[SerializeField] private float Speed;`. When other code reads the value, serialize an auto-property's backing field instead of pairing a field with a getter: `[field: SerializeField] public float Speed { get; private set; }`. Its serialized name is `<Speed>k__BackingField`, which is what `SerializedObject.FindProperty` and `JsonUtility` keys need.
+- **A shipped serialized field keeps its name.** The field name is the key in every consumer's scenes, prefabs and assets, so renaming it silently drops their values. A rename that has to happen carries `[FormerlySerializedAs("oldName")]` and a changelog entry. The fields that predate the PascalCase rule are listed under [Known inconsistencies](./packages.md#known-inconsistencies).
 - **Keep `UnityEngine` out of foundation packages** where it isn't needed. `PackageBasics` and `ServiceLocating` are pure C# and testable as plain libraries — preserve that.
 - Avoid per-frame allocations; prefer event-driven designs over `Update()` polling.

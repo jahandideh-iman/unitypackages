@@ -115,4 +115,5 @@ Versions are not listed here: each `package.json` holds its package's version, a
 Real, deliberately unfixed. Don't "clean these up" as a side quest — each has a cost, and the asmdef ones break consumer references:
 
 - `PackageTemplate` mixes `Arman.PackageTemplate` and `Arman.TemplatePackage` in its own asmdef names.
+- **Serialized fields in `Asset Providing`, `ObjectPooling` and `UI Management` are plain camelCase** (`componentPrefab`, `syncProviders`, `popupBackgroundPanel`), not the PascalCase of [C# coding style](./code-style.md#c-coding-style). Each name is the key consumers' scenes, prefabs and assets store the value under; renaming one without `[FormerlySerializedAs]` silently drops it.
 - **`DevelopmentConsole` bundles no log viewer.** Do not add the "Unity Logs Viewer" (`Reporter`) or any other Unity Asset Store code: Asset Store content cannot be redistributed inside an MIT package. The panel's `onErrorDetected` `UnityEvent` ships with no listener attached.

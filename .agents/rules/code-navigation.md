@@ -87,10 +87,13 @@ Common commands (see `unity command` for the full ~140-command surface — GameO
 | --------------------------------------------------------------------------------- | ----------------------------------------------- |
 | Read the console before fixing a compile error — do not guess the line/error code | `unity command console --tail 50 --level error` |
 | Inspect the active scene hierarchy before changing it                             | `unity command get_scene_hierarchy`             |
-| Quick C# check without a full recompile/domain reload                             | `unity command eval --code "<expression>"`      |
+| Run C# against the live Editor without a recompile                                | `unity command eval_file --file <snippet.cs>`   |
 | Find GameObjects by name/tag/component                                            | `unity command find_gameobjects --name "..."`   |
 | Run tests from inside a live Editor (vs. the batchmode `unity test`)              | `unity command run_tests --mode EditMode`       |
 
+- **Use `eval_file`, not `eval --code`.** The inline form breaks two ways: PowerShell re-splits a C# `$"..."` string on spaces, and Claude Code refuses a Bash command containing `eval` in a worktree session. Write the snippet to a `.cs` file (it can live outside the project) and pass `--file`. `eval_file` drops most `using` directives, so fully qualify every type (`System.Reflection.BindingFlags`), and use `+` concatenation instead of `$"..."`.
+- **Always pass `--mode` to `run_tests`**, and add `--async_tests true` for PlayMode, then poll `unity command test_status`. A bare `run_tests` queues an asynchronous PlayMode pass after EditMode, and stacked PlayMode runs wedge the Editor inside play mode with no in-band recovery. `run_tests` also runs the last _compiled_ assemblies: after editing a test, `recompile` and poll `recompile_status` first, or the green count is the previous build's.
+- **Never drive a `unity command menu --path` that opens a confirmation dialog** (`Assets/Reimport All`, for one). The native modal freezes the Editor's main thread, and that call and every later `unity command` hang until a person clicks a button in it.
 - Scenes, prefabs and `.asset` files change only through `unity command` or the Editor — never by hand-editing their YAML. The [`unity-asset-editing`](../skills/unity-asset-editing/SKILL.md) skill carries the rule and the fallback when a command is broken.
 
 ### Permissions
