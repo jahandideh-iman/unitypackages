@@ -39,7 +39,7 @@ An agent does neither, and never pushes to `dev`. It prepares the release on a b
 4. **Check the pull request.** Every required check passes, `unity-tests` included. Read the version headings and bumps `prepare` produced; while a package's major is `0`, a breaking change lands on the minor.
 5. **Hand over.** Report the pull request URL. A human merges it with a true merge, never a squash, and that merge is the publish.
 
-`Tools/release.bat` (`node Tools/release-flow.mjs`) runs the same steps in one go from a local `dev` checkout and pushes `dev` itself, so it is a maintainer's tool: an agent does not run it.
+`Tools/release.bat` (`node Tools/release-flow.mjs`) runs the same steps for a maintainer: each run opens the next pull request — the preparation pull request into `dev`, then, once that is merged, the release pull request into `master`. It commits and pushes as the person running it, so an agent does not run it.
 
 To preview or release one package by hand: `node Tools/upm-release.mjs prepare --dry-run`, `prepare --only "<folder or id>"`, `prepare --bump <package>=<major|minor|patch>`, and `tag --dry-run` on `master`.
 

@@ -16,7 +16,16 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 
-import { readVersions, versionChanges, commitMessage, pullRequestBody } from "./release-flow.mjs";
+import {
+    readVersions,
+    versionsFromManifests,
+    versionChanges,
+    commitMessage,
+    pullRequestBody,
+    preparePullRequestBody,
+    prepareBranchName,
+    findPreparePullRequest,
+} from "./release-flow.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const SCRIPT = path.join(HERE, "release-flow.mjs");
@@ -58,6 +67,15 @@ test("readVersions ignores a malformed manifest rather than throwing", () => {
 
 test("readVersions returns empty for a missing directory", () => {
     assert.equal(readVersions(path.join(os.tmpdir(), "does-not-exist-here")).size, 0);
+});
+
+test("versionsFromManifests reads manifest text, as the flow does from a remote ref", () => {
+    const versions = versionsFromManifests([
+        ["UI Management", JSON.stringify({ name: "com.arman.ui-management", version: "0.3.0" })],
+        ["PackageTemplate", JSON.stringify({ name: "x", version: "0.0.1", private: true })],
+        ["Broken", "{ not json"],
+    ]);
+    assert.deepEqual([...versions], [["com.arman.ui-management", "0.3.0"]]);
 });
 
 // ---------------------------------------------------------- versionChanges
@@ -114,6 +132,53 @@ test("pullRequestBody tabulates every change and warns that merging publishes", 
     assert.match(body, /\| `com\.arman\.object-pooling` \| 0\.1\.0 \| 0\.2\.0 \|/);
     assert.match(body, /Merging this pull request \*\*publishes\*\*/);
     assert.match(body, /permanent/);
+});
+
+test("preparePullRequestBody tabulates every change and says the merge publishes nothing", () => {
+    const body = preparePullRequestBody([
+        { name: "com.arman.object-pooling", from: "0.1.0", to: "0.2.0" },
+    ]);
+    assert.match(body, /\| `com\.arman\.object-pooling` \| 0\.1\.0 \| 0\.2\.0 \|/);
+    assert.match(body, /publishes nothing/);
+    assert.match(body, /release\.bat/);
+    assert.doesNotMatch(body, /\*\*publishes\*\*/);
+});
+
+// ------------------------------------------------------ prepare branch name
+
+test("prepareBranchName dates the branch", () => {
+    const date = new Date("2026-10-04T12:00:00Z");
+    assert.equal(prepareBranchName(date), "chore/prepare-release-2026-10-04");
+});
+
+test("prepareBranchName skips names already taken on the remote", () => {
+    const date = new Date("2026-10-04T12:00:00Z");
+    const taken = new Set([
+        "chore/prepare-release-2026-10-04",
+        "chore/prepare-release-2026-10-04-2",
+    ]);
+    assert.equal(prepareBranchName(date, taken), "chore/prepare-release-2026-10-04-3");
+});
+
+// ------------------------------------------------- open prepare pull request
+
+test("findPreparePullRequest picks the pull request from a prepare branch", () => {
+    const url = findPreparePullRequest([
+        { url: "https://example/1", headRefName: "feat/something" },
+        { url: "https://example/2", headRefName: "chore/prepare-release-2026-10-04" },
+    ]);
+    assert.equal(url, "https://example/2");
+});
+
+test("findPreparePullRequest is empty when no prepare branch is open", () => {
+    assert.equal(findPreparePullRequest([]), "");
+    // A branch that only shares the prefix's letters is not one.
+    assert.equal(
+        findPreparePullRequest([
+            { url: "https://example/1", headRefName: "chore/prepare-releases" },
+        ]),
+        "",
+    );
 });
 
 // ------------------------------------------------------------ argument guard

@@ -20,7 +20,7 @@ unitypackages/
 ├── Assets/                  # scratch sandbox only — Scenes/, Settings/, StreamingAssets/
 ├── Tools/                   # dependency-free Node, each script with its *.test.mjs
 │   ├── upm-release.mjs      # release tooling — validate, pack, tag, prepare
-│   ├── release-flow.mjs     # a whole release in one go, wrapped by release.bat
+│   ├── release-flow.mjs     # the release flow, one pull request per run, wrapped by release.bat
 │   ├── changelog-check.mjs  # the changelog CI check
 │   ├── promotion-check.mjs  # release PRs into master come from dev only
 │   ├── docs-check.mjs       # the docs check — links, anchors, skill mirror, manifest, budget

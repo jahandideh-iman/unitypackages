@@ -24,19 +24,22 @@ node Tools/upm-release.mjs prepare --dry-run    # what would each [Unreleased] s
 node Tools/upm-release.mjs prepare              # rename the headings, bump the versions
 ```
 
-### The whole flow in one go — `Tools/release.bat`
+### The release flow — `Tools/release.bat`
 
-`Tools/release.bat` (a two-line wrapper over `Tools/release-flow.mjs`) runs an entire release and **takes no arguments**:
+`Tools/release.bat` (a two-line wrapper over `Tools/release-flow.mjs`) drives a release and **takes no arguments**:
 
 ```powershell
 Tools/release.bat            # or: node Tools/release-flow.mjs
 ```
 
-Six steps, stopping at the first failure: preflight (`git` and `gh` present and authenticated, on `dev`, clean tree, not behind `origin/dev`) → `validate` → `prepare` → commit the bumps → push `dev` → `gh pr create --base master --head dev`. It prints the pull request URL and stops.
+`dev` and `master` both require a pull request (see [Branching](./git-workflow.md#branching)), so a release is two merges, and each run opens the pull request for whichever comes next. It works from `origin/dev` and `origin/master` after a fetch, never from the local checkout, so it runs from any branch and any working tree state. Preflight checks that `git` and `gh` are present and `gh` is authenticated, then:
 
-**It stops there deliberately.** Merging that pull request is the publish, and an OpenUPM tag is permanent, so the irreversible step stays a human click on a green PR. If no package has a populated `## [Unreleased]` section it says so and exits 0, having changed nothing. Re-running while a release PR is already open updates that PR rather than failing.
+1. **Prepare.** If a pull request from a `chore/prepare-release-*` branch into `dev` is already open, it prints that URL and stops. Otherwise it cuts `chore/prepare-release-<date>` from `origin/dev` into a temporary worktree and runs `validate` → `prepare` there. If `prepare` changed anything, it commits the bumps, pushes the branch, opens a pull request into `dev`, removes the temporary worktree, and stops. Merging that pull request publishes nothing.
+2. **Promote.** With nothing left to prepare, it compares every package version on `origin/dev` with `origin/master`. If any differ, it opens `gh pr create --base master --head dev`, or reports the one already open, and prints the URL. If none differ, it says there is nothing to release and exits 0, having changed nothing.
 
-It commits and pushes `dev` itself, so an agent does not run it: an agent prepares the release on a branch and opens pull requests — the [`releasing-packages`](../skills/releasing-packages/SKILL.md) skill.
+So a release is: run it, merge the preparation pull request into `dev`, run it again, merge the release pull request into `master`. **It stops at each pull request deliberately.** Merging the release pull request is the publish, and an OpenUPM tag is permanent, so the irreversible step stays a human click on a green PR. When `prepare` or a later step fails, the temporary worktree is left in place and its path printed.
+
+It commits, pushes a branch and opens pull requests as the person running it, so an agent does not run it: an agent follows the same steps by hand — the [`releasing-packages`](../skills/releasing-packages/SKILL.md) skill.
 
 Passing it any argument is an error (exit 2) that points back at `upm-release.mjs` — that script is where single steps, `--dry-run`, `--only` and `--bump` live. Nothing forwards sub-commands; spell those `node Tools/upm-release.mjs <command>`. The flow's own tests are `Tools/release-flow.test.mjs`, run by `tooling-tests` in `tests.yml`.
 
