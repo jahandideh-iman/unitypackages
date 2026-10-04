@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Arman.UIManagement
@@ -15,7 +16,7 @@ namespace Arman.UIManagement
         private Canvas canvas;
         private Window mainWindow;
 
-        private readonly Stack<Window> windowsStack = new Stack<Window>();
+        private readonly List<Window> windowsStack = new();
 
         void Awake()
         {
@@ -53,6 +54,7 @@ namespace Arman.UIManagement
         public T OpenPopUp<T>(T popup)
             where T : Window
         {
+            System.Diagnostics.Debug.Assert(mainWindow != null, "Main window must not be null");
             AttachToSelf(popup);
             popup.Init(this);
             SetPopupSortingOrder(popup);
@@ -85,10 +87,7 @@ namespace Arman.UIManagement
 
         public void Close(Window window)
         {
-            if (IsNotFocused(window))
-                return;
-
-            windowsStack.Pop();
+            windowsStack.Remove(window);
             DestroyWindow(window);
 
             if (FocusedWindowIsMainWindow())
@@ -119,19 +118,23 @@ namespace Arman.UIManagement
 
         private Window CurrentFocusedWindow()
         {
-            return windowsStack.Peek();
+            return windowsStack.Last();
         }
 
         private void PushOnStack(Window window)
         {
-            windowsStack.Push(window);
+            windowsStack.Add(window);
         }
 
         private void ClearLingeringWindows()
         {
             // It is assumed that Main Window will be destroyed on its own.
             while (windowsStack.Count > 1)
-                DestroyWindow(windowsStack.Pop());
+            {
+                var window = windowsStack.Last();
+                windowsStack.RemoveAt(windowsStack.Count - 1);
+                DestroyWindow(window);
+            }
 
             windowsStack.Clear();
             HidePopupPanel();
