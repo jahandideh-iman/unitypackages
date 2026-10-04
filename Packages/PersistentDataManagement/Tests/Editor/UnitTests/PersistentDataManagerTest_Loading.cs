@@ -1,8 +1,7 @@
-﻿
+﻿using System.IO;
 using Arman.PackageBasics;
 using Moq;
 using NUnit.Framework;
-using System.IO;
 
 namespace Arman.PersistentDataManagement.Tests
 {
@@ -15,7 +14,8 @@ namespace Arman.PersistentDataManagement.Tests
         {
             serializer.Verify(
                 s => s.DeserializeFrom(It.IsAny<IReadablePersistentDataWrapper>()),
-                times);
+                times
+            );
         }
 
         protected override void InternalSetup()
@@ -88,7 +88,10 @@ namespace Arman.PersistentDataManagement.Tests
                 manager.Load(new NamedChannel("UnregisteredChannel"));
             });
 
-            Assert.That(action, Throws.Exception.InstanceOf<PersistentDataChannelNotFoundException>());
+            Assert.That(
+                action,
+                Throws.Exception.InstanceOf<PersistentDataChannelNotFoundException>()
+            );
 
             VerifyDeserialized(serializerA, Times.Never());
             VerifyDeserialized(serializerB, Times.Never());
@@ -102,7 +105,6 @@ namespace Arman.PersistentDataManagement.Tests
             manager = CreateManager(emptyStreamFactory, persistentDataWrapper.Object);
             manager.Register(serializerA.Object);
             manager.Register(serializerB.Object);
-
 
             manager.LoadAll();
 
@@ -119,7 +121,6 @@ namespace Arman.PersistentDataManagement.Tests
             manager.Register(serializerA.Object, channel1);
             manager.Register(serializerB.Object, channel2);
 
-
             manager.LoadAll();
 
             persistentDataWrapper.Verify(w => w.Clear(), Times.Exactly(2));
@@ -133,7 +134,6 @@ namespace Arman.PersistentDataManagement.Tests
             manager = CreateManager(emptyStreamFactory, persistentDataWrapper.Object);
             manager.Register(serializerA.Object, channel1);
 
-
             manager.Load(channel1);
 
             persistentDataWrapper.Verify(w => w.Clear(), Times.Once);
@@ -146,11 +146,14 @@ namespace Arman.PersistentDataManagement.Tests
 
             int step = 0;
             int readStep = -1;
-            serializerA.Setup(s => s.DeserializeFrom(It.IsAny<IReadablePersistentDataWrapper>()))
+            serializerA
+                .Setup(s => s.DeserializeFrom(It.IsAny<IReadablePersistentDataWrapper>()))
                 .Callback(() => step++);
-            serializerB.Setup(s => s.DeserializeFrom(It.IsAny<IReadablePersistentDataWrapper>()))
+            serializerB
+                .Setup(s => s.DeserializeFrom(It.IsAny<IReadablePersistentDataWrapper>()))
                 .Callback(() => step++);
-            dataWrapper.Setup(w => w.ReadFrom(It.IsAny<StreamReader>()))
+            dataWrapper
+                .Setup(w => w.ReadFrom(It.IsAny<StreamReader>()))
                 .Callback(() => readStep = step);
 
             manager = CreateManager(emptyStreamFactory, dataWrapper.Object);
@@ -162,7 +165,6 @@ namespace Arman.PersistentDataManagement.Tests
             Assert.That(readStep, Is.EqualTo(0));
         }
 
-
         [Test]
         public void LoadingAChannelShouldGiveDataToPersistentDataWrapperBeforeCallingChannelsSerializers()
         {
@@ -170,9 +172,11 @@ namespace Arman.PersistentDataManagement.Tests
 
             int step = 0;
             int readStep = -1;
-            serializerA.Setup(s => s.DeserializeFrom(It.IsAny<IReadablePersistentDataWrapper>()))
+            serializerA
+                .Setup(s => s.DeserializeFrom(It.IsAny<IReadablePersistentDataWrapper>()))
                 .Callback(() => step++);
-            dataWrapper.Setup(w => w.ReadFrom(It.IsAny<StreamReader>()))
+            dataWrapper
+                .Setup(w => w.ReadFrom(It.IsAny<StreamReader>()))
                 .Callback(() => readStep = step);
 
             manager = CreateManager(emptyStreamFactory, dataWrapper.Object);

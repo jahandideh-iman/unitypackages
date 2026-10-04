@@ -8,20 +8,20 @@ lifetime, eviction); how a message looks, fades in and fades out is authored on 
 
 ## What it provides
 
-| Type | Namespace | Purpose |
-|---|---|---|
-| `IInGameMessageLogger` | `Arman.Foundation.InGameMessageLogging` | The contract — a single `Log(string message)`. |
+| Type                       | Namespace                                 | Purpose                                                                    |
+| -------------------------- | ----------------------------------------- | -------------------------------------------------------------------------- |
+| `IInGameMessageLogger`     | `Arman.Foundation.InGameMessageLogging`   | The contract — a single `Log(string message)`.                             |
 | `UnityInGameMessageLogger` | `Arman.Presentation.InGameMessageLogging` | `MonoBehaviour` implementation that instantiates one message per log call. |
-| `LogMessage` | `Arman.Presentation.InGameMessageLogging` | The message view, driven by `UnityEvent`s. |
+| `LogMessage`               | `Arman.Presentation.InGameMessageLogging` | The message view, driven by `UnityEvent`s.                                 |
 
 `UnityInGameMessageLogger` is configured in the Inspector:
 
-| Field | Meaning |
-|---|---|
-| `loggerMessagePrefab` | The `LogMessage` prefab instantiated per message. |
-| `messageContainer` | The parent `GameObject` messages are added under. |
-| `capacity` | Maximum messages on screen; the oldest is cleared when exceeded. |
-| `logLifeTime` | Seconds a message lives before clearing itself. |
+| Field                 | Meaning                                                          |
+| --------------------- | ---------------------------------------------------------------- |
+| `loggerMessagePrefab` | The `LogMessage` prefab instantiated per message.                |
+| `messageContainer`    | The parent `GameObject` messages are added under.                |
+| `capacity`            | Maximum messages on screen; the oldest is cleared when exceeded. |
+| `logLifeTime`         | Seconds a message lives before clearing itself.                  |
 
 `LogMessage` exposes four events the prefab wires up: `setTextAction` (`StringUnityEvent`, receives
 the message), `fadeInAction`, `startTimeAction` (`FloatUnityEvent`, receives the lifetime) and
@@ -64,7 +64,7 @@ logger.Log("Level loaded");
 4. Assign the prefab and a container to `UnityInGameMessageLogger`, and set `capacity` and
    `logLifeTime`.
 
-A worked example ships as the *In Game Message Logging Example* sample, which wires an `InputField`
+A worked example ships as the _In Game Message Logging Example_ sample, which wires an `InputField`
 to the logger — import it from the package's Samples tab in the Package Manager.
 
 ## Things to know

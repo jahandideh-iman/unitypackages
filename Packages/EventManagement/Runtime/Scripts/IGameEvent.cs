@@ -1,7 +1,4 @@
 ﻿namespace Arman.EventManagement
 {
-    public interface IGameEvent
-    {
-
-    }
+    public interface IGameEvent { }
 }

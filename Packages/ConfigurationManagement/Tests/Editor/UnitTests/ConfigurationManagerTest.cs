@@ -1,34 +1,22 @@
 ﻿using NUnit.Framework;
 
-
 namespace Arman.ConfigurationManagement.Tests
 {
-
     class TypeA { }
-    class TypeB { }
 
+    class TypeB { }
 
     class FakeMultiConfigurerAB : IConfigurer<TypeA>, IConfigurer<TypeB>
     {
-        public void Configure(TypeA entity)
-        {
-            
-        }
+        public void Configure(TypeA entity) { }
 
-        public void Configure(TypeB entity)
-        {
-            
-        }
+        public void Configure(TypeB entity) { }
 
-        public void RegisterSelf(IConfigurationManager manager)
-        {
-            
-        }
+        public void RegisterSelf(IConfigurationManager manager) { }
     }
 
     class FakeConfigurer<T> : IConfigurer<T>
     {
-
         public bool configurationCalled = false;
 
         public void Configure(T entity)
@@ -36,21 +24,15 @@ namespace Arman.ConfigurationManagement.Tests
             configurationCalled = true;
         }
 
-        public void RegisterSelf(IConfigurationManager manager)
-        {
-            
-        }
+        public void RegisterSelf(IConfigurationManager manager) { }
     }
 
-
-    public class ConfigurationManagerTest 
+    public class ConfigurationManagerTest
     {
-
         ConfigurationManager configManager;
 
         FakeConfigurer<TypeA> configurerA;
         FakeConfigurer<TypeB> configurerB;
-
 
         [SetUp]
         public void Setup()
@@ -64,7 +46,6 @@ namespace Arman.ConfigurationManagement.Tests
         [Test]
         public void HasTheRegisteredConfigurers()
         {
-            
             configManager.Register(configurerA);
             configManager.Register(configurerB);
 
@@ -103,7 +84,7 @@ namespace Arman.ConfigurationManagement.Tests
         public void MultiConfigurersCanBePartialyRemoved()
         {
             var configurerAB = new FakeMultiConfigurerAB();
-   
+
             configManager.Register<TypeA>(configurerAB);
             configManager.Register<TypeB>(configurerAB);
 

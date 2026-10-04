@@ -1,0 +1,11 @@
+# Commits that only reformatted code. `git blame` skips them once configured:
+#
+#     git config blame.ignoreRevsFile .git-blame-ignore-revs
+#
+# GitHub's blame view reads this file automatically.
+#
+# List a commit only once it reaches `dev` with this exact SHA. A squash merge
+# or a rebase rewrites it, and the entry then points at nothing.
+
+# style: apply CSharpier and Prettier to the whole repo
+dd23db444c8f38cdae296dcac194cda76d6be2c6

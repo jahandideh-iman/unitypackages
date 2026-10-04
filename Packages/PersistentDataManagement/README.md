@@ -1,7 +1,7 @@
 # Persistent Data Management
 
-Saving and loading game state, split into three replaceable parts: *what* is saved
-(`IPersistentDataSerializer`), *how it is encoded* (`IPersistentDataWrapper`), and *where it goes*
+Saving and loading game state, split into three replaceable parts: _what_ is saved
+(`IPersistentDataSerializer`), _how it is encoded_ (`IPersistentDataWrapper`), and _where it goes_
 (`IPersistentDataIOStreamFactory`). Systems register a serializer and never learn whether their data
 ends up in a JSON file, a memory stream or a test double.
 
@@ -12,22 +12,22 @@ the world's, or load only settings on boot.
 
 Namespace `Arman.Foundation.Core.PersistentDataManagement`:
 
-| Type | Purpose |
-|---|---|
-| `IPersistentDataSerializer` | `Key()`, `SerializeTo(...)`, `DeserializeFrom(...)` — implemented by anything with state to save. |
-| `IPersistentDataWrapper` | The encoding. Splits into `IWritablePersistentDataWrapper` and `IReadablePersistentDataWrapper`. |
-| `IPersistentDataIOStreamFactory` | Supplies a `StreamReader`/`StreamWriter` per channel. |
-| `IPersistentDataManager` / `PersistentDataManager` | Registration, `Save`/`SaveAll`, `Load`/`LoadAll`, `Delete`. |
-| `MemoryBasedPersistetDataIOStreamFactory` | In-memory streams — for tests. |
-| `EmptyPersistentDataWrapper`, `EmptyPersistetDataIOStreamFactory` | No-op stand-ins. |
+| Type                                                              | Purpose                                                                                           |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `IPersistentDataSerializer`                                       | `Key()`, `SerializeTo(...)`, `DeserializeFrom(...)` — implemented by anything with state to save. |
+| `IPersistentDataWrapper`                                          | The encoding. Splits into `IWritablePersistentDataWrapper` and `IReadablePersistentDataWrapper`.  |
+| `IPersistentDataIOStreamFactory`                                  | Supplies a `StreamReader`/`StreamWriter` per channel.                                             |
+| `IPersistentDataManager` / `PersistentDataManager`                | Registration, `Save`/`SaveAll`, `Load`/`LoadAll`, `Delete`.                                       |
+| `MemoryBasedPersistetDataIOStreamFactory`                         | In-memory streams — for tests.                                                                    |
+| `EmptyPersistentDataWrapper`, `EmptyPersistetDataIOStreamFactory` | No-op stand-ins.                                                                                  |
 
 Namespace `Arman.Foundation.Unity.PersistentDataManagement`:
 
-| Type | Purpose |
-|---|---|
-| `JSONPersistentDataWrapper` | JSON encoding, via the `NiceJson` bundled in `Package Basics`. |
-| `FileBasedPersistetDataIOStreamFactory` | One file per channel under a directory you pass in. |
-| `PlayerPrefsPersistentDataWrapper` | `PlayerPrefs` backing — see the warning below. |
+| Type                                    | Purpose                                                        |
+| --------------------------------------- | -------------------------------------------------------------- |
+| `JSONPersistentDataWrapper`             | JSON encoding, via the `NiceJson` bundled in `Package Basics`. |
+| `FileBasedPersistetDataIOStreamFactory` | One file per channel under a directory you pass in.            |
+| `PlayerPrefsPersistentDataWrapper`      | `PlayerPrefs` backing — see the warning below.                 |
 
 ## Usage
 

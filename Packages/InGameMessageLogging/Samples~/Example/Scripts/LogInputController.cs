@@ -14,6 +14,5 @@ namespace Arman.InGameMessageLogging.Samples
         {
             inGameMessageLogger.Log(inputField.text);
         }
-
     }
 }

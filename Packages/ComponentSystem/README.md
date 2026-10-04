@@ -11,14 +11,14 @@ composition half only, small enough to drop into an existing design.
 
 Everything lives in the `Arman.ComponentSystem` namespace.
 
-| Type | Purpose |
-|---|---|
-| `IComponent` | Marker interface. Any component type implements it. |
-| `IEntity` | `AddComponent`, `GetComponent<T>()`, `AllComponents()`. |
-| `Entity` | The implementation, plus `AddComponents(params)`, `GetComponentFromEnd<T>()` and `GetComponent<T>(int)`. |
-| `ISpecializedEntity<T>` / `SpecializedEntity<T>` | An entity constrained to one component family, with a typed `List<T> AllComponents()`. |
-| `ICache` | `TryCache(IComponent)` — a hook for caching frequently-read components. |
-| `CacheableEntity<T>` | `Entity` that offers every added component to an `ICache`. |
+| Type                                             | Purpose                                                                                                  |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
+| `IComponent`                                     | Marker interface. Any component type implements it.                                                      |
+| `IEntity`                                        | `AddComponent`, `GetComponent<T>()`, `AllComponents()`.                                                  |
+| `Entity`                                         | The implementation, plus `AddComponents(params)`, `GetComponentFromEnd<T>()` and `GetComponent<T>(int)`. |
+| `ISpecializedEntity<T>` / `SpecializedEntity<T>` | An entity constrained to one component family, with a typed `List<T> AllComponents()`.                   |
+| `ICache`                                         | `TryCache(IComponent)` — a hook for caching frequently-read components.                                  |
+| `CacheableEntity<T>`                             | `Entity` that offers every added component to an `ICache`.                                               |
 
 ## Usage
 
@@ -82,7 +82,7 @@ Dash dash = abilities.GetComponent<Dash>();
 
 ## Things to know
 
-- **Namespace simplification.** The runtime namespace is now `Arman.ComponentSystem`; the former `Arman.Foundation.ComponentSystem.Core` namespace is gone. Update any `using` directives (and test namespaces, now `Arman.ComponentSystem.Tests`) to match.
+- **One namespace.** The runtime lives in `Arman.ComponentSystem`, and its tests in `Arman.ComponentSystem.Tests`.
 - **`GetComponent<T>()` returns the first assignable match** by linear scan, and `default(T)` — `null`
   for a class — when there is none. It does not throw. `GetComponentFromEnd<T>()` scans backwards and
   returns the last, which is how you pick the most recently added of a duplicated type.

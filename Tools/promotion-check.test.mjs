@@ -105,7 +105,11 @@ test("a pull request into dev is not a release pull request", () => {
 });
 
 test("a push is not a release pull request", () => {
-    const { status, report: r } = report({ GITHUB_EVENT_NAME: "push", GITHUB_BASE_REF: "", GITHUB_HEAD_REF: "" });
+    const { status, report: r } = report({
+        GITHUB_EVENT_NAME: "push",
+        GITHUB_BASE_REF: "",
+        GITHUB_HEAD_REF: "",
+    });
     assert.equal(status, 0);
     assert.equal(r.ok, true);
 });

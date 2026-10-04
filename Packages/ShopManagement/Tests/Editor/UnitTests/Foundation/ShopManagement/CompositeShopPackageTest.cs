@@ -1,5 +1,5 @@
-﻿using Arman.ShopManagement;
-using Arman.Mocks.Foundation.ShopManagement.Core;
+﻿using Arman.Mocks.Foundation.ShopManagement.Core;
+using Arman.ShopManagement;
 using NUnit.Framework;
 
 namespace Arman.ShopManagement.Tests

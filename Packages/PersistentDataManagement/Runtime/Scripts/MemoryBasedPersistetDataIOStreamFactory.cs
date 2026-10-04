@@ -1,6 +1,6 @@
-﻿using Arman.PackageBasics;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
+using Arman.PackageBasics;
 
 namespace Arman.PersistentDataManagement
 {
@@ -15,7 +15,6 @@ namespace Arman.PersistentDataManagement
             memoryStreams.TryGetValue(channel, out memoryStream);
             if (memoryStream == null)
                 memoryStream = new MemoryStream();
-
 
             return new StreamReader(new MemoryStream(memoryStream.ToArray()));
         }

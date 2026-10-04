@@ -1,7 +1,6 @@
-﻿
-namespace Arman.ConfigurationManagement
+﻿namespace Arman.ConfigurationManagement
 {
-    public  interface IConfigurer
+    public interface IConfigurer
     {
         void RegisterSelf(IConfigurationManager manager);
     }
@@ -9,6 +8,5 @@ namespace Arman.ConfigurationManagement
     public interface IConfigurer<T> : IConfigurer
     {
         void Configure(T entity);
-
     }
 }

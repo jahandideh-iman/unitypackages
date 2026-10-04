@@ -10,33 +10,63 @@ namespace Arman.PersistentDataManagement
 
         public void ReadFrom(StreamReader stream) { }
 
-        public bool HasKey(string key) { return false; }
+        public bool HasKey(string key)
+        {
+            return false;
+        }
 
-        public int ReadInt(string key, int defaultValue = 0 ) { return 0; }
+        public int ReadInt(string key, int defaultValue = 0)
+        {
+            return 0;
+        }
 
-        public string ReadString(string key, string defaultValue = "") { return ""; }
+        public string ReadString(string key, string defaultValue = "")
+        {
+            return "";
+        }
 
-        public float ReadFloat(string key, float defaultValue = 0f) { return 0f; }
+        public float ReadFloat(string key, float defaultValue = 0f)
+        {
+            return 0f;
+        }
 
-        public bool ReadBoolean(string key, bool defaultValue = false) { return false; }
+        public bool ReadBoolean(string key, bool defaultValue = false)
+        {
+            return false;
+        }
 
+        public IWritablePersistentDataWrapper WriteInt(string key, int value)
+        {
+            return this;
+        }
 
-        public IWritablePersistentDataWrapper WriteInt(string key, int value) { return this; }
+        public IWritablePersistentDataWrapper WriteString(string key, string value)
+        {
+            return this;
+        }
 
-        public IWritablePersistentDataWrapper WriteString(string key, string value) { return this; }
+        public IWritablePersistentDataWrapper WriteFloat(string key, float value)
+        {
+            return this;
+        }
 
-        public IWritablePersistentDataWrapper WriteFloat(string key, float value) { return this; }
-
-        public IWritablePersistentDataWrapper WriteBoolean(string key, bool value) { return this; }
+        public IWritablePersistentDataWrapper WriteBoolean(string key, bool value)
+        {
+            return this;
+        }
 
         public void BeginReadingBlock(string key) { }
 
         public void EndReadingBlock() { }
 
-        public IWritablePersistentDataWrapper BeginWritingBlock(string key) { return this; }
-        public IWritablePersistentDataWrapper EndWritingBlock() { return this; }
+        public IWritablePersistentDataWrapper BeginWritingBlock(string key)
+        {
+            return this;
+        }
 
-
+        public IWritablePersistentDataWrapper EndWritingBlock()
+        {
+            return this;
+        }
     }
-
 }

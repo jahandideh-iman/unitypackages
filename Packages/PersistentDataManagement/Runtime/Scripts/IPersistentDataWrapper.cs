@@ -2,7 +2,9 @@
 
 namespace Arman.PersistentDataManagement
 {
-    public interface IPersistentDataWrapper : IReadablePersistentDataWrapper, IWritablePersistentDataWrapper
+    public interface IPersistentDataWrapper
+        : IReadablePersistentDataWrapper,
+            IWritablePersistentDataWrapper
     {
         void Clear();
 
@@ -21,8 +23,8 @@ namespace Arman.PersistentDataManagement
 
         void BeginReadingBlock(string key);
         void EndReadingBlock();
-
     }
+
     public interface IWritablePersistentDataWrapper
     {
         IWritablePersistentDataWrapper WriteInt(string key, int value);
@@ -32,8 +34,5 @@ namespace Arman.PersistentDataManagement
 
         IWritablePersistentDataWrapper BeginWritingBlock(string key);
         IWritablePersistentDataWrapper EndWritingBlock();
-
     }
-
-
 }

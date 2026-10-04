@@ -10,17 +10,17 @@ The point is that adding a cheat costs one attribute, so the console stays usefu
 
 Everything lives in the `Arman.DevelopmentConsole` namespace.
 
-| Type | Purpose |
-|---|---|
-| `DevelopmentOptionsDefinition` | Abstract base. Subclass it to have your options discovered. |
-| `DevOptionAttribute` | `[DevOption(group, commandName)]` on a static method. |
-| `ShortCutAttribute` | `[ShortCut(KeyCode..., KeyCode...)]` — a key combination for the same method. |
-| `DevelopmentConsolePanel` | The `MonoBehaviour` that scans, builds the UI and polls shortcuts. |
-| `DevelopmentGroup`, `DevelopmentCommand` | The group and button views, instantiated from prefabs. |
-| `CommandInfo` | A discovered command: name, method, shortcut keys. |
-| `CommandInputPrompt` | The argument prompt for commands that take parameters. |
-| `ReflectionUtilities` | Assembly-wide type lookup helpers. |
-| `FPSProfiler`, `ButtonDragabler` | An on-screen frame-rate readout, and a draggable button. |
+| Type                                     | Purpose                                                                       |
+| ---------------------------------------- | ----------------------------------------------------------------------------- |
+| `DevelopmentOptionsDefinition`           | Abstract base. Subclass it to have your options discovered.                   |
+| `DevOptionAttribute`                     | `[DevOption(group, commandName)]` on a static method.                         |
+| `ShortCutAttribute`                      | `[ShortCut(KeyCode..., KeyCode...)]` — a key combination for the same method. |
+| `DevelopmentConsolePanel`                | The `MonoBehaviour` that scans, builds the UI and polls shortcuts.            |
+| `DevelopmentGroup`, `DevelopmentCommand` | The group and button views, instantiated from prefabs.                        |
+| `CommandInfo`                            | A discovered command: name, method, shortcut keys.                            |
+| `CommandInputPrompt`                     | The argument prompt for commands that take parameters.                        |
+| `ReflectionUtilities`                    | Assembly-wide type lookup helpers.                                            |
+| `FPSProfiler`, `ButtonDragabler`         | An on-screen frame-rate readout, and a draggable button.                      |
 
 ## Usage
 
@@ -54,7 +54,7 @@ The panel also exposes `onErrorDetected`, `onToolsPanelOpened` and `onToolsPanel
 listener attached, so wire it to whatever you want — flashing the dev button red is a cheap way to
 notice that something has gone wrong off-screen.
 
-Two worked definitions ship as the *Development Console Example* sample — import it from the
+Two worked definitions ship as the _Development Console Example_ sample — import it from the
 package's Samples tab in the Package Manager.
 
 ## Things to know

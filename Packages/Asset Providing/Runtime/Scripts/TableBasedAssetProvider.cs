@@ -14,12 +14,14 @@ namespace Arman.AssetProviding
             this.objectTable = objectTable;
         }
 
-        public T LoadAssetById<T>(string id) where T : Object
+        public T LoadAssetById<T>(string id)
+            where T : Object
         {
             return UnityAssetUtilities.CastToAsset<T>(objectTable[id]);
         }
 
-        public T LoadAssetByType<T>() where T : Object
+        public T LoadAssetByType<T>()
+            where T : Object
         {
             foreach (var obj in objectTable.Values)
                 if (UnityAssetUtilities.IsOfAssetType<T>(obj, out var tObj))
@@ -28,13 +30,14 @@ namespace Arman.AssetProviding
             return default;
         }
 
-        public Task<T> LoadAssetByIdAsync<T>(string id) where T : Object
+        public Task<T> LoadAssetByIdAsync<T>(string id)
+            where T : Object
         {
             return Task.FromResult(LoadAssetById<T>(id));
         }
 
-
-        public Task<T> LoadAssetByTypeAsync<T>() where T : Object
+        public Task<T> LoadAssetByTypeAsync<T>()
+            where T : Object
         {
             return Task.FromResult(LoadAssetByType<T>());
         }

@@ -1,6 +1,4 @@
-﻿
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace Arman.ConfigurationManagement
@@ -8,7 +6,6 @@ namespace Arman.ConfigurationManagement
     public class DynamicConfigurer<T> : IConfigurer<T>
     {
         private List<Action<T>> configActions = new List<Action<T>>();
-
 
         public void AddConfigAction(Action<T> action)
         {
@@ -19,7 +16,6 @@ namespace Arman.ConfigurationManagement
         {
             foreach (var confAction in configActions)
                 TryExecute(confAction, entity);
-                
         }
 
         private void TryExecute(Action<T> confAction, T entity)
@@ -28,13 +24,14 @@ namespace Arman.ConfigurationManagement
             {
                 confAction(entity);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 UnityEngine.Debug.LogErrorFormat(
-                    "Error executing config command {0} on {1} \n Reason: {2}", 
-                    confAction, 
+                    "Error executing config command {0} on {1} \n Reason: {2}",
+                    confAction,
                     entity,
-                    e);
+                    e
+                );
             }
         }
 

@@ -1,0 +1,32 @@
+# Each rules-file or skill heading the routing depends on, and the file that holds it: heading, a tab, the file.
+What this repo is	AGENTS.md
+Writing documentation	.agents/rules/documentation-voice.md
+Repo layout	.agents/rules/packages.md
+Package anatomy	.agents/rules/packages.md
+Assembly definitions	.agents/rules/packages.md
+Package catalogue	.agents/rules/packages.md
+Naming	.agents/rules/packages.md
+Known inconsistencies	.agents/rules/packages.md
+Test Commands	.agents/rules/testing.md
+Test doubles — Moq for interactions, hand-written fakes for state	.agents/rules/testing.md
+CI	.agents/rules/ci.md
+MCP Tool Usage & Unity CLI	.agents/rules/code-navigation.md
+Skills	.agents/rules/code-navigation.md
+`sharplens`: Code Navigation — ALWAYS PREFER over Grep/Glob/LS	.agents/rules/code-navigation.md
+`lifeblood` — Roslyn code navigation	.agents/rules/code-navigation.md
+What belongs to `lifeblood`	.agents/rules/code-navigation.md
+`unity command`: Editor State — official Unity CLI, called directly (not an MCP server)	.agents/rules/code-navigation.md
+Permissions	.agents/rules/code-navigation.md
+Distribution and releases	.agents/rules/releases.md
+Release tooling — `Tools/upm-release.mjs`	.agents/rules/releases.md
+The release flow — `Tools/release.bat`	.agents/rules/releases.md
+Changelogs — four rules, enforced in CI	.agents/rules/releases.md
+Git and hosting	.agents/rules/git-workflow.md
+Branching	.agents/rules/git-workflow.md
+Superpowers workflows	.agents/rules/process.md
+Where superpowers meets this repo's rules	.agents/rules/process.md
+Project subagents	.agents/rules/process.md
+Formatting	.agents/rules/code-style.md
+C# coding style	.agents/rules/code-style.md
+Unity `.meta` files	.agents/skills/unity-asset-editing/SKILL.md
+Adding a new package	.agents/skills/adding-a-package/SKILL.md

@@ -1,5 +1,4 @@
-﻿
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
@@ -19,7 +18,6 @@ namespace Arman.DevelopmentConsole
             button = this.transform.GetComponent<Button>();
         }
 
-
         public void OnBeginDrag(PointerEventData eventData)
         {
             mustCheckForDrag = true;
@@ -27,7 +25,7 @@ namespace Arman.DevelopmentConsole
 
         public void OnDrag(PointerEventData eventData)
         {
-            if(mustCheckForDrag)
+            if (mustCheckForDrag)
             {
                 if (Vector2.Distance(eventData.position, eventData.pressPosition) >= dragThreshold)
                 {
@@ -35,7 +33,6 @@ namespace Arman.DevelopmentConsole
                     mustCheckForDrag = false;
                     button.enabled = false;
                 }
-
             }
 
             if (isDraging)
@@ -49,8 +46,8 @@ namespace Arman.DevelopmentConsole
         {
             isDraging = false;
             mustCheckForDrag = false;
-            button.enabled = true; ;
+            button.enabled = true;
+            ;
         }
-
     }
 }

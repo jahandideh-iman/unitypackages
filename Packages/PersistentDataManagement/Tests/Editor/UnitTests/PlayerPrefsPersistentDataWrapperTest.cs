@@ -1,9 +1,9 @@
-﻿using NUnit.Framework;
-using System.IO;
+﻿using System.IO;
+using NUnit.Framework;
 
 namespace Arman.PersistentDataManagement.Tests
 {
-    public class PlayerPrefsPersistentDataWrapperTest 
+    public class PlayerPrefsPersistentDataWrapperTest
     {
         PlayerPrefsPersistentDataWrapper dataWrapper;
 
@@ -52,39 +52,38 @@ namespace Arman.PersistentDataManagement.Tests
         [Test]
         public void ReadBlockShoudReadAWrittenBlock()
         {
-            dataWrapper.
-                BeginWritingBlock("outerblock1").
-                    WriteInt("key1", 1).
-                    WriteFloat("key2", 1f).
-                    BeginWritingBlock("innerblock").
-                        WriteString("innerKey1", "innerValue1" ).
-                    EndWritingBlock().
-                EndWritingBlock();
+            dataWrapper
+                .BeginWritingBlock("outerblock1")
+                .WriteInt("key1", 1)
+                .WriteFloat("key2", 1f)
+                .BeginWritingBlock("innerblock")
+                .WriteString("innerKey1", "innerValue1")
+                .EndWritingBlock()
+                .EndWritingBlock();
 
-            dataWrapper.
-                BeginWritingBlock("outerblock2").
-                    WriteInt("key1", 2).
-                    WriteFloat("key2", 2f).
-                    BeginWritingBlock("innerblock").
-                        WriteString("innerKey2", "innerValue2").
-                    EndWritingBlock().
-                EndWritingBlock();
-
+            dataWrapper
+                .BeginWritingBlock("outerblock2")
+                .WriteInt("key1", 2)
+                .WriteFloat("key2", 2f)
+                .BeginWritingBlock("innerblock")
+                .WriteString("innerKey2", "innerValue2")
+                .EndWritingBlock()
+                .EndWritingBlock();
 
             dataWrapper.BeginReadingBlock("outerblock1");
-                Assert.That(dataWrapper.ReadInt("key1"), Is.EqualTo(1));
-                Assert.That(dataWrapper.ReadFloat("key2"), Is.EqualTo(1f));
-                dataWrapper.BeginReadingBlock("innerblock");
-                    Assert.That(dataWrapper.ReadString("innerKey1"), Is.EqualTo("innerValue1"));
-                dataWrapper.EndReadingBlock();
+            Assert.That(dataWrapper.ReadInt("key1"), Is.EqualTo(1));
+            Assert.That(dataWrapper.ReadFloat("key2"), Is.EqualTo(1f));
+            dataWrapper.BeginReadingBlock("innerblock");
+            Assert.That(dataWrapper.ReadString("innerKey1"), Is.EqualTo("innerValue1"));
+            dataWrapper.EndReadingBlock();
             dataWrapper.EndReadingBlock();
 
             dataWrapper.BeginReadingBlock("outerblock2");
-                Assert.That(dataWrapper.ReadInt("key1"), Is.EqualTo(2));
-                Assert.That(dataWrapper.ReadFloat("key2"), Is.EqualTo(2f));
-                dataWrapper.BeginReadingBlock("innerblock");
-                    Assert.That(dataWrapper.ReadString("innerKey2"), Is.EqualTo("innerValue2"));
-                dataWrapper.EndReadingBlock();
+            Assert.That(dataWrapper.ReadInt("key1"), Is.EqualTo(2));
+            Assert.That(dataWrapper.ReadFloat("key2"), Is.EqualTo(2f));
+            dataWrapper.BeginReadingBlock("innerblock");
+            Assert.That(dataWrapper.ReadString("innerKey2"), Is.EqualTo("innerValue2"));
+            dataWrapper.EndReadingBlock();
             dataWrapper.EndReadingBlock();
         }
 
@@ -111,7 +110,6 @@ namespace Arman.PersistentDataManagement.Tests
                 Assert.That(dataWrapper.ReadFloat("Key3"), Is.EqualTo(3f));
                 Assert.That(dataWrapper.ReadBoolean("Key4"), Is.EqualTo(false));
             }
-
         }
     }
 }

@@ -11,14 +11,14 @@ positions, or equipment slots.
 
 Namespace `Arman.InventorySystem`:
 
-| Type | Purpose |
-|---|---|
-| `IInventoryItem` | Marker contract for anything an inventory can hold. |
-| `IInventory<T>` | `SetNumberOf`, `Increase`, `Decrease`, `NumberOf`, `Has`, `Items`, `SetConstraint`, and the two callback setters. |
-| `Inventory<T>` | The in-memory implementation. |
-| `IInventoryItemConstraint` | `int ApplyTo(int value)` — clamps a proposed count. |
-| `MinMaxInventoryItemConstraint` | Clamps a count between a minimum and a maximum. |
-| `OnItemNumberChanged<T>` | `delegate void (T item, int value)`. |
+| Type                            | Purpose                                                                                                           |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `IInventoryItem`                | Marker contract for anything an inventory can hold.                                                               |
+| `IInventory<T>`                 | `SetNumberOf`, `Increase`, `Decrease`, `NumberOf`, `Has`, `Items`, `SetConstraint`, and the two callback setters. |
+| `Inventory<T>`                  | The in-memory implementation.                                                                                     |
+| `IInventoryItemConstraint`      | `int ApplyTo(int value)` — clamps a proposed count.                                                               |
+| `MinMaxInventoryItemConstraint` | Clamps a count between a minimum and a maximum.                                                                   |
+| `OnItemNumberChanged<T>`        | `delegate void (T item, int value)`.                                                                              |
 
 ## Usage
 
@@ -77,5 +77,5 @@ foreach (Currency item in inventory.Items())
   every `SetNumberOf`, including one that clamps to an unchanged value.
 - **`Items()` allocates.** It copies the key set into a new `List<T>` on each call — keep it out of
   per-frame code.
-- **Flat namespace.** The runtime lives in `Arman.InventorySystem` (formerly
-  `Arman.Game.InventorySystem.Core`); the scripts are flat under `Runtime/Scripts`.
+- **Flat namespace.** The runtime lives in `Arman.InventorySystem`; the scripts are flat under
+  `Runtime/Scripts`.

@@ -13,14 +13,8 @@ name: release
 # ⚠️ Merging a release PR into `master` PUBLISHES. The `tag` job runs on that
 # push and tags every package whose version is not tagged yet; OpenUPM picks the
 # tags up and the resulting name/version is permanent. Bump versions on `dev`
-# and let them sit there until you mean to release.
-#
-# The `workflow_dispatch` gate this job used to carry was rollout step 4's
-# safeguard — a single-package smoke test (com.arman.service-locating) had to
-# settle the Package Manager visibility question in §5 before the rest were
-# submitted. That test passed and all 17 packages went out on 2026-08-31, so the
-# gate was dropped per rollout step 5 and merging the release PR is now the whole
-# release flow, as designed.
+# and let them sit there until you mean to release. Merging the release PR is
+# the whole release flow; there is no manual gate.
 
 on:
   pull_request:
@@ -39,7 +33,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version-file: .nvmrc
       # From the event, through the environment — never interpolated into the
       # shell body, where a branch name would be an injection seam.
       - name: Check the pull request's source branch
@@ -55,9 +49,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          # validate accepts a com.arman.* dependency pinned to a version that
+          # is either current or already tagged, and the tag half of that needs
+          # the tags present. Still depth 1: only the tag refs are added.
+          fetch-tags: true
       - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version-file: .nvmrc
       - run: node Tools/upm-release.mjs validate
 
   pack:
@@ -67,7 +66,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version-file: .nvmrc
       - run: node Tools/upm-release.mjs pack --out PackageExports
       - uses: actions/upload-artifact@v7
         with:
@@ -78,7 +77,7 @@ jobs:
   tag:
     needs: [validate, pack]
     # The ref condition is the one thing standing between a routine push to
-    # `dev` and publishing 17 packages — `master` is the release branch, so a tag
+    # `dev` and publishing every package — `master` is the release branch, so a tag
     # can never be cut from `dev`. Keep it. (`Tools/upm-release.mjs tag` refuses
     # to run off `master` too, deliberately belt and braces.)
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
@@ -93,7 +92,7 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version-file: .nvmrc
       # `git tag -a` needs an identity.
       - name: Configure git identity
         run: |
@@ -104,15 +103,3 @@ jobs:
       # skipped, so a push to `master` that changes no version tags nothing.
       - name: Create and push tags
         run: node Tools/upm-release.mjs tag --push
-
-  # The release tooling's own tests. `prepare` rewrites CHANGELOGs and version
-  # fields, and a release is permanent, so its arithmetic is not something to
-  # find out about afterwards. Named for uniqueness: changelog.yml owns `test`.
-  release-script-tests:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 22
-      - run: node --test Tools/upm-release.test.mjs Tools/upm-release.prepare.test.mjs Tools/promotion-check.test.mjs Tools/release-flow.test.mjs

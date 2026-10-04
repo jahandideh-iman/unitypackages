@@ -1,5 +1,5 @@
-﻿using Arman.PackageBasics;
-using System.IO;
+﻿using System.IO;
+using Arman.PackageBasics;
 
 namespace Arman.PersistentDataManagement
 {
@@ -20,8 +20,6 @@ namespace Arman.PersistentDataManagement
             return true;
         }
 
-        public void Delete(IChannel channel)
-        {
-        }
+        public void Delete(IChannel channel) { }
     }
 }

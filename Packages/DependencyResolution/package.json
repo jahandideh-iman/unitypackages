@@ -1,0 +1,12 @@
+{
+  "name": "com.arman.dependency-resolution",
+  "displayName": "Dependency Resolution",
+  "version": "0.1.0",
+  "license": "MIT",
+  "unity": "2019.1",
+  "description": "Reflection-based dependency resolution: register types, factories or instances, optionally expose them under their interfaces, then build a repository that constructs every registration once in dependency order and fails fast on missing, duplicate or circular dependencies.",
+  "author": {
+    "name": "Iman Jahandideh",
+    "email": "jahandidehk.iman@gmail.com"
+  }
+}

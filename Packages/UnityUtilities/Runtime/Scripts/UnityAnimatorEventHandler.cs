@@ -22,6 +22,5 @@ namespace Arman.UnityUtilities
                 if (animEvt.name.Equals(eventName))
                     animEvt.action.Invoke();
         }
-
     }
 }

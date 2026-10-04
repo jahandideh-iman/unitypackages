@@ -5,7 +5,8 @@
         void TryCache(IComponent component);
     }
 
-    public class CacheableEntity<T> : Entity where T : ICache
+    public class CacheableEntity<T> : Entity
+        where T : ICache
     {
         readonly T cache;
 
@@ -24,5 +25,4 @@
             return cache;
         }
     }
-
 }

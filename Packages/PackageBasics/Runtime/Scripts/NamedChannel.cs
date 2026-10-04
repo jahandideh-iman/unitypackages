@@ -11,7 +11,6 @@ namespace Arman.PackageBasics
             this.name = name;
         }
 
-
         // TODO: Refactor this.
         public override bool Equals(object obj)
         {

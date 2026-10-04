@@ -74,7 +74,9 @@ const RELEASE_BRANCH = "master";
 function git(...args) {
     const result = spawnSync("git", args, { cwd: ROOT, encoding: "utf8" });
     if (result.status !== 0) {
-        throw new Error(`git ${args.join(" ")} failed: ${(result.stderr || result.stdout || "").trim()}`);
+        throw new Error(
+            `git ${args.join(" ")} failed: ${(result.stderr || result.stdout || "").trim()}`,
+        );
     }
     return result.stdout;
 }
@@ -103,9 +105,7 @@ function mergeBase(base, head) {
 
 function changedFiles(from, to) {
     // -z keeps paths verbatim; three package folders have spaces in their names.
-    return git("diff", "--name-only", "-z", from, to)
-        .split("\0")
-        .filter(Boolean);
+    return git("diff", "--name-only", "-z", from, to).split("\0").filter(Boolean);
 }
 
 /** The package folder a repo-relative path belongs to, or null. */
@@ -137,7 +137,8 @@ function packagesTouched(files) {
         const changelog = withinPackage === CHANGELOG;
         if (!code && !changelog) continue;
 
-        if (!byFolder.has(folder)) byFolder.set(folder, { files: [], code: false, changelog: false });
+        if (!byFolder.has(folder))
+            byFolder.set(folder, { files: [], code: false, changelog: false });
         const touched = byFolder.get(folder);
         touched.files.push(withinPackage);
         touched.code ||= code;
@@ -169,7 +170,9 @@ function manifestAt(ref, folder) {
  */
 function unreleasedSection(text) {
     const lines = text.split(/\r?\n/);
-    const start = lines.findIndex((line) => H2_VERSION.test(line) && UNRELEASED.test(line.match(H2_VERSION)[1]));
+    const start = lines.findIndex(
+        (line) => H2_VERSION.test(line) && UNRELEASED.test(line.match(H2_VERSION)[1]),
+    );
     if (start === -1) return null;
     const rest = lines.slice(start + 1);
     const end = rest.findIndex((line) => H2.test(line));
@@ -181,7 +184,9 @@ function unreleasedSection(text) {
  * are scaffolding, not a record of a change.
  */
 function entriesOf(lines) {
-    return lines.map((line) => line.trim()).filter((line) => line !== "" && !SUB_HEADING.test(line));
+    return lines
+        .map((line) => line.trim())
+        .filter((line) => line !== "" && !SUB_HEADING.test(line));
 }
 
 /** Every `## [x.y.z]` section, keyed by version, each including its heading. */
@@ -252,7 +257,9 @@ function entryProblem(folder, base, head) {
 function frozenProblem(folder, name, base, head, tags) {
     if (name === null) return null;
     const prefix = `${name}/`;
-    const tagged = new Set(tags.filter((tag) => tag.startsWith(prefix)).map((tag) => tag.slice(prefix.length)));
+    const tagged = new Set(
+        tags.filter((tag) => tag.startsWith(prefix)).map((tag) => tag.slice(prefix.length)),
+    );
     if (tagged.size === 0) return null;
 
     const baseText = changelogAt(base, folder);
@@ -304,7 +311,8 @@ function unreleasedProblems(head, releasePullRequest) {
 
         const entry = { folder, name: manifest.name ?? null };
         if (releasePullRequest) found.push({ ...entry, rule: "unpromoted-unreleased" });
-        else if (entriesOf(section).length === 0) found.push({ ...entry, rule: "empty-unreleased" });
+        else if (entriesOf(section).length === 0)
+            found.push({ ...entry, rule: "empty-unreleased" });
     }
     return found;
 }
@@ -313,7 +321,12 @@ function inspect(folder, touched, base, head, tags, waived) {
     const headManifest = manifestAt(head, folder);
     if (headManifest === null) return null; // Not a package — a stray Packages/ path.
 
-    const result = { folder, name: headManifest.name ?? null, files: touched.files.sort(), problems: [] };
+    const result = {
+        folder,
+        name: headManifest.name ?? null,
+        files: touched.files.sort(),
+        problems: [],
+    };
 
     if (headManifest.private === true) return { ...result, skipped: "private" };
     if (manifestAt(base, folder) === null) return { ...result, skipped: "new" };
@@ -349,10 +362,12 @@ function waivedLabels() {
 // -------------------------------------------------------------------- reporting
 
 const EXPLANATIONS = {
-    "missing-changelog": () => `has no ${CHANGELOG}. Add one and record the change under \`## [Unreleased]\`.`,
+    "missing-changelog": () =>
+        `has no ${CHANGELOG}. Add one and record the change under \`## [Unreleased]\`.`,
     "missing-section": () =>
         "has no `## [Unreleased]` heading. Create one above the newest version together with the entry describing this change — the heading exists only while it has entries.",
-    "missing-entry": () => "changed, but nothing was added under `## [Unreleased]`. Describe the change there.",
+    "missing-entry": () =>
+        "changed, but nothing was added under `## [Unreleased]`. Describe the change there.",
     "frozen-section": (problem) =>
         `edits ${problem.versions.map((v) => `\`${v}\``).join(", ")}, which ${problem.versions.length > 1 ? "have" : "has"} already been tagged and published. Released history must not change — put the note under \`## [Unreleased]\` instead.`,
     "empty-unreleased": () =>
@@ -402,7 +417,10 @@ function render(report) {
 function writeStepSummary(report) {
     const target = process.env.GITHUB_STEP_SUMMARY;
     if (!target) return;
-    fs.appendFileSync(target, ["## Changelog check", "", "```", ...render(report), "```", ""].join("\n"));
+    fs.appendFileSync(
+        target,
+        ["## Changelog check", "", "```", ...render(report), "```", ""].join("\n"),
+    );
 }
 
 // ------------------------------------------------------------------------ main
@@ -487,7 +505,9 @@ try {
 }
 
 const byFolder = new Map();
-for (const [folder, touched] of [...packagesTouched(files)].sort((a, b) => a[0].localeCompare(b[0]))) {
+for (const [folder, touched] of [...packagesTouched(files)].sort((a, b) =>
+    a[0].localeCompare(b[0]),
+)) {
     const result = inspect(folder, touched, from, flags.head, tags, report.waived);
     if (result !== null) byFolder.set(folder, result);
 }

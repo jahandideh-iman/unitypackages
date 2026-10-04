@@ -5,7 +5,6 @@ using UnityEngine.UI;
 
 namespace Arman.PersistentDataManagement.Samples
 {
-
     public class ExamplePersistentDataSerializer : IPersistentDataSerializer
     {
         PersistentDataExample persistentDataExample;
@@ -15,12 +14,10 @@ namespace Arman.PersistentDataManagement.Samples
             this.persistentDataExample = persistentDataExample;
         }
 
-
         public string Key()
         {
             return "ExampleSerializer";
         }
-
 
         public void DeserializeFrom(IReadablePersistentDataWrapper persistentDataWrapper)
         {
@@ -36,6 +33,7 @@ namespace Arman.PersistentDataManagement.Samples
             persistentDataWrapper.WriteString("string", persistentDataExample.stringValue);
         }
     }
+
     public class PersistentDataExample : MonoBehaviour
     {
         IPersistentDataManager persistentDataManager;
@@ -46,8 +44,10 @@ namespace Arman.PersistentDataManagement.Samples
 
         [HideInInspector]
         public int intValue;
+
         [HideInInspector]
         public float floatValue;
+
         [HideInInspector]
         public string stringValue;
 
@@ -95,6 +95,4 @@ namespace Arman.PersistentDataManagement.Samples
             stringText.text = $"string is \"{stringValue}\"";
         }
     }
-
-
 }

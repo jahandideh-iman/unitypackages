@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 
-
 namespace Arman.ServiceLocating
 {
     public class ServiceLocator
@@ -26,7 +25,8 @@ namespace Arman.ServiceLocating
             instance = null;
         }
 
-        public static void Register<TInterface, TImplementation>(TImplementation implementation) where TImplementation : TInterface
+        public static void Register<TInterface, TImplementation>(TImplementation implementation)
+            where TImplementation : TInterface
         {
             instance.services.Add(implementation);
         }
@@ -37,7 +37,8 @@ namespace Arman.ServiceLocating
             instance.services.Remove(service);
         }
 
-        public static void Replace<TInterface, TImplementation>(TImplementation implementation) where TImplementation : TInterface
+        public static void Replace<TInterface, TImplementation>(TImplementation implementation)
+            where TImplementation : TInterface
         {
             UnRegister<TInterface>();
             Register<TInterface, TImplementation>(implementation);
@@ -49,7 +50,9 @@ namespace Arman.ServiceLocating
                 if (service is T)
                     return (T)service;
 
-            throw new System.Exception(string.Format("Service of type '{0}' could not be found.", typeof(T).ToString()));
+            throw new System.Exception(
+                string.Format("Service of type '{0}' could not be found.", typeof(T).ToString())
+            );
         }
     }
 }

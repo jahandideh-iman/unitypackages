@@ -1,21 +1,20 @@
-﻿
-
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-public static class AssetEditorUtilities {
-
-
-    public static List<T> FindAssetsByType<T>() where T : UnityEngine.Object
+public static class AssetEditorUtilities
+{
+    public static List<T> FindAssetsByType<T>()
+        where T : UnityEngine.Object
     {
         return FindAssetsByType<T>("", true);
     }
 
-    public static List<T> FindAssetsByType<T>(string path, bool searchInChildFolders = false) where T : UnityEngine.Object
+    public static List<T> FindAssetsByType<T>(string path, bool searchInChildFolders = false)
+        where T : UnityEngine.Object
     {
         List<T> assets = new List<T>();
         string[] guids;
@@ -23,22 +22,28 @@ public static class AssetEditorUtilities {
         if (path.Equals(""))
             guids = AssetDatabase.FindAssets(string.Format("t:{0}", typeof(T)));
         else
-            guids = AssetDatabase.FindAssets(string.Format("t:{0}", typeof(T)), new string[] { path });
+            guids = AssetDatabase.FindAssets(
+                string.Format("t:{0}", typeof(T)),
+                new string[] { path }
+            );
         for (int i = 0; i < guids.Length; i++)
         {
             string assetPath = AssetDatabase.GUIDToAssetPath(guids[i]);
             T asset = AssetDatabase.LoadAssetAtPath<T>(assetPath);
             if (asset != null)
             {
-                if(searchInChildFolders == true || IsInRoot(assetPath, path))
+                if (searchInChildFolders == true || IsInRoot(assetPath, path))
                     assets.Add(asset);
-
             }
         }
         return assets;
     }
 
-    public static List<object> FindAssetsByType(string path, Type type, bool searchInChildFolders = false) 
+    public static List<object> FindAssetsByType(
+        string path,
+        Type type,
+        bool searchInChildFolders = false
+    )
     {
         List<object> assets = new List<object>();
         string[] guids;
@@ -55,12 +60,10 @@ public static class AssetEditorUtilities {
             {
                 if (searchInChildFolders == true || IsInRoot(assetPath, path))
                     assets.Add(asset);
-
             }
         }
         return assets;
     }
-
 
     private static bool IsInRoot(string assetPath, string rootPath)
     {
@@ -79,7 +82,6 @@ public static class AssetEditorUtilities {
         string relativePath = absolutePath;
         if (absolutePath.StartsWith(Application.dataPath, StringComparison.Ordinal))
             relativePath = "Assets" + absolutePath.Substring(Application.dataPath.Length);
-        
 
         return relativePath;
     }

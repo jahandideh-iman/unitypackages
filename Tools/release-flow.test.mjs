@@ -16,7 +16,16 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 
-import { readVersions, versionChanges, commitMessage, pullRequestBody } from "./release-flow.mjs";
+import {
+    readVersions,
+    versionsFromManifests,
+    versionChanges,
+    commitMessage,
+    pullRequestBody,
+    preparePullRequestBody,
+    prepareBranchName,
+    findPreparePullRequest,
+} from "./release-flow.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const SCRIPT = path.join(HERE, "release-flow.mjs");
@@ -60,11 +69,26 @@ test("readVersions returns empty for a missing directory", () => {
     assert.equal(readVersions(path.join(os.tmpdir(), "does-not-exist-here")).size, 0);
 });
 
+test("versionsFromManifests reads manifest text, as the flow does from a remote ref", () => {
+    const versions = versionsFromManifests([
+        ["UI Management", JSON.stringify({ name: "com.arman.ui-management", version: "0.3.0" })],
+        ["PackageTemplate", JSON.stringify({ name: "x", version: "0.0.1", private: true })],
+        ["Broken", "{ not json"],
+    ]);
+    assert.deepEqual([...versions], [["com.arman.ui-management", "0.3.0"]]);
+});
+
 // ---------------------------------------------------------- versionChanges
 
 test("versionChanges reports only the packages whose version moved", () => {
-    const before = new Map([["a", "0.1.0"], ["b", "0.1.0"]]);
-    const after = new Map([["a", "0.2.0"], ["b", "0.1.0"]]);
+    const before = new Map([
+        ["a", "0.1.0"],
+        ["b", "0.1.0"],
+    ]);
+    const after = new Map([
+        ["a", "0.2.0"],
+        ["b", "0.1.0"],
+    ]);
     assert.deepEqual(versionChanges(before, after), [{ name: "a", from: "0.1.0", to: "0.2.0" }]);
 });
 
@@ -81,7 +105,9 @@ test("versionChanges marks a package that did not exist before as new", () => {
 // ----------------------------------------------------------- commit message
 
 test("commitMessage names the package when exactly one moved", () => {
-    const message = commitMessage([{ name: "com.arman.object-pooling", from: "0.1.0", to: "0.2.0" }]);
+    const message = commitMessage([
+        { name: "com.arman.object-pooling", from: "0.1.0", to: "0.2.0" },
+    ]);
     assert.match(message, /^chore\(release\): com\.arman\.object-pooling@0\.2\.0\n/);
     assert.match(message, /- com\.arman\.object-pooling 0\.1\.0 -> 0\.2\.0/);
 });
@@ -99,11 +125,60 @@ test("commitMessage counts the packages when several moved, and lists each", () 
 // -------------------------------------------------------- pull request body
 
 test("pullRequestBody tabulates every change and warns that merging publishes", () => {
-    const body = pullRequestBody([{ name: "com.arman.object-pooling", from: "0.1.0", to: "0.2.0" }]);
+    const body = pullRequestBody([
+        { name: "com.arman.object-pooling", from: "0.1.0", to: "0.2.0" },
+    ]);
     assert.match(body, /## Packages \(1\)/);
     assert.match(body, /\| `com\.arman\.object-pooling` \| 0\.1\.0 \| 0\.2\.0 \|/);
     assert.match(body, /Merging this pull request \*\*publishes\*\*/);
     assert.match(body, /permanent/);
+});
+
+test("preparePullRequestBody tabulates every change and says the merge publishes nothing", () => {
+    const body = preparePullRequestBody([
+        { name: "com.arman.object-pooling", from: "0.1.0", to: "0.2.0" },
+    ]);
+    assert.match(body, /\| `com\.arman\.object-pooling` \| 0\.1\.0 \| 0\.2\.0 \|/);
+    assert.match(body, /publishes nothing/);
+    assert.match(body, /release\.bat/);
+    assert.doesNotMatch(body, /\*\*publishes\*\*/);
+});
+
+// ------------------------------------------------------ prepare branch name
+
+test("prepareBranchName dates the branch", () => {
+    const date = new Date("2026-10-04T12:00:00Z");
+    assert.equal(prepareBranchName(date), "chore/prepare-release-2026-10-04");
+});
+
+test("prepareBranchName skips names already taken on the remote", () => {
+    const date = new Date("2026-10-04T12:00:00Z");
+    const taken = new Set([
+        "chore/prepare-release-2026-10-04",
+        "chore/prepare-release-2026-10-04-2",
+    ]);
+    assert.equal(prepareBranchName(date, taken), "chore/prepare-release-2026-10-04-3");
+});
+
+// ------------------------------------------------- open prepare pull request
+
+test("findPreparePullRequest picks the pull request from a prepare branch", () => {
+    const url = findPreparePullRequest([
+        { url: "https://example/1", headRefName: "feat/something" },
+        { url: "https://example/2", headRefName: "chore/prepare-release-2026-10-04" },
+    ]);
+    assert.equal(url, "https://example/2");
+});
+
+test("findPreparePullRequest is empty when no prepare branch is open", () => {
+    assert.equal(findPreparePullRequest([]), "");
+    // A branch that only shares the prefix's letters is not one.
+    assert.equal(
+        findPreparePullRequest([
+            { url: "https://example/1", headRefName: "chore/prepare-releases" },
+        ]),
+        "",
+    );
 });
 
 // ------------------------------------------------------------ argument guard
@@ -120,13 +195,13 @@ test("release-flow rejects any argument with exit code 2", () => {
 
 // ------------------------------------------------------------------- the bat
 //
-// release.bat was twice committed with its `Tools\release.bat` usage comments
-// mangled — once into `Tools<CR>elease.bat` (harmless, still one `rem` line),
-// once into a bare `release.bat validate` on its own line, which cmd runs. That
-// second form recurses forever when the working directory is Tools/. The file
-// now contains no backslash at all, which is what this test pins.
+// Tooling that eats backslashes can turn a `Tools\release.bat` usage comment
+// into `Tools<CR>elease.bat` (harmless, still one `rem` line) or into a bare
+// `release.bat validate` on its own line, which cmd runs and which recurses
+// forever when the working directory is Tools/. The file contains no backslash
+// at all, and these tests pin that and the shape that makes it safe.
 
-test("release.bat contains no backslash, the character that mangled it before", () => {
+test("release.bat contains no backslash", () => {
     assert.equal(fs.readFileSync(BAT, "utf8").includes("\\"), false);
 });
 

@@ -1,5 +1,4 @@
-﻿
-using Arman.PackageBasics;
+﻿using Arman.PackageBasics;
 using Moq;
 using NUnit.Framework;
 
@@ -53,12 +52,13 @@ namespace Arman.PersistentDataManagement.Tests
             var wrapper = new Mock<IPersistentDataWrapper>();
 
             wrapper.Setup(w => w.HasKey(It.IsAny<string>())).Returns(true);
-            wrapper.Setup(w => w.WriteInt(It.IsAny<string>(), It.IsAny<int>()))
+            wrapper
+                .Setup(w => w.WriteInt(It.IsAny<string>(), It.IsAny<int>()))
                 .Returns(() => wrapper.Object);
-            wrapper.Setup(w => w.BeginWritingBlock(It.IsAny<string>()))
+            wrapper
+                .Setup(w => w.BeginWritingBlock(It.IsAny<string>()))
                 .Returns(() => wrapper.Object);
-            wrapper.Setup(w => w.EndWritingBlock())
-                .Returns(() => wrapper.Object);
+            wrapper.Setup(w => w.EndWritingBlock()).Returns(() => wrapper.Object);
 
             return wrapper;
         }
@@ -75,14 +75,12 @@ namespace Arman.PersistentDataManagement.Tests
         protected static PersistentDataManager CreateManager(
             IPersistentDataIOStreamFactory streamFactory,
             IPersistentDataWrapper dataWrapper,
-            int saveVersion = 0)
+            int saveVersion = 0
+        )
         {
             return new PersistentDataManager(streamFactory, dataWrapper, saveVersion);
         }
 
-        protected virtual void InternalSetup()
-        {
-
-        }
+        protected virtual void InternalSetup() { }
     }
 }

@@ -11,14 +11,14 @@ in Unity IAP, an in-game currency wallet, an ad-reward flow, or a test double.
 
 Everything lives in the `Arman.ShopManagement` namespace.
 
-| Type | Purpose |
-|---|---|
-| `IShopPackage` | The unit of purchase. A single `Apply()` — what the player gets. |
-| `CompositeShopPackage` | An `IShopPackage` that holds others and applies them all; use it for bundles. |
-| `IPurchaseHandler` | `Purchase(package, onSuccess, onFailure)` — performs the transaction. |
-| `IPurchaseSuccessResult` / `IPurchaseFailureResult` | Marker interfaces for handler-specific result payloads. |
-| `IShopCenter` | The storefront contract. |
-| `ShopCenter` | The implementation. |
+| Type                                                | Purpose                                                                       |
+| --------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `IShopPackage`                                      | The unit of purchase. A single `Apply()` — what the player gets.              |
+| `CompositeShopPackage`                              | An `IShopPackage` that holds others and applies them all; use it for bundles. |
+| `IPurchaseHandler`                                  | `Purchase(package, onSuccess, onFailure)` — performs the transaction.         |
+| `IPurchaseSuccessResult` / `IPurchaseFailureResult` | Marker interfaces for handler-specific result payloads.                       |
+| `IShopCenter`                                       | The storefront contract.                                                      |
+| `ShopCenter`                                        | The implementation.                                                           |
 
 `IShopCenter` offers `AddPackage`, `RemovePackage`, `Packages()`, `PackagesOfType<T>()`,
 `AssignPurchaseHandler<T>`, `Purchase`, `SetPurchaseSuccessCallback` and
@@ -105,5 +105,5 @@ foreach (CoinPackage coins in shop.PackagesOfType<CoinPackage>())
   the previous delegate.
 - **`AddPackage` does not deduplicate**, and `Packages()` returns the live internal list — copy it
   before mutating the shop while iterating.
-- **Flat namespace.** The runtime lives in `Arman.ShopManagement` (formerly
-  `Arman.Foundation.ShopManagement.Core`); the scripts are flat under `Runtime/Scripts`.
+- **Flat namespace.** The runtime lives in `Arman.ShopManagement`; the scripts are flat under
+  `Runtime/Scripts`.

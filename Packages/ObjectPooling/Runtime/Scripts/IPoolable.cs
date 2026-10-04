@@ -1,5 +1,4 @@
-﻿
-namespace Arman.ObjectPooling
+﻿namespace Arman.ObjectPooling
 {
     public interface IPoolable
     {

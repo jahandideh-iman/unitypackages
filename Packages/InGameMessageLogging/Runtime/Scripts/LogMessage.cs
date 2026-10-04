@@ -1,7 +1,5 @@
-﻿
-
+﻿using System;
 using Arman.UnityUtilities;
-using System;
 using UnityEngine;
 using UnityEngine.Events;
 

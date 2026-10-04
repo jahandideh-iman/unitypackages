@@ -13,6 +13,4 @@ namespace Arman.DevelopmentConsole
             this.keyCodes = keyCodes;
         }
     }
-
-   
 }

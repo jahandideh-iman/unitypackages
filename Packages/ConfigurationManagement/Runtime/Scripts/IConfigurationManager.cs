@@ -1,5 +1,4 @@
-﻿
-namespace Arman.ConfigurationManagement
+﻿namespace Arman.ConfigurationManagement
 {
     public interface IConfigurationManager
     {

@@ -1,7 +1,7 @@
-﻿
-namespace Arman.ObjectPooling
+﻿namespace Arman.ObjectPooling
 {
-    public interface IObjectPool<T> where T: IPoolable
+    public interface IObjectPool<T>
+        where T : IPoolable
     {
         T Acquire();
         void Release(T obj);
@@ -9,6 +9,5 @@ namespace Arman.ObjectPooling
         void Reserve(int count);
 
         int Size();
-
     }
 }

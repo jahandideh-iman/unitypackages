@@ -7,15 +7,15 @@ from anywhere, without threading dependencies through constructors.
 
 A single static class, `ServiceLocator`, in the `Arman.ServiceLocating` namespace.
 
-| Member | Behaviour |
-|---|---|
-| `Init()` | Creates the backing instance. Call once at startup — every other member throws `NullReferenceException` until you do. |
-| `IsInited()` | Whether `Init()` has run and `Clear()` has not. |
-| `Register<TInterface, TImplementation>(impl)` | Registers `impl`, constrained to `TImplementation : TInterface`. |
-| `Find<T>()` | Returns the first registration assignable to `T`. Throws if there is none. |
-| `UnRegister<T>()` | Removes the registration `Find<T>()` would return. |
-| `Replace<TInterface, TImplementation>(impl)` | `UnRegister<TInterface>()` followed by `Register`. |
-| `Clear()` | Drops the instance entirely, so `Init()` must be called again. |
+| Member                                        | Behaviour                                                                                                             |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `Init()`                                      | Creates the backing instance. Call once at startup — every other member throws `NullReferenceException` until you do. |
+| `IsInited()`                                  | Whether `Init()` has run and `Clear()` has not.                                                                       |
+| `Register<TInterface, TImplementation>(impl)` | Registers `impl`, constrained to `TImplementation : TInterface`.                                                      |
+| `Find<T>()`                                   | Returns the first registration assignable to `T`. Throws if there is none.                                            |
+| `UnRegister<T>()`                             | Removes the registration `Find<T>()` would return.                                                                    |
+| `Replace<TInterface, TImplementation>(impl)`  | `UnRegister<TInterface>()` followed by `Register`.                                                                    |
+| `Clear()`                                     | Drops the instance entirely, so `Init()` must be called again.                                                        |
 
 ## Usage
 
@@ -50,5 +50,5 @@ ServiceLocator.Clear();
   message. There is no `TryFind`.
 - **The registration list is static and survives scene loads.** Call `Clear()` when you want a fresh
   container, such as between tests.
-- **Flat namespace.** The runtime lives in `Arman.ServiceLocating` (formerly
-  `Arman.Foundation.Core.ServiceLocating`); the scripts are flat under `Runtime/Scripts`.
+- **Flat namespace.** The runtime lives in `Arman.ServiceLocating`; the scripts are flat under
+  `Runtime/Scripts`.

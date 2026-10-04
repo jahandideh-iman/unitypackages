@@ -1,5 +1,4 @@
-﻿
-using Arman.PackageBasics;
+﻿using Arman.PackageBasics;
 using UnityEngine;
 
 namespace Arman.UpdateManagement

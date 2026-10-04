@@ -12,15 +12,12 @@ namespace Arman.DevelopmentConsole
         int intervalframes;
         float intervalRemainingTime;
 
-
         bool isProfilingStarted = false;
-
 
         float averageFPS;
         float maxFPS;
         float minFPS;
         float fps;
-
 
         void Awake()
         {
@@ -58,20 +55,13 @@ namespace Arman.DevelopmentConsole
 
             if (isProfilingStarted)
             {
-
                 ++totalFrames;
-
-
-
 
                 averageFPS += (fps - averageFPS) / totalFrames;
 
                 maxFPS = Mathf.Max(maxFPS, fps);
                 minFPS = Mathf.Min(minFPS, fps);
-
             }
         }
-
-
     }
 }

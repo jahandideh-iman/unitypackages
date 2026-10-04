@@ -2,7 +2,8 @@
 
 namespace Arman.InventorySystem
 {
-    public class Inventory<T> : IInventory<T> where T : IInventoryItem
+    public class Inventory<T> : IInventory<T>
+        where T : IInventoryItem
     {
         class EmptyConstraint : IInventoryItemConstraint
         {
@@ -13,12 +14,14 @@ namespace Arman.InventorySystem
         }
 
         Dictionary<T, int> itemNumbers = new Dictionary<T, int>();
-        Dictionary<T, IInventoryItemConstraint> itemConstraints = new Dictionary<T, IInventoryItemConstraint>();
+        Dictionary<T, IInventoryItemConstraint> itemConstraints =
+            new Dictionary<T, IInventoryItemConstraint>();
 
         IInventoryItemConstraint defaultConstraint = new EmptyConstraint();
 
         OnItemNumberChanged<T> globalOnItemNumberChangedCallback = delegate { };
-        Dictionary<T, OnItemNumberChanged<T>> specificOnItemNumberChangedCallbacks = new Dictionary<T, OnItemNumberChanged<T>>();
+        Dictionary<T, OnItemNumberChanged<T>> specificOnItemNumberChangedCallbacks =
+            new Dictionary<T, OnItemNumberChanged<T>>();
 
         public void SetNumberOf(T item, int number)
         {

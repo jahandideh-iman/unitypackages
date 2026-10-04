@@ -2,7 +2,10 @@
 
 namespace Arman.ConfigurationManagement
 {
-    [CreateAssetMenu(fileName = "ConfigurationMaster", menuName = "Arman/Configuration/UnityConfigurationMaster")]
+    [CreateAssetMenu(
+        fileName = "ConfigurationMaster",
+        menuName = "Arman/Configuration/UnityConfigurationMaster"
+    )]
     public class UnityConfigurationMaster : ScriptableConfiguration
     {
         [AutoFillAssetArray("scriptableConfigurers")]
@@ -15,6 +18,5 @@ namespace Arman.ConfigurationManagement
             foreach (var config in scriptableConfigurers)
                 config.RegisterSelf(manager);
         }
-
     }
 }

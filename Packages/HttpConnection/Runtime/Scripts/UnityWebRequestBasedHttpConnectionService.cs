@@ -15,7 +15,6 @@ namespace Arman.HttpConnection
 
         float defaultTimeout = 5f;
 
-
         public void SetDefaultTimeOut(float timeOut)
         {
             this.defaultTimeout = timeOut;
@@ -80,10 +79,13 @@ namespace Arman.HttpConnection
             return resultBuilder.ToString();
         }
 
-
         // TODO: Refactor this.
         // TODO: Try to Remove/Disable the logs
-        private IEnumerator Connecting(UnityWebRequest request, Action<string> successCallback, Action<string> failCallback)
+        private IEnumerator Connecting(
+            UnityWebRequest request,
+            Action<string> successCallback,
+            Action<string> failCallback
+        )
         {
             yield return request.SendWebRequest();
 

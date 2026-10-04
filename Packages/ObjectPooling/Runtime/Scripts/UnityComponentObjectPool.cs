@@ -1,9 +1,9 @@
-﻿
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Arman.ObjectPooling
 {
-    public class UnityComponentObjectPool<T> : ObjectPool<T> where T : Component, IPoolable 
+    public class UnityComponentObjectPool<T> : ObjectPool<T>
+        where T : Component, IPoolable
     {
         protected Transform poolingContainer;
         protected T componentPrefab;
@@ -18,10 +18,7 @@ namespace Arman.ObjectPooling
             this.componentPrefab = prefab;
         }
 
-        protected override void ActivateObject(T obj)
-        {
-            
-        }
+        protected override void ActivateObject(T obj) { }
 
         protected override void DeactivateObject(T obj)
         {
@@ -33,6 +30,5 @@ namespace Arman.ObjectPooling
             var obj = UnityEngine.Object.Instantiate(componentPrefab, poolingContainer, false);
             return obj;
         }
-
     }
 }

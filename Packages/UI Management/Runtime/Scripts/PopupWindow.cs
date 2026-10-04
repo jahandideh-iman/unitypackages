@@ -4,11 +4,16 @@ namespace Arman.UIManagement
 {
     public class PopupWindow : Window
     {
-        [SerializeField] bool closeOnBackButtonPressed;
+        [SerializeField]
+        bool closeOnBackButtonPressed;
 
-        protected override void InternalInit(UIManager manager)
-        {
-        }
+        [field: SerializeField]
+        public Transition? InTransition { get; private set; }
+
+        [field: SerializeField]
+        public Transition? OutTransition { get; private set; }
+
+        protected override void InternalInit(UIManager manager) { }
 
         public override void OnBackButtonPressed()
         {

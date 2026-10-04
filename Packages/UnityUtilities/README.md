@@ -10,13 +10,13 @@ than a framework you buy into.
 
 Everything lives in the `Arman.UnityUtilities` namespace.
 
-| Type | Purpose |
-|---|---|
-| `DelayHandler` | A coroutine timer. Raises `timeoutEvent` after `duration` seconds; `StartTimer()`, `StartTimer(float)`, `StopTimer()`, optional `autoStart`. |
-| `UnityAnimationPlayer` | Wrapper over the legacy `Animation` component — `Play()`, `Play(name)`, `Play(clip)`, `RemoveClip(name)`, `Stop()`. |
-| `UnityAnimatorEventHandler` | Receives `OnAnimationEvent(string)` from an animation clip and invokes the matching named `UnityEvent`. |
-| `UnityEventDelegator` | Holds a list of id/`UnityEvent` pairs; `Delegate(id)` invokes one, `DelegateAll()` invokes all. |
-| `BooleanUnityEvent`, `FloatUnityEvent`, `IntUnityEvent`, `StringUnityEvent` | Serializable `UnityEvent<T>` subclasses. |
+| Type                                                                        | Purpose                                                                                                                                      |
+| --------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DelayHandler`                                                              | A coroutine timer. Raises `timeoutEvent` after `duration` seconds; `StartTimer()`, `StartTimer(float)`, `StopTimer()`, optional `autoStart`. |
+| `UnityAnimationPlayer`                                                      | Wrapper over the legacy `Animation` component — `Play()`, `Play(name)`, `Play(clip)`, `RemoveClip(name)`, `Stop()`.                          |
+| `UnityAnimatorEventHandler`                                                 | Receives `OnAnimationEvent(string)` from an animation clip and invokes the matching named `UnityEvent`.                                      |
+| `UnityEventDelegator`                                                       | Holds a list of id/`UnityEvent` pairs; `Delegate(id)` invokes one, `DelegateAll()` invokes all.                                              |
+| `BooleanUnityEvent`, `FloatUnityEvent`, `IntUnityEvent`, `StringUnityEvent` | Serializable `UnityEvent<T>` subclasses.                                                                                                     |
 
 ## Usage
 
@@ -78,8 +78,7 @@ animationPlayer.Stop();
 
 ## Things to know
 
-- **The namespace is `Arman.UnityUtilities`** — it was renamed from `Arman.Utilty.Unity` (which
-  carried a "Utilty" typo), so any out-of-tree `using` referring to the old name needs updating.
+- **The namespace is `Arman.UnityUtilities`.**
 - **`DelayHandler` calls `StopAllCoroutines()`** when a timer starts or stops. If you run other
   coroutines on the same GameObject, they will be cancelled too — give the handler its own object.
 - **`UnityAnimationPlayer` wraps the legacy `Animation` component**, not `Animator`. It is for

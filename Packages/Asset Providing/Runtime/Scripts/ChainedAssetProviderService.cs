@@ -7,12 +7,10 @@
         public IAsyncUnityAssetProvider IAsyncUnityAssetProvider => rootAsyncAssetProvider;
 
         ChainedSyncUnityAssetProvider rootSyncAssetProvider = new ChainedSyncUnityAssetProvider();
-        ChainedAsyncUnityAssetProvider rootAsyncAssetProvider = new ChainedAsyncUnityAssetProvider();
+        ChainedAsyncUnityAssetProvider rootAsyncAssetProvider =
+            new ChainedAsyncUnityAssetProvider();
 
-        public ChainedAssetProviderService()
-        {
-
-        }
+        public ChainedAssetProviderService() { }
 
         public void AddSyncProvider(ISyncUnityAssetProvider syncProvider)
         {
@@ -23,6 +21,5 @@
         {
             rootAsyncAssetProvider.Add(asyncProvider);
         }
-
     }
 }

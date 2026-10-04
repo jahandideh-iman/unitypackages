@@ -24,7 +24,7 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.0] - 2026-08-30
 
-First release of *Component System*.
+First release of _Component System_.
 
 ### Added
 

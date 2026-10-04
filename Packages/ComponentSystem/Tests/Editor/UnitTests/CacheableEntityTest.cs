@@ -12,15 +12,11 @@ namespace Arman.ComponentSystem.Tests
             var cached = new List<IComponent>();
 
             var cache = new Mock<ICache>();
-            cache.Setup(c => c.TryCache(It.IsAny<IComponent>()))
-                .Callback<IComponent>(cached.Add);
+            cache.Setup(c => c.TryCache(It.IsAny<IComponent>())).Callback<IComponent>(cached.Add);
 
             var entity = new CacheableEntity<ICache>(cache.Object);
 
-            entity.AddComponents(
-                new ComponentA(),
-                new ComponentB(),
-                new ComponentC());
+            entity.AddComponents(new ComponentA(), new ComponentB(), new ComponentC());
 
             Assert.That(cached[0], Is.TypeOf<ComponentA>());
             Assert.That(cached[1], Is.TypeOf<ComponentB>());

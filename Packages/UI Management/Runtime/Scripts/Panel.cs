@@ -7,7 +7,8 @@ namespace Arman.UIManagement
     [RequireComponent(typeof(CanvasGroup))]
     public class Panel : Window
     {
-        [SerializeField] Image backgroundImage = default;
+        [SerializeField]
+        Image backgroundImage = default;
 
         float originalAlpha;
 

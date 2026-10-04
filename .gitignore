@@ -81,9 +81,12 @@ crashlytics-build.properties
 /.qwen/tmp
 
 # UPM release artefacts — npm pack output is a local verification aid,
-# not a distribution channel. Never commit tarballs (see .agents/AGENTS.md).
+# not a distribution channel. Never commit tarballs (see .agents/rules/releases.md).
 /PackageExports/
 *.tgz
 
 # Subagent-driven-development scratch (ledgers, briefs, review packages)
 /.superpowers/
+
+# Root tooling (Prettier). See package.json.
+node_modules/

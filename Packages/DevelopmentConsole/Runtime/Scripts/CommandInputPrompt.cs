@@ -20,7 +20,7 @@ namespace Arman.DevelopmentConsole
             this.commandInfo = commandInfo;
             this.gameObject.SetActive(true);
 
-            foreach(var param in commandInfo.methodInfo.GetParameters())
+            foreach (var param in commandInfo.methodInfo.GetParameters())
             {
                 var inputField = Instantiate(inputFieldPrefab, inputFieldsContainer, false);
                 inputField.placeholder.As<Text>().text = param.Name;
@@ -28,9 +28,9 @@ namespace Arman.DevelopmentConsole
                 var type = param.ParameterType;
                 if (type == typeof(int))
                     inputField.contentType = InputField.ContentType.IntegerNumber;
-                else if(type == typeof(float))
+                else if (type == typeof(float))
                     inputField.contentType = InputField.ContentType.DecimalNumber;
-                else if(type == typeof(string))
+                else if (type == typeof(string))
                     inputField.contentType = InputField.ContentType.Standard;
                 else
                     Debug.LogErrorFormat("Parameter of type {0} is not supproted", type);
@@ -49,7 +49,7 @@ namespace Arman.DevelopmentConsole
             var paramters = commandInfo.methodInfo.GetParameters();
             var inputs = new object[paramters.Length];
 
-            for(int i = 0; i< paramters.Length; ++i )
+            for (int i = 0; i < paramters.Length; ++i)
             {
                 var type = paramters[i].ParameterType;
                 var stringValue = inputFields[i].text;
@@ -66,7 +66,6 @@ namespace Arman.DevelopmentConsole
                 inputs[i] = value;
             }
 
-
             commandInfo.Invoke(inputs);
 
             Close();
@@ -74,7 +73,6 @@ namespace Arman.DevelopmentConsole
 
         void Close()
         {
-
             foreach (var field in inputFields)
                 Destroy(field.gameObject);
 

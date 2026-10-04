@@ -10,7 +10,7 @@ namespace Arman.ConfigurationManagement
         {
             this.configurers.Add(configurer);
         }
-        
+
         public void Configure(T entity)
         {
             foreach (var configurer in configurers)

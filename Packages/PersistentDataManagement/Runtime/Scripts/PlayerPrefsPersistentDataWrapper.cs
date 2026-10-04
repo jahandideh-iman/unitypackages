@@ -1,6 +1,4 @@
-﻿
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -19,7 +17,6 @@ namespace Arman.PersistentDataManagement
             PushBlock("");
         }
 
-
         public void Clear()
         {
             // PlayerPrefs Implemenetation doesn't clear anything.
@@ -34,7 +31,6 @@ namespace Arman.PersistentDataManagement
         {
             // PlayerPrefs Implemenetation ignore the stream.
         }
-
 
         public bool HasKey(string key)
         {
@@ -76,7 +72,9 @@ namespace Arman.PersistentDataManagement
 
         public bool ReadBoolean(string key, bool defaultValue = false)
         {
-            return PlayerPrefs.GetInt(ConvertToBlockKey(key), defaultValue ? 1: 0) == 0 ? false : true;
+            return PlayerPrefs.GetInt(ConvertToBlockKey(key), defaultValue ? 1 : 0) == 0
+                ? false
+                : true;
         }
 
         public IWritablePersistentDataWrapper WriteBoolean(string key, bool value)
@@ -90,7 +88,6 @@ namespace Arman.PersistentDataManagement
             PushBlock(key);
             return this;
         }
-
 
         public IWritablePersistentDataWrapper EndWritingBlock()
         {
@@ -107,7 +104,6 @@ namespace Arman.PersistentDataManagement
         {
             PopBlock();
         }
-
 
         private void PushBlock(string block)
         {

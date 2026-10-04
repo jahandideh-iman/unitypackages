@@ -9,10 +9,7 @@ namespace Arman.UIManagement
             GameObject.Destroy(this);
         }
 
-        protected virtual void InternalOnDestroy()
-        {
-
-        }
+        protected virtual void InternalOnDestroy() { }
 
         public void OnDestroy()
         {

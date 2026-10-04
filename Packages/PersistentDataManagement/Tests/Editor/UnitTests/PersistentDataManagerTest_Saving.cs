@@ -1,8 +1,7 @@
-﻿
+﻿using System.IO;
 using Arman.PackageBasics;
 using Moq;
 using NUnit.Framework;
-using System.IO;
 
 namespace Arman.PersistentDataManagement.Tests
 {
@@ -13,7 +12,8 @@ namespace Arman.PersistentDataManagement.Tests
         {
             serializer.Verify(
                 s => s.SerializeTo(It.IsAny<IWritablePersistentDataWrapper>()),
-                times);
+                times
+            );
         }
 
         [Test]
@@ -48,7 +48,10 @@ namespace Arman.PersistentDataManagement.Tests
                 manager.Save(new NamedChannel("UnregisteredChannel"));
             });
 
-            Assert.That(action, Throws.Exception.InstanceOf<PersistentDataChannelNotFoundException>());
+            Assert.That(
+                action,
+                Throws.Exception.InstanceOf<PersistentDataChannelNotFoundException>()
+            );
 
             VerifySerialized(serializerA, Times.Never());
             VerifySerialized(serializerB, Times.Never());
@@ -75,7 +78,6 @@ namespace Arman.PersistentDataManagement.Tests
 
             manager = CreateManager(emptyStreamFactory, persistentDataWrapper.Object);
             manager.Register(serializerA.Object, channel1);
-
 
             manager.Save(channel1);
 
@@ -104,11 +106,14 @@ namespace Arman.PersistentDataManagement.Tests
 
             int step = 0;
             int writeStep = -1;
-            serializerA.Setup(s => s.SerializeTo(It.IsAny<IWritablePersistentDataWrapper>()))
+            serializerA
+                .Setup(s => s.SerializeTo(It.IsAny<IWritablePersistentDataWrapper>()))
                 .Callback(() => step++);
-            serializerB.Setup(s => s.SerializeTo(It.IsAny<IWritablePersistentDataWrapper>()))
+            serializerB
+                .Setup(s => s.SerializeTo(It.IsAny<IWritablePersistentDataWrapper>()))
                 .Callback(() => step++);
-            dataWrapper.Setup(w => w.WriteTo(It.IsAny<StreamWriter>()))
+            dataWrapper
+                .Setup(w => w.WriteTo(It.IsAny<StreamWriter>()))
                 .Callback(() => writeStep = step);
 
             manager = CreateManager(emptyStreamFactory, dataWrapper.Object);
@@ -120,7 +125,6 @@ namespace Arman.PersistentDataManagement.Tests
             Assert.That(writeStep, Is.EqualTo(2));
         }
 
-
         [Test]
         public void SavingAChannelShouldWriteDataToPersistentDataWrapperAfterCallingChannelsSerializers()
         {
@@ -128,9 +132,11 @@ namespace Arman.PersistentDataManagement.Tests
 
             int step = 0;
             int writeStep = -1;
-            serializerA.Setup(s => s.SerializeTo(It.IsAny<IWritablePersistentDataWrapper>()))
+            serializerA
+                .Setup(s => s.SerializeTo(It.IsAny<IWritablePersistentDataWrapper>()))
                 .Callback(() => step++);
-            dataWrapper.Setup(w => w.WriteTo(It.IsAny<StreamWriter>()))
+            dataWrapper
+                .Setup(w => w.WriteTo(It.IsAny<StreamWriter>()))
                 .Callback(() => writeStep = step);
 
             manager = CreateManager(emptyStreamFactory, dataWrapper.Object);

@@ -1,5 +1,4 @@
-﻿
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Arman.ComponentSystem
 {
@@ -34,7 +33,8 @@ namespace Arman.ComponentSystem
             return compArray;
         }
 
-        public T GetComponent<T>() where T : IComponent
+        public T GetComponent<T>()
+            where T : IComponent
         {
             var count = compArray.Length;
             for (int i = 0; i < count; ++i)
@@ -44,17 +44,19 @@ namespace Arman.ComponentSystem
             return default(T);
         }
 
-        public T GetComponentFromEnd<T>() where T : IComponent
+        public T GetComponentFromEnd<T>()
+            where T : IComponent
         {
             var count = compArray.Length;
-            for (int i = count-1; i >= 0; --i)
+            for (int i = count - 1; i >= 0; --i)
                 if (compArray[i] is T)
                     return (T)compArray[i];
 
             return default(T);
         }
 
-        public T GetComponent<T>(int index) where T : IComponent
+        public T GetComponent<T>(int index)
+            where T : IComponent
         {
             return (T)compArray[index];
         }

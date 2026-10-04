@@ -1,7 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System.IO;
+using System.Threading.Tasks;
 using UnityEngine;
 using Object = UnityEngine.Object;
-using System.IO;
 
 namespace Arman.AssetProviding
 {
@@ -14,31 +14,32 @@ namespace Arman.AssetProviding
             this.pathPrefix = pathPrefix;
         }
 
-        public T LoadAssetById<T>(string id) where T : Object
+        public T LoadAssetById<T>(string id)
+            where T : Object
         {
             return Resources.Load<T>(Path.Combine(pathPrefix, id));
         }
 
-        public T LoadAssetByType<T>() where T : Object
+        public T LoadAssetByType<T>()
+            where T : Object
         {
             var assets = Resources.LoadAll<T>(pathPrefix);
 
             return assets.Length > 0 ? assets[0] : default;
         }
 
-
-        public async Task<T> LoadAssetByIdAsync<T>(string id) where T : Object
+        public async Task<T> LoadAssetByIdAsync<T>(string id)
+            where T : Object
         {
             var request = Resources.LoadAsync<T>(Path.Combine(pathPrefix, id));
             await TaskUtilities.WaitUntil(() => request.isDone);
-            return (T) request.asset;
+            return (T)request.asset;
         }
 
-
-        public Task<T> LoadAssetByTypeAsync<T>() where T : Object
+        public Task<T> LoadAssetByTypeAsync<T>()
+            where T : Object
         {
             return Task.FromResult(LoadAssetByType<T>());
         }
-
     }
 }

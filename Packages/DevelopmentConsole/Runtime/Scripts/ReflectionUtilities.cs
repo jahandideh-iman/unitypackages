@@ -1,15 +1,14 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
-using System;
 using System.Linq;
+using UnityEngine;
 
 // TODO: Move this to another package.
 namespace Arman.DevelopmentConsole
 {
     public static class ReflectionUtilities
     {
-
         public static List<Type> FindTypesOf(Type type, bool considerAbstracts)
         {
             //var allTypes = new List<Type>();
@@ -45,7 +44,6 @@ namespace Arman.DevelopmentConsole
 
             return result.ToArray();
         }
-
 
         // NOTE: Why not Type.GetType(typeName)?!!
         public static Type GetType(string typeName)

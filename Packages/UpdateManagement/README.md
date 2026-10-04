@@ -12,16 +12,16 @@ exists.
 
 Namespace `Arman.UpdateManagement.Foundation`:
 
-| Type | Purpose |
-|---|---|
-| `IUpdatable` | `UpdateTime(float dt)` — named to avoid clashing with Unity's `Update`. |
+| Type             | Purpose                                                                                     |
+| ---------------- | ------------------------------------------------------------------------------------------- |
+| `IUpdatable`     | `UpdateTime(float dt)` — named to avoid clashing with Unity's `Update`.                     |
 | `IUpdateManager` | Channel registration, updatable registration, pause/resume, and `ChannelStateChangedEvent`. |
-| `UpdateManager` | The implementation, plus `AdvanceTime(float)`. |
+| `UpdateManager`  | The implementation, plus `AdvanceTime(float)`.                                              |
 
 Namespace `Arman.UpdateManagement.Foundation.Unity`:
 
-| Type | Purpose |
-|---|---|
+| Type                 | Purpose                                                               |
+| -------------------- | --------------------------------------------------------------------- |
 | `UnityUpdateManager` | `MonoBehaviour` that calls `AdvanceTime(Time.deltaTime)` every frame. |
 
 Channels come from `Package Basics` (`IChannel`, `NamedChannel`, `IDedChannel`).
