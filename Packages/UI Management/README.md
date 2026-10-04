@@ -124,15 +124,16 @@ ignored, and `IsTransitioning()` is `true`.
 
 ## Things to know
 
-- **`Close` works on any popup on the stack.** Closing one below the top removes it and leaves focus
-  where it is.
+- **`Close` works on any popup on the stack, once.** Closing one below the top removes it; the top
+  popup stays focused and receives `OnFocused` again. `Close` throws `InvalidOperationException` for a
+  popup that is not on the stack or is already closing.
 - **`Close` destroys the popup GameObject**, after its out transition if it has one. Popups are
   instantiate-and-discard, not show/hide; keep state outside the popup or reload it in `InternalInit`.
 - **Only a `PopupWindow` can be opened or closed.** `Window` is abstract; the main window is any
   `Window` subclass, usually `MainWindow`.
 - **Interrupted transitions are cancelled, not awaited.** `Close` during an in transition cancels it
-  and starts the out transition; a second `Close` on a closing popup is ignored; `SetMainWindow`
-  cancels every transition and destroys lingering popups at once. Honour the `CancellationToken` so
+  and starts the out transition; `SetMainWindow`, and destroying the manager, cancel every transition
+  and abandon pending closes, and `SetMainWindow` destroys lingering popups at once. Honour the `CancellationToken` so
   the animation stops too — the manager stops waiting either way.
 - **A transition that never completes blocks input for good.** The manager releases the blocker when
   `Play` completes, throws (the exception is logged), or is cancelled — nothing else.

@@ -199,16 +199,16 @@ namespace Arman.UIManagement.Tests
         }
 
         [UnityTest]
-        public IEnumerator ClosingAWindowThatIsNotOnTheStack_LeavesTheStackIntact()
+        public IEnumerator ClosingAWindowThatIsNotOnTheStack_ThrowsAndLeavesTheStackIntact()
         {
             _manager.SetMainWindow(CreateWindow("Main"));
             var popup = _manager.OpenPopUp(CreatePopup("Popup"));
             var stranger = CreatePopup("Stranger");
 
-            _manager.Close(stranger);
+            Assert.That(() => _manager.Close(stranger), Throws.InvalidOperationException);
             yield return null;
 
-            Assert.That(stranger == null, Is.True);
+            Assert.That(stranger == null, Is.False);
             Assert.That(popup == null, Is.False);
             Assert.That(_backgroundPanel.gameObject.activeSelf, Is.True);
             Assert.That(_backgroundPanel.SortingOrder(), Is.EqualTo(popup.SortingOrder() - 1));
@@ -321,7 +321,7 @@ namespace Arman.UIManagement.Tests
         }
 
         [Test]
-        public void Close_TwiceDuringTheOutTransition_PlaysItOnce()
+        public void Close_TwiceDuringTheOutTransition_ThrowsAndPlaysItOnce()
         {
             _manager.SetMainWindow(CreateWindow("Main"));
             var popup = CreatePopup("Popup");
@@ -329,8 +329,8 @@ namespace Arman.UIManagement.Tests
             _manager.OpenPopUp(popup);
 
             _manager.Close(popup);
-            _manager.Close(popup);
 
+            Assert.That(() => _manager.Close(popup), Throws.InvalidOperationException);
             Assert.That(transition.PlayCount, Is.EqualTo(1));
             transition.Complete();
             Assert.That(_manager.IsTransitioning(), Is.False);

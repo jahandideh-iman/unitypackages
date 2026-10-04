@@ -120,6 +120,9 @@ namespace Arman.UIManagement
                 {
                     _closingPopups.Add(window);
                     await PlayTransition(window, window.OutTransition);
+                    // SetMainWindow and OnDestroy abandon pending closes by emptying the set.
+                    if (!_closingPopups.Remove(window))
+                        return;
                 }
 
                 windowsStack.Remove(window);
@@ -242,6 +245,7 @@ namespace Arman.UIManagement
 
         private void OnDestroy()
         {
+            _closingPopups.Clear();
             CancelAllTransitions();
         }
 
@@ -282,7 +286,6 @@ namespace Arman.UIManagement
             return canvas;
         }
 
-        [System.Diagnostics.Conditional("DEBUG")]
         private static void Assert(bool condition, string message)
         {
             if (!condition)
