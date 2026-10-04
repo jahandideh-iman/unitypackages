@@ -50,8 +50,11 @@ dotnet_naming_style.camel.capitalization = camel_case
 dotnet_naming_symbols.interfaces.applicable_kinds = interface
 dotnet_naming_symbols.interfaces.applicable_accessibilities = *
 
+# Only readonly fields: [SerializeField] fields are PascalCase and editorconfig
+# cannot select by attribute, but a serialized field is never readonly.
 dotnet_naming_symbols.hidden_fields.applicable_kinds = field
 dotnet_naming_symbols.hidden_fields.applicable_accessibilities = private, protected, private_protected
+dotnet_naming_symbols.hidden_fields.required_modifiers = readonly
 
 dotnet_naming_symbols.visible_fields.applicable_kinds = field
 dotnet_naming_symbols.visible_fields.applicable_accessibilities = public, internal, protected_internal

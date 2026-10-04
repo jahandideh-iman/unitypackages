@@ -20,6 +20,7 @@ Each agent tool reads its own folders, so some files exist twice. When you chang
 | ----------- | --------------------------------------- | -------------------------------------------- |
 | Rules       | `CLAUDE.md` (imports `AGENTS.md`)       | `AGENTS.md`                                  |
 | Skills      | `.claude/skills/` (copy)                | `.agents/skills/` (source)                   |
+| Subagents   | `.claude/agents/`                       | `.opencode/agents/` (`mode: subagent`)       |
 | MCP servers | per user, `claude mcp add`              | per user, `~/.config/opencode/opencode.json` |
 | Permissions | per user, `.claude/settings.local.json` | per user, your own `opencode.json`           |
 
@@ -31,6 +32,7 @@ Each agent tool reads its own folders, so some files exist twice. When you chang
 
 | Rule                                                                                               | Read before acting                                                               |
 | -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Feature work goes spec → plan → code, through the superpowers workflows                            | [`.agents/rules/process.md`](./.agents/rules/process.md)                         |
 | Never hand-edit `.unity`, `.prefab` or `.asset` YAML                                               | [`unity-asset-editing`](./.agents/skills/unity-asset-editing/SKILL.md)           |
 | Never delete, ignore or hand-create a `.meta`; commit an asset with its `.meta`                    | [`unity-asset-editing`](./.agents/skills/unity-asset-editing/SKILL.md)           |
 | Start work in a worktree cut from `origin/dev`, never `git checkout -b`                            | [`feature-worktree`](./.agents/skills/feature-worktree/SKILL.md)                 |
@@ -42,9 +44,12 @@ Each agent tool reads its own folders, so some files exist twice. When you chang
 | `unity-tests` never runs on a fork PR: no `pull_request_target`, third-party actions pinned by SHA | [`.agents/rules/ci.md`](./.agents/rules/ci.md)                                   |
 | Never rename an asmdef or tidy a known inconsistency                                               | [`.agents/rules/packages.md`](./.agents/rules/packages.md)                       |
 | Keep `UnityEngine` out of `PackageBasics` and `ServiceLocating`                                    | [`.agents/rules/code-style.md`](./.agents/rules/code-style.md)                   |
+| Never rename a shipped serialized field without `[FormerlySerializedAs]`                           | [`.agents/rules/code-style.md`](./.agents/rules/code-style.md)                   |
 | Never turn `overrideReferences` off to fix a duplicate-assembly error                              | [`.agents/rules/testing.md`](./.agents/rules/testing.md)                         |
 | Prefer `sharplens` to `Grep`/`Glob` for C# navigation                                              | [`.agents/rules/code-navigation.md`](./.agents/rules/code-navigation.md)         |
 | Never delete Unity-facing code on a SharpLens dead-code result alone                               | [`.agents/rules/code-navigation.md`](./.agents/rules/code-navigation.md)         |
+| Use `unity command eval_file`, never `eval --code`                                                 | [`.agents/rules/code-navigation.md`](./.agents/rules/code-navigation.md)         |
+| Never drive a `unity command menu --path` that opens a confirmation dialog                         | [`.agents/rules/code-navigation.md`](./.agents/rules/code-navigation.md)         |
 | Documents describe the present, never the change                                                   | [`.agents/rules/documentation-voice.md`](./.agents/rules/documentation-voice.md) |
 
 ## Where the rules live
@@ -63,6 +68,7 @@ Each agent tool reads its own folders, so some files exist twice. When you chang
 | A new package under `Packages/`                                          | [`adding-a-package`](./.agents/skills/adding-a-package/SKILL.md)                 |
 | A scene, prefab, `.asset`, `.meta`, or adding/moving a file in a package | [`unity-asset-editing`](./.agents/skills/unity-asset-editing/SKILL.md)           |
 | Starting or finishing a branch                                           | [`feature-worktree`](./.agents/skills/feature-worktree/SKILL.md)                 |
+| Planning work, superpowers workflows, the project subagents              | [`.agents/rules/process.md`](./.agents/rules/process.md)                         |
 | Any feature's design or plan                                             | [`docs/INDEX.md`](./docs/INDEX.md)                                               |
 
 ## Commands
@@ -76,10 +82,10 @@ Each agent tool reads its own folders, so some files exist twice. When you chang
 
   Exit codes: `0` success, `8` tests ran and failed, `6` the run never produced results (compiler errors, a missing `--execute-method` target, a dead Editor). Treat `8` as a red suite and `6` as "couldn't run".
 
-- **Unity tests, Editor already open** — runs in the live instance and returns per-test results as JSON: `unity command run_tests --mode EditMode`, `unity command run_tests --mode PlayMode`.
+- **Unity tests, Editor already open** — runs in the live instance and returns per-test results as JSON: `unity command run_tests --mode EditMode`, `unity command run_tests --mode PlayMode --async_tests true`, then poll `unity command test_status`.
 - **Tooling tests** — `node --test Tools/*.test.mjs`, and `powershell -NoProfile -File Tools/ci/Tests/Test-CiScripts.ps1` for the CI helpers.
 - **Formatting** — `npm run format` rewrites every in-scope file; `npm run format:check` is the required `format` check.
-- **Documentation** — `npm run check:docs` verifies that every cross-file link and heading anchor resolves, that `.claude/skills/` matches `.agents/skills/`, and that this file stays inside its byte budget. Run it after editing anything under `.agents/` or `docs/`. It reads tracked and staged files only, so `git add` a new file before running it.
+- **Documentation** — `npm run check:docs` verifies that every cross-file link and heading anchor resolves, that the paired skill and subagent copies match, and that this file stays inside its byte budget. Run it after editing anything under `.agents/` or `docs/`. It reads tracked and staged files only, so `git add` a new file before running it.
 
 ## Documentation
 

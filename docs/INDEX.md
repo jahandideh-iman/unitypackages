@@ -12,7 +12,7 @@ Each spec and plan carries a `**Status:**` line near its top, and the row here r
 | `Superseded — <reason>` | Another design replaced this one; the reason names or links it. |
 | `Abandoned — <reason>`  | The work was dropped; the reason says why.                      |
 
-A new spec adds its row in the same commit, and the commit that lands the work sets `Implemented` in the row, the spec and the plan. A plan's checkboxes are working state while it runs; they are not ticked after the fact.
+A new spec adds its row in the same commit, and the commit that lands the work sets `Implemented` in the row, the spec and the plan. A plan's checkboxes are working state while it runs; they are not ticked after the fact. A status is set from evidence in the tree — the feature's code, assets and scripts — not from the document's own account of itself; where the evidence is ambiguous it is `Planned`, because a document wrongly marked `Implemented` sends a reader hunting for code that is not there.
 
 | Feature                                      | Status                                               | Spec                                                             | Plan                                                    | Main files                                                                                                                                            |
 | -------------------------------------------- | ---------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |

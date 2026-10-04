@@ -23,6 +23,9 @@ The whole flow in one go — `Tools/release.bat`	.agents/rules/releases.md
 Changelogs — four rules, enforced in CI	.agents/rules/releases.md
 Git and hosting	.agents/rules/git-workflow.md
 Branching	.agents/rules/git-workflow.md
+Superpowers workflows	.agents/rules/process.md
+Where superpowers meets this repo's rules	.agents/rules/process.md
+Project subagents	.agents/rules/process.md
 Formatting	.agents/rules/code-style.md
 C# coding style	.agents/rules/code-style.md
 Unity `.meta` files	.agents/skills/unity-asset-editing/SKILL.md

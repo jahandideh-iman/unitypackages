@@ -1,7 +1,7 @@
 // Tests for Tools/docs-check.mjs.
 //
 // The pure helpers (slug, anchors, links, headings) are imported and tested
-// directly. The five checks are tested the way CI runs them: each test builds a
+// directly. The six checks are tested the way CI runs them: each test builds a
 // throwaway git repo, stages a set of files, and runs the real script against
 // it as a subprocess with --root. Nothing is mocked.
 //
@@ -130,11 +130,11 @@ test("vendored skills are read from the Source column", () => {
 
 // --- the whole script ------------------------------------------------------
 
-test("a clean repo passes all five checks", () => {
+test("a clean repo passes all six checks", () => {
     const root = repo();
     const result = spawnSync(process.execPath, [SCRIPT, "--root", root], { encoding: "utf8" });
     assert.equal(result.status, 0, result.stdout);
-    assert.match(result.stdout, /all five checks pass/);
+    assert.match(result.stdout, /all six checks pass/);
 });
 
 test("a broken link is reported with its file and line", () => {
@@ -278,6 +278,44 @@ test("the skill mirror must match file for file and byte for byte", () => {
         ".agents/skills/example/SKILL.md: differs from .claude/skills/example/SKILL.md",
         ".agents/skills/only-source/SKILL.md: missing from .claude/skills/",
         ".claude/skills/only-mirror/SKILL.md: missing from .agents/skills/",
+    ]);
+});
+
+const AGENT_BODY = "\nYou are an example subagent.\n";
+const CLAUDE_AGENT = `---\nname: example\ndescription: Does one thing.\n---\n${AGENT_BODY}`;
+const OPENCODE_AGENT = `---\ndescription: Does one thing.\nmode: subagent\n---\n${AGENT_BODY}`;
+
+test("a subagent pair with the same description and body passes", () => {
+    const found = findings(
+        {
+            ".claude/agents/example.md": CLAUDE_AGENT,
+            ".opencode/agents/example.md": OPENCODE_AGENT.replace(/\n/g, "\r\n"),
+        },
+        "agents",
+    );
+    assert.deepEqual(found, []);
+});
+
+test("each subagent needs its pair, the same description and body, and mode: subagent", () => {
+    const found = findings(
+        {
+            ".claude/agents/only-claude.md": CLAUDE_AGENT,
+            ".opencode/agents/only-opencode.md": OPENCODE_AGENT,
+            ".claude/agents/body.md": CLAUDE_AGENT,
+            ".opencode/agents/body.md": `${OPENCODE_AGENT}drift\n`,
+            ".claude/agents/described.md": CLAUDE_AGENT,
+            ".opencode/agents/described.md": OPENCODE_AGENT.replace("one thing", "two things"),
+            ".claude/agents/primary.md": CLAUDE_AGENT,
+            ".opencode/agents/primary.md": OPENCODE_AGENT.replace("mode: subagent\n", ""),
+        },
+        "agents",
+    );
+    assert.deepEqual(found.map((finding) => `${finding.file}: ${finding.message}`).sort(), [
+        ".claude/agents/body.md: body differs from .opencode/agents/body.md",
+        ".claude/agents/described.md: description differs from .opencode/agents/described.md",
+        ".claude/agents/only-claude.md: missing from .opencode/agents/",
+        ".opencode/agents/only-opencode.md: missing from .claude/agents/",
+        ".opencode/agents/primary.md: needs mode: subagent",
     ]);
 });
 
