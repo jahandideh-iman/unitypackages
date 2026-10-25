@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Arman.PackageBasics;
+using Moq;
 using NUnit.Framework;
 
 namespace Arman.UpdateManagement.Tests
@@ -66,6 +67,26 @@ namespace Arman.UpdateManagement.Tests
             manager.Pause(channel);
 
             Assert.That(raised, Is.Empty);
+        }
+
+        [Test]
+        public void AnUpdatableThatPausesItsOwnChannelShouldStopTheRestOfTheChannelFromUpdating()
+        {
+            var updateManager = new UpdateManager();
+
+            // Updatables are walked back to front, so the pauser (registered last) runs first.
+            var skipped = new Mock<IUpdatable>();
+            var pauser = new Mock<IUpdatable>();
+            pauser
+                .Setup(updatable => updatable.UpdateTime(It.IsAny<float>()))
+                .Callback(() => updateManager.Pause(channel));
+
+            updateManager.RegisterUpdatable(skipped.Object, channel);
+            updateManager.RegisterUpdatable(pauser.Object, channel);
+
+            updateManager.AdvanceTime(1f);
+
+            skipped.Verify(updatable => updatable.UpdateTime(It.IsAny<float>()), Times.Never);
         }
 
         void Record(IChannel channel, bool isPaused)
