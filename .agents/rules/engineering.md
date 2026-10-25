@@ -1,38 +1,34 @@
-# Engineering rules
+# Engineering principles
 
-The short checklist every change is held to, for people and agents alike. Each rule links to the file that holds its detail. Where this list and that file disagree, the file is right, and this list gets fixed in the same commit.
+General design principles for every change in this repo, whatever the package or language. They guide judgement rather than mechanical checks. When two of them pull in different directions, choose the one that leaves the code easier to read and to change, and say in the change description which one you chose and why. The project's own rules live in the files linked from [`AGENTS.md`](../../AGENTS.md).
 
-## Before you start
+## Keep it simple
 
-- **Read the routing.** Read [`AGENTS.md`](../../AGENTS.md), then the rules file its "Where the rules live" table names for the area you are changing.
-- **Check for a skill before acting.** When a superpowers workflow or a repo skill covers the task, invoke it before the first action. See [`process.md`](./process.md).
-- **Features go spec → plan → code.** Chores, docs and CI changes skip the spec. See [`process.md`](./process.md).
-- **Work in a worktree cut from `origin/dev`,** never with `git checkout -b`. See the [`feature-worktree`](../skills/feature-worktree/SKILL.md) skill.
+- **KISS (keep it simple).** Choose the simplest design that meets the requirement. Solve the problem in front of you, not a more general version of it. Plain functions and data come before new abstractions.
+- **YAGNI (you aren't gonna need it).** Don't build for a future requirement nobody has written down. An extension point that nothing uses costs maintenance and gives nothing back.
+- **Rule of three.** Abstract repeated code once it has appeared three times and the shape of the repetition is clear. Two similar copies are cheaper than the wrong abstraction.
 
-## While you change code
+## Structure
 
-- **Test first.** A feature or a fix starts with a failing test. See [`testing.md`](./testing.md).
-- **Unity writes the asset files.** Never hand-edit `.unity`, `.prefab` or `.asset` YAML. Never delete or hand-create a `.meta`, and commit every asset together with its `.meta`. See the [`unity-asset-editing`](../skills/unity-asset-editing/SKILL.md) skill.
-- **Shipped names stay put.** Don't rename an asmdef. Don't rename a shipped serialized field without `[FormerlySerializedAs]`. See [`packages.md`](./packages.md) and [`code-style.md`](./code-style.md).
-- **Foundation packages stay free of `UnityEngine`.** `PackageBasics` and `ServiceLocating` remain plain C#. See [`code-style.md`](./code-style.md).
-- **Fix a duplicate-assembly error in the asmdef.** Never turn `overrideReferences` off to make it go away. See [`testing.md`](./testing.md).
-- **A shipped change gets a changelog bullet.** Add it under `## [Unreleased]` in the package's `CHANGELOG.md`. See [`releases.md`](./releases.md).
-- **Unity code is not dead on a tool's word.** Don't delete Unity-facing code on a SharpLens unused-code result alone. See [`code-navigation.md`](./code-navigation.md).
-- **Drive a live Editor with `unity command eval_file`,** never `eval --code`. Never drive a `menu --path` that opens a confirmation dialog. See [`code-navigation.md`](./code-navigation.md).
+- **Separation of concerns.** Each part handles one kind of work: input, rules, persistence, presentation. Don't mix them in one function or class. Logic that can be tested without the UI should not live in the UI.
+- **Cohesion.** Code that changes together lives together, and each module serves one purpose. Test a module by describing it in one sentence without "and". If the sentence needs "and", split the module.
+- **Low coupling, high information hiding.** A change in one module should not force edits in unrelated modules. Expose the smallest public surface that callers need, and keep the rest private.
+- **Law of Demeter.** Talk only to direct collaborators. Ask `order.Total()` rather than reaching through `order.Customer.Account.Balance`.
 
-## Before you call it done
+## Locality
 
-- **Run the checks the change touches.** Unity tests and `node --test Tools/*.test.mjs` run as [`testing.md`](./testing.md) describes. Formatting is checked with `npm run format:check`. Run `npm run check:docs` after editing anything under `.agents/` or `docs/`.
-- **Exit code `6` is not a pass.** It means the run never produced results. Report it as "couldn't run," and report `8` as a red suite. See [`testing.md`](./testing.md).
-- **Show the output.** Say what passed and what failed, with the output behind it. If a step was skipped, say so.
-- **Write documents in the present tense.** A document describes the project as it is, not the change that produced it. See [`documentation-voice.md`](./documentation-voice.md).
+- **Locality of behaviour.** Code that is read together sits together. A behaviour's logic, its tests and the configuration it depends on should be findable from one place, so a reader does not have to follow a chain of indirections to understand one action. Prefer a visible, local definition over a registry or a lookup by string, unless the indirection buys real reuse.
+- **Least surprise.** A name says what the code does, and a function does nothing its name does not promise. Side effects are visible at the call site.
 
-## Git and pull requests
+## Change and failure
 
-- **Use `git -C <path>`,** never `cd <dir> && git`. See [`git-workflow.md`](./git-workflow.md).
-- **Use `gh`, not `glab`.** The `gitlab` remote is a read-only archive.
-- **An agent opens its pull request into `dev` and stops.** It never merges. It never pushes to `master` or runs `tag --push`, because those publish, and a published id and version are permanent. See the [`releasing-packages`](../skills/releasing-packages/SKILL.md) skill.
+- **Remove duplicated knowledge, not duplicated text.** A rule stated in two places that must agree is a real duplicate. Two pieces of code that look alike but change for different reasons are not.
+- **Fail where the bad input enters.** Validate at the boundary and report the problem there. Don't swallow errors or substitute defaults that hide them.
+- **Small, reviewable steps.** Keep a refactoring separate from a behaviour change, so each can be reviewed and reverted on its own.
 
-## Keeping this list short
+## Applying them
 
-Add a rule here only when breaking it is expensive. Put its detail in the file it links to, so this checklist stays something an agent reads in full.
+- Before writing code, name the single responsibility of each unit you add or change. If the name needs "and", split it.
+- Before adding an abstraction, name the second real case that needs it. If there isn't one, don't add it.
+- When you change a behaviour, keep its logic, its tests and its configuration close together.
+- When two principles conflict, say which one won and why in the change description.
