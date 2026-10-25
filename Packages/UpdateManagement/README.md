@@ -10,28 +10,23 @@ exists.
 
 ## What it provides
 
-Namespace `Arman.UpdateManagement.Foundation`:
+Namespace `Arman.UpdateManagement`:
 
-| Type             | Purpose                                                                                     |
-| ---------------- | ------------------------------------------------------------------------------------------- |
-| `IUpdatable`     | `UpdateTime(float dt)` — named to avoid clashing with Unity's `Update`.                     |
-| `IUpdateManager` | Channel registration, updatable registration, pause/resume, and `ChannelStateChangedEvent`. |
-| `UpdateManager`  | The implementation, plus `AdvanceTime(float)`.                                              |
+| Type                 | Purpose                                                                                     |
+| -------------------- | ------------------------------------------------------------------------------------------- |
+| `IUpdatable`         | `UpdateTime(float dt)` — named to avoid clashing with Unity's `Update`.                     |
+| `IUpdateManager`     | Channel registration, updatable registration, pause/resume, and `ChannelStateChangedEvent`. |
+| `UpdateManager`      | The implementation, plus `AdvanceTime(float)`.                                              |
+| `UnityUpdateManager` | `MonoBehaviour` that calls `AdvanceTime(Time.deltaTime)` every frame.                       |
 
-Namespace `Arman.UpdateManagement.Foundation.Unity`:
-
-| Type                 | Purpose                                                               |
-| -------------------- | --------------------------------------------------------------------- |
-| `UnityUpdateManager` | `MonoBehaviour` that calls `AdvanceTime(Time.deltaTime)` every frame. |
-
-Channels come from `Package Basics` (`IChannel`, `NamedChannel`, `IDedChannel`).
+Channels come from `Package Basics` (`Arman.PackageBasics`: `IChannel`, `NamedChannel`, `IDedChannel`).
 
 ## Usage
 
 Implement `IUpdatable` rather than Unity's `Update`:
 
 ```csharp
-using Arman.UpdateManagement.Foundation;
+using Arman.UpdateManagement;
 
 public class Enemy : MonoBehaviour, IUpdatable
 {
@@ -42,7 +37,7 @@ public class Enemy : MonoBehaviour, IUpdatable
 Register it on a channel. Drop a `UnityUpdateManager` in the scene and it ticks for you:
 
 ```csharp
-using Arman.Utility.Core;
+using Arman.PackageBasics;
 
 IChannel gameplay = new NamedChannel("gameplay");
 IChannel ui       = new NamedChannel("ui");
@@ -102,12 +97,19 @@ manager.AdvanceTime(0.016f);     // one deterministic step
 - **`RegisterUpdatable` creates the channel if it is new**, so an explicit `RegisterChannel` is only
   needed for a channel you want to configure or pause before anything registers on it.
 - **Registration is not deduplicated.** Registering the same object twice makes it tick twice per
-  frame; `UnRegisterUpdatable` then removes every copy at once, from whichever channel holds it.
-- **Updatables are iterated over a per-frame snapshot**, so registering or unregistering from inside
-  `UpdateTime` is safe. Objects are ticked in reverse registration order.
+  frame. `UnRegisterUpdatable` removes every copy from the first channel that holds the object;
+  a copy registered on another channel stays. Unregister each channel's copy separately.
+- **Updatables are iterated over a per-frame snapshot of their channel**, so registering or
+  unregistering updatables on an existing channel from inside `UpdateTime` is safe. Objects are
+  ticked in reverse registration order.
+- **Registering a new channel from inside `UpdateTime` throws `InvalidOperationException`.**
+  `AdvanceTime` is enumerating the manager's channel table, so create every channel before the tick
+  that first uses it.
+- **`RegisterChannelToParent` throws for an unregistered parent.** Call `RegisterChannel(parent)`
+  or register an updatable on the parent first.
 - **`ChannelStateChangedEvent` fires on every `Pause`/`Resume`** of a registered channel, reporting
   that channel's own flag — not the inherited state of its children.
-- **An updatable that throws is dropped.** If `UpdateTime` throws, the manager unregisters that
-  updatable and keeps ticking the rest of the channel. The alternative is worse than it looks: the
-  offender stays registered, so it throws again on the very next frame and its channel never
-  advances past it. The usual cause is a destroyed Unity object that was never unregistered.
+- **An updatable that throws stays registered.** If `UpdateTime` throws, the manager logs the
+  exception with `Debug.LogException` and keeps ticking the rest of the channel and every channel
+  after it. The offender is ticked again on every later frame, so it logs on every frame until you
+  unregister it. The usual cause is a destroyed Unity object that was never unregistered.
