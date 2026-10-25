@@ -11,7 +11,7 @@ namespace Arman.PersistentDataManagement.Tests
         static void VerifySerialized(Mock<IPersistentDataSerializer> serializer, Times times)
         {
             serializer.Verify(
-                s => s.SerializeTo(It.IsAny<IWritablePersistentDataWrapper>()),
+                s => s.SerializeTo(It.IsAny<IWritablePersistentDataEncoder>()),
                 times
             );
         }
@@ -58,65 +58,65 @@ namespace Arman.PersistentDataManagement.Tests
         }
 
         [Test]
-        public void SavingAllShouldClearPersistentDataWrapperForEachChannel()
+        public void SavingAllShouldClearPersistentDataEncoderForEachChannel()
         {
-            var persistentDataWrapper = DataWrapper();
+            var persistentDataEncoder = DataEncoder();
 
-            manager = CreateManager(emptyStreamFactory, persistentDataWrapper.Object);
+            manager = CreateManager(emptyStreamFactory, persistentDataEncoder.Object);
             manager.Register(serializerA.Object, channel1);
             manager.Register(serializerB.Object, channel2);
 
             manager.SaveAll();
 
-            persistentDataWrapper.Verify(w => w.Clear(), Times.Exactly(2));
+            persistentDataEncoder.Verify(w => w.Clear(), Times.Exactly(2));
         }
 
         [Test]
-        public void SavingAChannelShouldClearPersistentDataWrapper()
+        public void SavingAChannelShouldClearPersistentDataEncoder()
         {
-            var persistentDataWrapper = DataWrapper();
+            var persistentDataEncoder = DataEncoder();
 
-            manager = CreateManager(emptyStreamFactory, persistentDataWrapper.Object);
+            manager = CreateManager(emptyStreamFactory, persistentDataEncoder.Object);
             manager.Register(serializerA.Object, channel1);
 
             manager.Save(channel1);
 
-            persistentDataWrapper.Verify(w => w.Clear(), Times.Once);
+            persistentDataEncoder.Verify(w => w.Clear(), Times.Once);
         }
 
         [Test]
-        public void SavingShouldGivePersistentDataWrapperToTheSerializers()
+        public void SavingShouldGivePersistentDataEncoderToTheSerializers()
         {
-            var persistentDataWrapper = DataWrapper();
+            var persistentDataEncoder = DataEncoder();
 
-            manager = CreateManager(emptyStreamFactory, persistentDataWrapper.Object);
+            manager = CreateManager(emptyStreamFactory, persistentDataEncoder.Object);
             manager.Register(serializerA.Object);
             manager.Register(serializerB.Object);
 
             manager.SaveAll();
 
-            serializerA.Verify(s => s.SerializeTo(persistentDataWrapper.Object), Times.Once);
-            serializerB.Verify(s => s.SerializeTo(persistentDataWrapper.Object), Times.Once);
+            serializerA.Verify(s => s.SerializeTo(persistentDataEncoder.Object), Times.Once);
+            serializerB.Verify(s => s.SerializeTo(persistentDataEncoder.Object), Times.Once);
         }
 
         [Test]
-        public void SavingAllShouldWriteDataToPersistentDataWrapperAfterCallingAllSerializers()
+        public void SavingAllShouldWriteDataToPersistentDataEncoderAfterCallingAllSerializers()
         {
-            var dataWrapper = DataWrapper();
+            var dataEncoder = DataEncoder();
 
             int step = 0;
             int writeStep = -1;
             serializerA
-                .Setup(s => s.SerializeTo(It.IsAny<IWritablePersistentDataWrapper>()))
+                .Setup(s => s.SerializeTo(It.IsAny<IWritablePersistentDataEncoder>()))
                 .Callback(() => step++);
             serializerB
-                .Setup(s => s.SerializeTo(It.IsAny<IWritablePersistentDataWrapper>()))
+                .Setup(s => s.SerializeTo(It.IsAny<IWritablePersistentDataEncoder>()))
                 .Callback(() => step++);
-            dataWrapper
+            dataEncoder
                 .Setup(w => w.WriteTo(It.IsAny<StreamWriter>()))
                 .Callback(() => writeStep = step);
 
-            manager = CreateManager(emptyStreamFactory, dataWrapper.Object);
+            manager = CreateManager(emptyStreamFactory, dataEncoder.Object);
             manager.Register(serializerA.Object);
             manager.Register(serializerB.Object);
 
@@ -126,20 +126,20 @@ namespace Arman.PersistentDataManagement.Tests
         }
 
         [Test]
-        public void SavingAChannelShouldWriteDataToPersistentDataWrapperAfterCallingChannelsSerializers()
+        public void SavingAChannelShouldWriteDataToPersistentDataEncoderAfterCallingChannelsSerializers()
         {
-            var dataWrapper = DataWrapper();
+            var dataEncoder = DataEncoder();
 
             int step = 0;
             int writeStep = -1;
             serializerA
-                .Setup(s => s.SerializeTo(It.IsAny<IWritablePersistentDataWrapper>()))
+                .Setup(s => s.SerializeTo(It.IsAny<IWritablePersistentDataEncoder>()))
                 .Callback(() => step++);
-            dataWrapper
+            dataEncoder
                 .Setup(w => w.WriteTo(It.IsAny<StreamWriter>()))
                 .Callback(() => writeStep = step);
 
-            manager = CreateManager(emptyStreamFactory, dataWrapper.Object);
+            manager = CreateManager(emptyStreamFactory, dataEncoder.Object);
             manager.Register(serializerA.Object, channel1);
 
             manager.Save(channel1);
@@ -152,7 +152,7 @@ namespace Arman.PersistentDataManagement.Tests
         {
             var streamFactory = StreamFactory();
 
-            manager = CreateManager(streamFactory.Object, emptyDataWrapper);
+            manager = CreateManager(streamFactory.Object, emptyDataEncoder);
             manager.Register(serializerA.Object, channel1);
             manager.Register(serializerB.Object, channel2);
 
@@ -167,7 +167,7 @@ namespace Arman.PersistentDataManagement.Tests
         {
             var streamFactory = StreamFactory();
 
-            manager = CreateManager(streamFactory.Object, emptyDataWrapper);
+            manager = CreateManager(streamFactory.Object, emptyDataEncoder);
 
             manager.Register(serializerA.Object, channel1);
             manager.Register(serializerB.Object, channel2);

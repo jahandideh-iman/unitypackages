@@ -2,7 +2,7 @@
 
 namespace Arman.PersistentDataManagement
 {
-    public class EmptyPersistentDataWrapper : IPersistentDataWrapper
+    public class EmptyPersistentDataEncoder : IPersistentDataEncoder
     {
         public void Clear() { }
 
@@ -35,22 +35,22 @@ namespace Arman.PersistentDataManagement
             return false;
         }
 
-        public IWritablePersistentDataWrapper WriteInt(string key, int value)
+        public IWritablePersistentDataEncoder WriteInt(string key, int value)
         {
             return this;
         }
 
-        public IWritablePersistentDataWrapper WriteString(string key, string value)
+        public IWritablePersistentDataEncoder WriteString(string key, string value)
         {
             return this;
         }
 
-        public IWritablePersistentDataWrapper WriteFloat(string key, float value)
+        public IWritablePersistentDataEncoder WriteFloat(string key, float value)
         {
             return this;
         }
 
-        public IWritablePersistentDataWrapper WriteBoolean(string key, bool value)
+        public IWritablePersistentDataEncoder WriteBoolean(string key, bool value)
         {
             return this;
         }
@@ -59,12 +59,12 @@ namespace Arman.PersistentDataManagement
 
         public void EndReadingBlock() { }
 
-        public IWritablePersistentDataWrapper BeginWritingBlock(string key)
+        public IWritablePersistentDataEncoder BeginWritingBlock(string key)
         {
             return this;
         }
 
-        public IWritablePersistentDataWrapper EndWritingBlock()
+        public IWritablePersistentDataEncoder EndWritingBlock()
         {
             return this;
         }

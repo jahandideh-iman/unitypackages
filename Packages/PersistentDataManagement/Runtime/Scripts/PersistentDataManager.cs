@@ -19,7 +19,7 @@ namespace Arman.PersistentDataManagement
         }
 
         IPersistentDataIOStreamFactory persistentDataIOStreamFactory;
-        IPersistentDataWrapper persistentDataWrapper;
+        IPersistentDataEncoder persistentDataEncoder;
 
         SerializerContainer allSerializers = new Container<IPersistentDataSerializer>();
         Dictionary<IChannel, SerializerContainer> channelSerializers =
@@ -31,12 +31,12 @@ namespace Arman.PersistentDataManagement
 
         public PersistentDataManager(
             IPersistentDataIOStreamFactory persistentDataIOStreamFactory,
-            IPersistentDataWrapper persistentDataWrapper,
+            IPersistentDataEncoder persistentDataEncoder,
             int saveVersion
         )
         {
             this.persistentDataIOStreamFactory = persistentDataIOStreamFactory;
-            this.persistentDataWrapper = persistentDataWrapper;
+            this.persistentDataEncoder = persistentDataEncoder;
             this.saveVersion = saveVersion;
         }
 
@@ -67,45 +67,45 @@ namespace Arman.PersistentDataManagement
             if (ChannelDoesNotExists(channel))
                 throw new PersistentDataChannelNotFoundException(channel);
 
-            persistentDataWrapper.Clear();
+            persistentDataEncoder.Clear();
 
-            WriteMetaDataTo(persistentDataWrapper);
-            WriteDataTo(persistentDataWrapper, channelSerializers[channel].Items());
+            WriteMetaDataTo(persistentDataEncoder);
+            WriteDataTo(persistentDataEncoder, channelSerializers[channel].Items());
 
             using (var writeStream = persistentDataIOStreamFactory.CreateWriteStreamFor(channel))
-                persistentDataWrapper.WriteTo(writeStream);
+                persistentDataEncoder.WriteTo(writeStream);
         }
 
-        void WriteMetaDataTo(IWritablePersistentDataWrapper dataWrapper)
+        void WriteMetaDataTo(IWritablePersistentDataEncoder dataEncoder)
         {
-            dataWrapper.BeginWritingBlock("MetaData");
+            dataEncoder.BeginWritingBlock("MetaData");
 
-            dataWrapper.WriteInt("Version", saveVersion);
+            dataEncoder.WriteInt("Version", saveVersion);
 
-            dataWrapper.EndWritingBlock();
+            dataEncoder.EndWritingBlock();
         }
 
         private void WriteDataTo(
-            IPersistentDataWrapper persistentDataWrapper,
+            IPersistentDataEncoder persistentDataEncoder,
             IEnumerable<IPersistentDataSerializer> serializers
         )
         {
-            persistentDataWrapper.BeginWritingBlock("Data");
+            persistentDataEncoder.BeginWritingBlock("Data");
 
             foreach (var serializer in serializers)
-                Serialize(serializer, persistentDataWrapper);
+                Serialize(serializer, persistentDataEncoder);
 
-            persistentDataWrapper.EndWritingBlock();
+            persistentDataEncoder.EndWritingBlock();
         }
 
         private void Serialize(
             IPersistentDataSerializer serializer,
-            IWritablePersistentDataWrapper persistentDataWrapper
+            IWritablePersistentDataEncoder persistentDataEncoder
         )
         {
-            persistentDataWrapper.BeginWritingBlock(serializer.Key());
-            serializer.SerializeTo(persistentDataWrapper);
-            persistentDataWrapper.EndWritingBlock();
+            persistentDataEncoder.BeginWritingBlock(serializer.Key());
+            serializer.SerializeTo(persistentDataEncoder);
+            persistentDataEncoder.EndWritingBlock();
         }
 
         public void LoadAll()
@@ -124,15 +124,15 @@ namespace Arman.PersistentDataManagement
 
             using (var readStream = persistentDataIOStreamFactory.CreateReadStreamFor(channel))
             {
-                persistentDataWrapper.Clear();
-                persistentDataWrapper.ReadFrom(readStream);
+                persistentDataEncoder.Clear();
+                persistentDataEncoder.ReadFrom(readStream);
 
-                persistentDataWrapper.BeginReadingBlock("Data");
+                persistentDataEncoder.BeginReadingBlock("Data");
 
                 foreach (var serializer in channelSerializers[channel].Items())
-                    TryDeserialize(serializer, persistentDataWrapper);
+                    TryDeserialize(serializer, persistentDataEncoder);
 
-                persistentDataWrapper.EndReadingBlock();
+                persistentDataEncoder.EndReadingBlock();
             }
         }
 
@@ -143,14 +143,14 @@ namespace Arman.PersistentDataManagement
 
         private void TryDeserialize(
             IPersistentDataSerializer serializer,
-            IReadablePersistentDataWrapper persistentDataWrapper
+            IReadablePersistentDataEncoder persistentDataEncoder
         )
         {
-            if (persistentDataWrapper.HasKey(serializer.Key()))
+            if (persistentDataEncoder.HasKey(serializer.Key()))
             {
-                persistentDataWrapper.BeginReadingBlock(serializer.Key());
-                serializer.DeserializeFrom(persistentDataWrapper);
-                persistentDataWrapper.EndReadingBlock();
+                persistentDataEncoder.BeginReadingBlock(serializer.Key());
+                serializer.DeserializeFrom(persistentDataEncoder);
+                persistentDataEncoder.EndReadingBlock();
             }
         }
 

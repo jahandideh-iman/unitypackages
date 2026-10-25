@@ -6,13 +6,13 @@ using UnityEngine;
 
 namespace Arman.PersistentDataManagement
 {
-    // NOTE: This voilates the PersistentDataWrapper's interface. Do not use this class.s
-    public class PlayerPrefsPersistentDataWrapper : IPersistentDataWrapper
+    // NOTE: This voilates the PersistentDataEncoder's interface. Do not use this class.s
+    public class PlayerPrefsPersistentDataEncoder : IPersistentDataEncoder
     {
         private StringBuilder blockPath = new StringBuilder();
         private Stack<string> blockStack = new Stack<string>();
 
-        public PlayerPrefsPersistentDataWrapper()
+        public PlayerPrefsPersistentDataEncoder()
         {
             PushBlock("");
         }
@@ -42,7 +42,7 @@ namespace Arman.PersistentDataManagement
             return PlayerPrefs.GetInt(ConvertToBlockKey(key), defaultValue);
         }
 
-        public IWritablePersistentDataWrapper WriteInt(string key, int value)
+        public IWritablePersistentDataEncoder WriteInt(string key, int value)
         {
             PlayerPrefs.SetInt(ConvertToBlockKey(key), value);
             return this;
@@ -53,7 +53,7 @@ namespace Arman.PersistentDataManagement
             return PlayerPrefs.GetString(ConvertToBlockKey(key), defaultValue);
         }
 
-        public IWritablePersistentDataWrapper WriteString(string key, string value)
+        public IWritablePersistentDataEncoder WriteString(string key, string value)
         {
             PlayerPrefs.SetString(ConvertToBlockKey(key), value);
             return this;
@@ -64,7 +64,7 @@ namespace Arman.PersistentDataManagement
             return PlayerPrefs.GetFloat(ConvertToBlockKey(key), defaultValue);
         }
 
-        public IWritablePersistentDataWrapper WriteFloat(string key, float value)
+        public IWritablePersistentDataEncoder WriteFloat(string key, float value)
         {
             PlayerPrefs.SetFloat(ConvertToBlockKey(key), value);
             return this;
@@ -77,19 +77,19 @@ namespace Arman.PersistentDataManagement
                 : true;
         }
 
-        public IWritablePersistentDataWrapper WriteBoolean(string key, bool value)
+        public IWritablePersistentDataEncoder WriteBoolean(string key, bool value)
         {
             PlayerPrefs.SetInt(ConvertToBlockKey(key), value == false ? 0 : 1);
             return this;
         }
 
-        public IWritablePersistentDataWrapper BeginWritingBlock(string key)
+        public IWritablePersistentDataEncoder BeginWritingBlock(string key)
         {
             PushBlock(key);
             return this;
         }
 
-        public IWritablePersistentDataWrapper EndWritingBlock()
+        public IWritablePersistentDataEncoder EndWritingBlock()
         {
             PopBlock();
             return this;

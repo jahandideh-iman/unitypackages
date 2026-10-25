@@ -11,7 +11,7 @@ namespace Arman.PersistentDataManagement.Tests
         // The collaborators the default manager was built with. A test that wants to
         // observe one of them builds a new manager, passing the other one through.
         protected IPersistentDataIOStreamFactory emptyStreamFactory;
-        protected IPersistentDataWrapper emptyDataWrapper;
+        protected IPersistentDataEncoder emptyDataEncoder;
 
         protected Mock<IPersistentDataSerializer> serializerA;
         protected Mock<IPersistentDataSerializer> serializerB;
@@ -29,9 +29,9 @@ namespace Arman.PersistentDataManagement.Tests
             channel2 = new NamedChannel("ChannelB");
 
             emptyStreamFactory = new EmptyPersistetDataIOStreamFactory();
-            emptyDataWrapper = new EmptyPersistentDataWrapper();
+            emptyDataEncoder = new EmptyPersistentDataEncoder();
 
-            manager = CreateManager(emptyStreamFactory, emptyDataWrapper);
+            manager = CreateManager(emptyStreamFactory, emptyDataEncoder);
 
             InternalSetup();
         }
@@ -45,22 +45,22 @@ namespace Arman.PersistentDataManagement.Tests
             return serializer;
         }
 
-        // The manager chains its writes and asks the wrapper for keys, so the
-        // fluent methods have to answer with the wrapper itself rather than null.
-        protected static Mock<IPersistentDataWrapper> DataWrapper()
+        // The manager chains its writes and asks the encoder for keys, so the
+        // fluent methods have to answer with the encoder itself rather than null.
+        protected static Mock<IPersistentDataEncoder> DataEncoder()
         {
-            var wrapper = new Mock<IPersistentDataWrapper>();
+            var encoder = new Mock<IPersistentDataEncoder>();
 
-            wrapper.Setup(w => w.HasKey(It.IsAny<string>())).Returns(true);
-            wrapper
+            encoder.Setup(w => w.HasKey(It.IsAny<string>())).Returns(true);
+            encoder
                 .Setup(w => w.WriteInt(It.IsAny<string>(), It.IsAny<int>()))
-                .Returns(() => wrapper.Object);
-            wrapper
+                .Returns(() => encoder.Object);
+            encoder
                 .Setup(w => w.BeginWritingBlock(It.IsAny<string>()))
-                .Returns(() => wrapper.Object);
-            wrapper.Setup(w => w.EndWritingBlock()).Returns(() => wrapper.Object);
+                .Returns(() => encoder.Object);
+            encoder.Setup(w => w.EndWritingBlock()).Returns(() => encoder.Object);
 
-            return wrapper;
+            return encoder;
         }
 
         // Reports every channel as readable; the streams themselves stay null,
@@ -74,11 +74,11 @@ namespace Arman.PersistentDataManagement.Tests
 
         protected static PersistentDataManager CreateManager(
             IPersistentDataIOStreamFactory streamFactory,
-            IPersistentDataWrapper dataWrapper,
+            IPersistentDataEncoder dataEncoder,
             int saveVersion = 0
         )
         {
-            return new PersistentDataManager(streamFactory, dataWrapper, saveVersion);
+            return new PersistentDataManager(streamFactory, dataEncoder, saveVersion);
         }
 
         protected virtual void InternalSetup() { }
