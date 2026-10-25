@@ -115,6 +115,10 @@ namespace Arman.UpdateManagement
             var count = updatablesTemp.Count;
             for (int i = count - 1; i >= 0; --i)
             {
+                // An updatable may pause its own channel, so the state is checked for every updatable.
+                if (IsChannelDataGloballyPaused(data))
+                    return;
+
                 try
                 {
                     updatablesTemp[i].UpdateTime(amount * data.timeScale);
