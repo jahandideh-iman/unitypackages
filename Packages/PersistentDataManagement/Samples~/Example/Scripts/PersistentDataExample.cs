@@ -19,18 +19,18 @@ namespace Arman.PersistentDataManagement.Samples
             return "ExampleSerializer";
         }
 
-        public void DeserializeFrom(IReadablePersistentDataWrapper persistentDataWrapper)
+        public void DeserializeFrom(IReadablePersistentDataEncoder persistentDataEncoder)
         {
-            persistentDataExample.intValue = persistentDataWrapper.ReadInt("int");
-            persistentDataExample.floatValue = persistentDataWrapper.ReadFloat("float");
-            persistentDataExample.stringValue = persistentDataWrapper.ReadString("string");
+            persistentDataExample.intValue = persistentDataEncoder.ReadInt("int");
+            persistentDataExample.floatValue = persistentDataEncoder.ReadFloat("float");
+            persistentDataExample.stringValue = persistentDataEncoder.ReadString("string");
         }
 
-        public void SerializeTo(IWritablePersistentDataWrapper persistentDataWrapper)
+        public void SerializeTo(IWritablePersistentDataEncoder persistentDataEncoder)
         {
-            persistentDataWrapper.WriteInt("int", persistentDataExample.intValue);
-            persistentDataWrapper.WriteFloat("float", persistentDataExample.floatValue);
-            persistentDataWrapper.WriteString("string", persistentDataExample.stringValue);
+            persistentDataEncoder.WriteInt("int", persistentDataExample.intValue);
+            persistentDataEncoder.WriteFloat("float", persistentDataExample.floatValue);
+            persistentDataEncoder.WriteString("string", persistentDataExample.stringValue);
         }
     }
 

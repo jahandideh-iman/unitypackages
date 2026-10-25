@@ -13,7 +13,7 @@ namespace Arman.PersistentDataManagement.Tests
         static void VerifyDeserialized(Mock<IPersistentDataSerializer> serializer, Times times)
         {
             serializer.Verify(
-                s => s.DeserializeFrom(It.IsAny<IReadablePersistentDataWrapper>()),
+                s => s.DeserializeFrom(It.IsAny<IReadablePersistentDataEncoder>()),
                 times
             );
         }
@@ -23,9 +23,9 @@ namespace Arman.PersistentDataManagement.Tests
             serializerC = Serializer("C");
 
             emptyStreamFactory = new MemoryBasedPersistetDataIOStreamFactory();
-            emptyDataWrapper = new JSONPersistentDataWrapper();
+            emptyDataEncoder = new JSONPersistentDataEncoder();
 
-            manager = CreateManager(emptyStreamFactory, emptyDataWrapper);
+            manager = CreateManager(emptyStreamFactory, emptyDataEncoder);
         }
 
         [Test]
@@ -73,7 +73,7 @@ namespace Arman.PersistentDataManagement.Tests
             var streamFactory = new MemoryBasedPersistetDataIOStreamFactory();
             streamFactory.CreateWriteStreamFor(channel1).Dispose();
 
-            manager = CreateManager(streamFactory, emptyDataWrapper);
+            manager = CreateManager(streamFactory, emptyDataEncoder);
             manager.Register(serializerA.Object, channel1);
 
             Assert.DoesNotThrow(() => manager.Load(channel1));
@@ -98,65 +98,65 @@ namespace Arman.PersistentDataManagement.Tests
         }
 
         [Test]
-        public void LoadingShouldGivePersistentDataWrapperToTheSerializers()
+        public void LoadingShouldGivePersistentDataEncoderToTheSerializers()
         {
-            var persistentDataWrapper = DataWrapper();
+            var persistentDataEncoder = DataEncoder();
 
-            manager = CreateManager(emptyStreamFactory, persistentDataWrapper.Object);
+            manager = CreateManager(emptyStreamFactory, persistentDataEncoder.Object);
             manager.Register(serializerA.Object);
             manager.Register(serializerB.Object);
 
             manager.LoadAll();
 
-            serializerA.Verify(s => s.DeserializeFrom(persistentDataWrapper.Object), Times.Once);
-            serializerB.Verify(s => s.DeserializeFrom(persistentDataWrapper.Object), Times.Once);
+            serializerA.Verify(s => s.DeserializeFrom(persistentDataEncoder.Object), Times.Once);
+            serializerB.Verify(s => s.DeserializeFrom(persistentDataEncoder.Object), Times.Once);
         }
 
         [Test]
-        public void LoadingAllShouldClearPersistentDataWrapperForEachChannel()
+        public void LoadingAllShouldClearPersistentDataEncoderForEachChannel()
         {
-            var persistentDataWrapper = DataWrapper();
+            var persistentDataEncoder = DataEncoder();
 
-            manager = CreateManager(emptyStreamFactory, persistentDataWrapper.Object);
+            manager = CreateManager(emptyStreamFactory, persistentDataEncoder.Object);
             manager.Register(serializerA.Object, channel1);
             manager.Register(serializerB.Object, channel2);
 
             manager.LoadAll();
 
-            persistentDataWrapper.Verify(w => w.Clear(), Times.Exactly(2));
+            persistentDataEncoder.Verify(w => w.Clear(), Times.Exactly(2));
         }
 
         [Test]
-        public void LoadingAChannelShouldClearPersistentDataWrapper()
+        public void LoadingAChannelShouldClearPersistentDataEncoder()
         {
-            var persistentDataWrapper = DataWrapper();
+            var persistentDataEncoder = DataEncoder();
 
-            manager = CreateManager(emptyStreamFactory, persistentDataWrapper.Object);
+            manager = CreateManager(emptyStreamFactory, persistentDataEncoder.Object);
             manager.Register(serializerA.Object, channel1);
 
             manager.Load(channel1);
 
-            persistentDataWrapper.Verify(w => w.Clear(), Times.Once);
+            persistentDataEncoder.Verify(w => w.Clear(), Times.Once);
         }
 
         [Test]
-        public void LoadingAllShouldGiveDataToPersistentDataWrapperBeforeCallingAllSerializers()
+        public void LoadingAllShouldGiveDataToPersistentDataEncoderBeforeCallingAllSerializers()
         {
-            var dataWrapper = DataWrapper();
+            var dataEncoder = DataEncoder();
 
             int step = 0;
             int readStep = -1;
             serializerA
-                .Setup(s => s.DeserializeFrom(It.IsAny<IReadablePersistentDataWrapper>()))
+                .Setup(s => s.DeserializeFrom(It.IsAny<IReadablePersistentDataEncoder>()))
                 .Callback(() => step++);
             serializerB
-                .Setup(s => s.DeserializeFrom(It.IsAny<IReadablePersistentDataWrapper>()))
+                .Setup(s => s.DeserializeFrom(It.IsAny<IReadablePersistentDataEncoder>()))
                 .Callback(() => step++);
-            dataWrapper
+            dataEncoder
                 .Setup(w => w.ReadFrom(It.IsAny<StreamReader>()))
                 .Callback(() => readStep = step);
 
-            manager = CreateManager(emptyStreamFactory, dataWrapper.Object);
+            manager = CreateManager(emptyStreamFactory, dataEncoder.Object);
             manager.Register(serializerA.Object);
             manager.Register(serializerB.Object);
 
@@ -166,20 +166,20 @@ namespace Arman.PersistentDataManagement.Tests
         }
 
         [Test]
-        public void LoadingAChannelShouldGiveDataToPersistentDataWrapperBeforeCallingChannelsSerializers()
+        public void LoadingAChannelShouldGiveDataToPersistentDataEncoderBeforeCallingChannelsSerializers()
         {
-            var dataWrapper = DataWrapper();
+            var dataEncoder = DataEncoder();
 
             int step = 0;
             int readStep = -1;
             serializerA
-                .Setup(s => s.DeserializeFrom(It.IsAny<IReadablePersistentDataWrapper>()))
+                .Setup(s => s.DeserializeFrom(It.IsAny<IReadablePersistentDataEncoder>()))
                 .Callback(() => step++);
-            dataWrapper
+            dataEncoder
                 .Setup(w => w.ReadFrom(It.IsAny<StreamReader>()))
                 .Callback(() => readStep = step);
 
-            manager = CreateManager(emptyStreamFactory, dataWrapper.Object);
+            manager = CreateManager(emptyStreamFactory, dataEncoder.Object);
             manager.Register(serializerA.Object, channel1);
 
             manager.Load(channel1);
@@ -192,7 +192,7 @@ namespace Arman.PersistentDataManagement.Tests
         {
             var streamFactory = StreamFactory();
 
-            manager = CreateManager(streamFactory.Object, DataWrapper().Object);
+            manager = CreateManager(streamFactory.Object, DataEncoder().Object);
             manager.Register(serializerA.Object, channel1);
             manager.Register(serializerB.Object, channel2);
 
@@ -207,7 +207,7 @@ namespace Arman.PersistentDataManagement.Tests
         {
             var streamFactory = StreamFactory();
 
-            manager = CreateManager(streamFactory.Object, DataWrapper().Object);
+            manager = CreateManager(streamFactory.Object, DataEncoder().Object);
             manager.Register(serializerA.Object, channel1);
             manager.Register(serializerB.Object, channel2);
 

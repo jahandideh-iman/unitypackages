@@ -11,7 +11,7 @@ namespace Arman.PersistentDataManagement.Tests
         {
             var streamFactory = StreamFactory();
 
-            manager = CreateManager(streamFactory.Object, emptyDataWrapper);
+            manager = CreateManager(streamFactory.Object, emptyDataEncoder);
 
             manager.Delete(channel1);
 

@@ -12,7 +12,7 @@ namespace Arman.PersistentDataManagement
         {
             return new PersistentDataManager(
                 new FileBasedPersistetDataIOStreamFactory(Application.persistentDataPath),
-                new JSONPersistentDataWrapper(),
+                new JSONPersistentDataEncoder(),
                 saveVersion
             );
         }
