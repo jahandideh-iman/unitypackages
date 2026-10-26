@@ -40,7 +40,7 @@ namespace NiceJson
     public abstract class JsonNode
     {
         protected const char PP_IDENT_CHAR = '\t'; //Modify this to spaces or whatever char you want to be the ident one
-        protected const int PP_IDENT_COUNT = 1; //Modify this to be the numbers of IDENT_CHAR x identation
+        protected const int PP_IDENT_COUNT = 1; //Modify this to be the numbers of IDENT_CHAR x indentation
         protected const bool ESCAPE_SOLIDUS = false; //If you are going to to embed this json in html, you can turn this on ref: http://andowebsit.es/blog/noteslog.com/post/the-solidus-issue/
 
         protected const char CHAR_CURLY_OPEN = '{';
@@ -90,7 +90,7 @@ namespace NiceJson
 
         protected const string STRING_ESCAPED_UNICODE_INIT = "\\u00";
 
-        //Indexers and accesors
+        //Indexers and accessors
         public JsonNode this[string key]
         {
             get

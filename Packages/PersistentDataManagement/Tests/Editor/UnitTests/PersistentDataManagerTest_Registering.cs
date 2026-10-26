@@ -39,7 +39,7 @@ namespace Arman.PersistentDataManagement.Tests
                 Throws.Exception.InstanceOf<PersistentDataSerializerAlreadyRegisterException>()
             );
 
-            // TODO: Shoud I not assert that serializerA is not registered in channelB?
+            // TODO: Should I not assert that serializerA is not registered in channelB?
         }
     }
 }
