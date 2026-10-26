@@ -14,7 +14,7 @@ Namespace `Arman.ObjectPooling`:
 | `IObjectPool<T>`              | `Acquire()`, `Release(obj)`, `Reserve(count)`, `Size()`.                               |
 | `ObjectPool<T>`               | Abstract pool; subclasses supply `CreateObject`, `ActivateObject`, `DeactivateObject`. |
 | `UnityComponentObjectPool<T>` | `ObjectPool<T>` for `Component` prefabs; `SetComponentPrefab`, `SetPoolingContainer`.  |
-| `MonobehaviorObjectPool<T>`   | `MonoBehaviour` front-end over a `UnityComponentObjectPool<T>`.                        |
+| `MonoBehaviourObjectPool<T>`  | `MonoBehaviour` front-end over a `UnityComponentObjectPool<T>`.                        |
 | `ScriptableObjectPool<T>`     | `ScriptableObject` front-end over the same, with `Setup(Transform)`.                   |
 
 ## Usage
@@ -61,7 +61,7 @@ public class ProjectilePool : ObjectPool<Projectile>
 }
 ```
 
-`MonobehaviorObjectPool<T>` and `ScriptableObjectPool<T>` wrap the component pool when you would
+`MonoBehaviourObjectPool<T>` and `ScriptableObjectPool<T>` wrap the component pool when you would
 rather configure it as a scene component or as an asset:
 
 ```csharp

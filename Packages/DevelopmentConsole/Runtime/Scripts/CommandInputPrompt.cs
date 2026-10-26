@@ -33,7 +33,7 @@ namespace Arman.DevelopmentConsole
                 else if (type == typeof(string))
                     inputField.contentType = InputField.ContentType.Standard;
                 else
-                    Debug.LogErrorFormat("Parameter of type {0} is not supproted", type);
+                    Debug.LogErrorFormat("Parameter of type {0} is not supported", type);
 
                 inputFields.Add(inputField);
             }
@@ -46,12 +46,12 @@ namespace Arman.DevelopmentConsole
 
         public void Execute()
         {
-            var paramters = commandInfo.methodInfo.GetParameters();
-            var inputs = new object[paramters.Length];
+            var parameters = commandInfo.methodInfo.GetParameters();
+            var inputs = new object[parameters.Length];
 
-            for (int i = 0; i < paramters.Length; ++i)
+            for (int i = 0; i < parameters.Length; ++i)
             {
-                var type = paramters[i].ParameterType;
+                var type = parameters[i].ParameterType;
                 var stringValue = inputFields[i].text;
                 object value = null;
                 if (type == typeof(int))
@@ -61,7 +61,7 @@ namespace Arman.DevelopmentConsole
                 else if (type == typeof(string))
                     value = stringValue;
                 else
-                    Debug.LogErrorFormat("Parameter of type {0} is not supproted", type);
+                    Debug.LogErrorFormat("Parameter of type {0} is not supported", type);
 
                 inputs[i] = value;
             }

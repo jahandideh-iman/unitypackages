@@ -25,7 +25,7 @@ namespace Arman.EventManagement.Tests
         }
 
         [Test]
-        public void RegisteringListenrerShouldAddThemToManager()
+        public void RegisteringListenerShouldAddThemToManager()
         {
             manager.Register(listener1.Object);
             manager.Register(listener2.Object);
@@ -35,7 +35,7 @@ namespace Arman.EventManagement.Tests
         }
 
         [Test]
-        public void UnregisteringListenrerShouldRemoveThemFromManager()
+        public void UnregisteringListenerShouldRemoveThemFromManager()
         {
             manager.Register(listener1.Object);
 

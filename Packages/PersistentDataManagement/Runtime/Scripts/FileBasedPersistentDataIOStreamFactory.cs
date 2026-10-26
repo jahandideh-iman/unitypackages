@@ -3,11 +3,11 @@ using Arman.PackageBasics;
 
 namespace Arman.PersistentDataManagement
 {
-    public class FileBasedPersistetDataIOStreamFactory : IPersistentDataIOStreamFactory
+    public class FileBasedPersistentDataIOStreamFactory : IPersistentDataIOStreamFactory
     {
         public string path;
 
-        public FileBasedPersistetDataIOStreamFactory(string path)
+        public FileBasedPersistentDataIOStreamFactory(string path)
         {
             this.path = path;
         }

@@ -40,7 +40,7 @@ namespace NiceJson
     public abstract class JsonNode
     {
         protected const char PP_IDENT_CHAR = '\t'; //Modify this to spaces or whatever char you want to be the ident one
-        protected const int PP_IDENT_COUNT = 1; //Modify this to be the numbers of IDENT_CHAR x identation
+        protected const int PP_IDENT_COUNT = 1; //Modify this to be the numbers of IDENT_CHAR x indentation
         protected const bool ESCAPE_SOLIDUS = false; //If you are going to to embed this json in html, you can turn this on ref: http://andowebsit.es/blog/noteslog.com/post/the-solidus-issue/
 
         protected const char CHAR_CURLY_OPEN = '{';
@@ -90,7 +90,7 @@ namespace NiceJson
 
         protected const string STRING_ESCAPED_UNICODE_INIT = "\\u00";
 
-        //Indexers and accesors
+        //Indexers and accessors
         public JsonNode this[string key]
         {
             get
@@ -400,10 +400,10 @@ namespace NiceJson
                 case JsonNode.CHAR_CURLY_OPEN:
                     {
                         JsonObject jsonObject = new JsonObject();
-                        List<string> splittedParts = SplitJsonParts(jsonPart.Substring(1, jsonPart.Length - 2));
+                        List<string> splitParts = SplitJsonParts(jsonPart.Substring(1, jsonPart.Length - 2));
 
                         string[] keyValueParts = new string[2];
-                        foreach (string keyValuePart in splittedParts)
+                        foreach (string keyValuePart in splitParts)
                         {
                             keyValueParts = SplitKeyValuePart(keyValuePart);
                             if (keyValueParts[0] != null)
@@ -417,9 +417,9 @@ namespace NiceJson
                 case JsonNode.CHAR_SQUARED_OPEN:
                     {
                         JsonArray jsonArray = new JsonArray();
-                        List<string> splittedParts = SplitJsonParts(jsonPart.Substring(1, jsonPart.Length - 2));
+                        List<string> splitParts = SplitJsonParts(jsonPart.Substring(1, jsonPart.Length - 2));
 
-                        foreach (string part in splittedParts)
+                        foreach (string part in splitParts)
                         {
                             if (part.Length > 0)
                             {

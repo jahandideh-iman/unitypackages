@@ -16,7 +16,7 @@ namespace Arman.UpdateManagement
         class ChannelData
         {
             public IChannel channel;
-            public ChannelData parrent;
+            public ChannelData parent;
             public float timeScale;
             public bool isPaused;
             public List<IUpdatable> updatables;
@@ -44,7 +44,7 @@ namespace Arman.UpdateManagement
         public void RegisterChannelToParent(IChannel child, IChannel parent)
         {
             AddChannelDataIfIsNew(child);
-            ChannelDataFor(child).parrent = ChannelDataFor(parent);
+            ChannelDataFor(child).parent = ChannelDataFor(parent);
         }
 
         public void RegisterUpdatable(IUpdatable updatable, IChannel channel)
@@ -107,7 +107,7 @@ namespace Arman.UpdateManagement
             if (IsChannelDataGloballyPaused(data))
                 return;
 
-            // WARNING: This is costly. This is a fast (and hacky) soloution to handle
+            // WARNING: This is costly. This is a fast (and hacky) solution to handle
             // changes to updatables while iterating (due to unregistering).
             updatablesTemp.Clear();
             updatablesTemp.AddRange(data.updatables);
@@ -143,7 +143,7 @@ namespace Arman.UpdateManagement
             {
                 if (current.isPaused)
                     return true;
-                current = current.parrent;
+                current = current.parent;
             }
 
             return false;

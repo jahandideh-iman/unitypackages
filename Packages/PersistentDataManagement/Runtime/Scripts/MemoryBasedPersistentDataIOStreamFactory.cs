@@ -4,7 +4,7 @@ using Arman.PackageBasics;
 
 namespace Arman.PersistentDataManagement
 {
-    public class MemoryBasedPersistetDataIOStreamFactory : IPersistentDataIOStreamFactory
+    public class MemoryBasedPersistentDataIOStreamFactory : IPersistentDataIOStreamFactory
     {
         Dictionary<IChannel, MemoryStream> memoryStreams = new Dictionary<IChannel, MemoryStream>();
 

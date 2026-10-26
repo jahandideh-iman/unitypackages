@@ -22,7 +22,7 @@ namespace Arman.PersistentDataManagement.Tests
         {
             serializerC = Serializer("C");
 
-            emptyStreamFactory = new MemoryBasedPersistetDataIOStreamFactory();
+            emptyStreamFactory = new MemoryBasedPersistentDataIOStreamFactory();
             emptyDataEncoder = new JSONPersistentDataEncoder();
 
             manager = CreateManager(emptyStreamFactory, emptyDataEncoder);
@@ -44,7 +44,7 @@ namespace Arman.PersistentDataManagement.Tests
         }
 
         [Test]
-        public void LoadingAChannelShoudCallDeserializeOnAllTheRegisteredSerializersOnThatChannelThatAreSaved()
+        public void LoadingAChannelShouldCallDeserializeOnAllTheRegisteredSerializersOnThatChannelThatAreSaved()
         {
             manager.Register(serializerA.Object, channel1);
             manager.Register(serializerB.Object, channel2);
@@ -70,7 +70,7 @@ namespace Arman.PersistentDataManagement.Tests
         [Test]
         public void LoadingAChannelWhoseStoredDataIsEmptyShouldNotThrow()
         {
-            var streamFactory = new MemoryBasedPersistetDataIOStreamFactory();
+            var streamFactory = new MemoryBasedPersistentDataIOStreamFactory();
             streamFactory.CreateWriteStreamFor(channel1).Dispose();
 
             manager = CreateManager(streamFactory, emptyDataEncoder);

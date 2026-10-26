@@ -81,7 +81,7 @@ namespace Arman.ObjectPooling.Tests
         }
 
         [Test]
-        public void ReleasingAnObjectShoudDeactiveTheObjectAndReturnItToThePool()
+        public void ReleasingAnObjectShouldDeactivateTheObjectAndReturnItToThePool()
         {
             var obj = pool.Acquire();
 
@@ -104,7 +104,7 @@ namespace Arman.ObjectPooling.Tests
         }
 
         [Test]
-        public void ReservingShoudAddToTheSizeOfThePool()
+        public void ReservingShouldAddToTheSizeOfThePool()
         {
             pool.Reserve(3);
             pool.Reserve(2);
@@ -113,7 +113,7 @@ namespace Arman.ObjectPooling.Tests
         }
 
         [Test]
-        public void AcquiringShoudDecreaseTheSizeOfThePool()
+        public void AcquiringShouldDecreaseTheSizeOfThePool()
         {
             pool.Reserve(3);
 

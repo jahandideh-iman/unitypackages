@@ -19,17 +19,17 @@ namespace Arman.PersistentDataManagement
 
         public void Clear()
         {
-            // PlayerPrefs Implemenetation doesn't clear anything.
+            // PlayerPrefs implementation doesn't clear anything.
         }
 
         public void WriteTo(StreamWriter stream)
         {
-            // PlayerPrefs Implemenetation ignore the stream.
+            // PlayerPrefs implementation ignores the stream.
         }
 
         public void ReadFrom(StreamReader stream)
         {
-            // PlayerPrefs Implemenetation ignore the stream.
+            // PlayerPrefs implementation ignores the stream.
         }
 
         public bool HasKey(string key)
