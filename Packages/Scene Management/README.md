@@ -11,10 +11,10 @@ not race the `Awake` order of everything else in the scene.
 
 Everything lives in the `Arman.SceneManagement` namespace.
 
-| Type              | Purpose                                                              |
-| ----------------- | -------------------------------------------------------------------- |
-| `SceneManager`    | `Open(string sceneName)` — loads a scene.                            |
-| `SceneInitilizer` | Abstract `MonoBehaviour`; override `Init()` for per-scene bootstrap. |
+| Type               | Purpose                                                              |
+| ------------------ | -------------------------------------------------------------------- |
+| `SceneManager`     | `Open(string sceneName)` — loads a scene.                            |
+| `SceneInitializer` | Abstract `MonoBehaviour`; override `Init()` for per-scene bootstrap. |
 
 ## Usage
 
@@ -38,7 +38,7 @@ Give each scene one bootstrap component:
 ```csharp
 using Arman.SceneManagement;
 
-public class LevelInitializer : SceneInitilizer
+public class LevelInitializer : SceneInitializer
 {
     protected override void Init()
     {
@@ -52,8 +52,7 @@ public class LevelInitializer : SceneInitilizer
 - **`Init()` runs from `Awake`, at execution order -100.** `[DefaultExecutionOrder(-100)]` puts it
   ahead of ordinary components, so anything the scene needs registered is ready before their `Awake`.
   Components with a more negative order of their own still run first.
-- **The namespace is `Arman.SceneManagement`.** The class name `SceneInitilizer` is misspelled, and
-  the spelling is kept for compatibility.
+- **The namespace is `Arman.SceneManagement`.** Every runtime type in the package lives in it.
 - **`SceneManager` shadows Unity's own `SceneManager`.** In a file that has both `using` directives you
   will need to qualify one of them.
 - **`Open` is a single-scene, synchronous `LoadScene`.** There is no additive load, no async load and

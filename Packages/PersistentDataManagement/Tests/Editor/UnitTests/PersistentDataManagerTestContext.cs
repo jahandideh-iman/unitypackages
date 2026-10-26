@@ -28,7 +28,7 @@ namespace Arman.PersistentDataManagement.Tests
             channel1 = new NamedChannel("ChannelA");
             channel2 = new NamedChannel("ChannelB");
 
-            emptyStreamFactory = new EmptyPersistetDataIOStreamFactory();
+            emptyStreamFactory = new EmptyPersistentDataIOStreamFactory();
             emptyDataEncoder = new EmptyPersistentDataEncoder();
 
             manager = CreateManager(emptyStreamFactory, emptyDataEncoder);

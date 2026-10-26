@@ -10,10 +10,12 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - `IPersistentDataWrapper`, `IReadablePersistentDataWrapper`, `IWritablePersistentDataWrapper`, `JSONPersistentDataWrapper`, `PlayerPrefsPersistentDataWrapper` and `EmptyPersistentDataWrapper`. **Breaking** — update references to the `...Encoder` names below.
+- `EmptyPersistetDataIOStreamFactory`, `FileBasedPersistetDataIOStreamFactory` and `MemoryBasedPersistetDataIOStreamFactory`, whose names misspelled "Persistent". **Breaking** — update references to the `...PersistentDataIOStreamFactory` names below.
 
 ### Added
 
 - `IPersistentDataEncoder`, `IReadablePersistentDataEncoder`, `IWritablePersistentDataEncoder`, `JSONPersistentDataEncoder`, `PlayerPrefsPersistentDataEncoder` and `EmptyPersistentDataEncoder`, renamed from the `...Wrapper` types with no change in behaviour.
+- `EmptyPersistentDataIOStreamFactory`, `FileBasedPersistentDataIOStreamFactory` and `MemoryBasedPersistentDataIOStreamFactory`, renamed from the misspelled `...PersistetDataIOStreamFactory` types with no change in behaviour.
 
 ## [0.3.0] - 2026-09-05
 

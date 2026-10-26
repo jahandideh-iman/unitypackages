@@ -3,7 +3,7 @@
 namespace Arman.SceneManagement
 {
     [DefaultExecutionOrder(-100)]
-    public abstract class SceneInitilizer : MonoBehaviour
+    public abstract class SceneInitializer : MonoBehaviour
     {
         private void Awake()
         {

@@ -2,7 +2,7 @@
 
 namespace Arman.ObjectPooling
 {
-    public class MonobehaviorObjectPool<T> : MonoBehaviour, IObjectPool<T>
+    public class MonoBehaviourObjectPool<T> : MonoBehaviour, IObjectPool<T>
         where T : Component, IPoolable
     {
         [SerializeField]

@@ -5,6 +5,16 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Removed
+
+- `SceneInitilizer`, renamed to `SceneInitializer` to fix its spelling. The script keeps its GUID, so components already in scenes and prefabs stay attached. **Breaking** — update subclasses to derive from the new name.
+
+### Added
+
+- `SceneInitializer`, renamed from the misspelled `SceneInitilizer` with no change in behaviour.
+
 ## [0.2.0] - 2026-09-02
 
 ### Added
