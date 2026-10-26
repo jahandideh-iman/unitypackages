@@ -52,7 +52,7 @@ namespace Arman.ShopManagement.Tests
         }
 
         [Test]
-        public void ShoudHaveTheAddedPackages()
+        public void ShouldHaveTheAddedPackages()
         {
             var package1 = new FakeShopPackage();
             var package2 = new FakeShopPackage();
@@ -80,7 +80,7 @@ namespace Arman.ShopManagement.Tests
         }
 
         [Test]
-        public void ShoudGivePackagesByType()
+        public void ShouldGivePackagesByType()
         {
             var packageA1 = new FakeShopPackageA();
             var packageA2 = new FakeShopPackageA();

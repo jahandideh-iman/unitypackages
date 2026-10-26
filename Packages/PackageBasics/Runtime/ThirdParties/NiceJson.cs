@@ -400,10 +400,10 @@ namespace NiceJson
                 case JsonNode.CHAR_CURLY_OPEN:
                     {
                         JsonObject jsonObject = new JsonObject();
-                        List<string> splittedParts = SplitJsonParts(jsonPart.Substring(1, jsonPart.Length - 2));
+                        List<string> splitParts = SplitJsonParts(jsonPart.Substring(1, jsonPart.Length - 2));
 
                         string[] keyValueParts = new string[2];
-                        foreach (string keyValuePart in splittedParts)
+                        foreach (string keyValuePart in splitParts)
                         {
                             keyValueParts = SplitKeyValuePart(keyValuePart);
                             if (keyValueParts[0] != null)
@@ -417,9 +417,9 @@ namespace NiceJson
                 case JsonNode.CHAR_SQUARED_OPEN:
                     {
                         JsonArray jsonArray = new JsonArray();
-                        List<string> splittedParts = SplitJsonParts(jsonPart.Substring(1, jsonPart.Length - 2));
+                        List<string> splitParts = SplitJsonParts(jsonPart.Substring(1, jsonPart.Length - 2));
 
-                        foreach (string part in splittedParts)
+                        foreach (string part in splitParts)
                         {
                             if (part.Length > 0)
                             {

@@ -29,7 +29,7 @@ namespace Arman.PersistentDataManagement.Tests
         }
 
         [Test]
-        public void SavingAChannelShoudCallSerializeOnAllTheRegisteredSerializersOnThatChannel()
+        public void SavingAChannelShouldCallSerializeOnAllTheRegisteredSerializersOnThatChannel()
         {
             manager.Register(serializerA.Object, channel1);
             manager.Register(serializerB.Object, channel2);

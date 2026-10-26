@@ -15,7 +15,7 @@ namespace Arman.PersistentDataManagement.Tests
         }
 
         [Test]
-        public void ReadIntShoudReadAWrittenInt()
+        public void ReadIntShouldReadAWrittenInt()
         {
             dataEncoder.WriteInt("Key", 5);
 
@@ -24,7 +24,7 @@ namespace Arman.PersistentDataManagement.Tests
         }
 
         [Test]
-        public void ReadFloatShoudReadAWrittenFloat()
+        public void ReadFloatShouldReadAWrittenFloat()
         {
             dataEncoder.WriteFloat("Key", 5f);
 
@@ -33,7 +33,7 @@ namespace Arman.PersistentDataManagement.Tests
         }
 
         [Test]
-        public void ReadBooleanShoudReadAWrittenBoolean()
+        public void ReadBooleanShouldReadAWrittenBoolean()
         {
             dataEncoder.WriteBoolean("Key", true);
 
@@ -42,7 +42,7 @@ namespace Arman.PersistentDataManagement.Tests
         }
 
         [Test]
-        public void ReadStringShoudReadAWrittenString()
+        public void ReadStringShouldReadAWrittenString()
         {
             dataEncoder.WriteString("Key", "value");
 
@@ -51,7 +51,7 @@ namespace Arman.PersistentDataManagement.Tests
         }
 
         [Test]
-        public void ReadBlockShoudReadAWrittenBlock()
+        public void ReadBlockShouldReadAWrittenBlock()
         {
             dataEncoder
                 .BeginWritingBlock("outerblock1")

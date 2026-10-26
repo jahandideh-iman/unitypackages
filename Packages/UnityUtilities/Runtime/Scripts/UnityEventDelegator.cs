@@ -17,15 +17,15 @@ namespace Arman.UnityUtilities
 
         public void DelegateAll()
         {
-            foreach (var delgateInfo in delegations)
-                delgateInfo.delegates.Invoke();
+            foreach (var delegateInfo in delegations)
+                delegateInfo.delegates.Invoke();
         }
 
         public void Delegate(string id)
         {
-            foreach (var delgateInfo in delegations)
-                if (delgateInfo.id.Equals(id))
-                    delgateInfo.delegates.Invoke();
+            foreach (var delegateInfo in delegations)
+                if (delegateInfo.id.Equals(id))
+                    delegateInfo.delegates.Invoke();
         }
     }
 }

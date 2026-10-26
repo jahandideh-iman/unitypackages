@@ -81,7 +81,7 @@ namespace Arman.ConfigurationManagement.Tests
         }
 
         [Test]
-        public void MultiConfigurersCanBePartialyRemoved()
+        public void MultiConfigurersCanBePartiallyRemoved()
         {
             var configurerAB = new FakeMultiConfigurerAB();
 

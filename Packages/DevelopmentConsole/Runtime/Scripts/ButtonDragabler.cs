@@ -11,7 +11,7 @@ namespace Arman.DevelopmentConsole
 
         Button button;
         bool mustCheckForDrag = false;
-        bool isDraging = false;
+        bool isDragging = false;
 
         void Awake()
         {
@@ -29,13 +29,13 @@ namespace Arman.DevelopmentConsole
             {
                 if (Vector2.Distance(eventData.position, eventData.pressPosition) >= dragThreshold)
                 {
-                    isDraging = true;
+                    isDragging = true;
                     mustCheckForDrag = false;
                     button.enabled = false;
                 }
             }
 
-            if (isDraging)
+            if (isDragging)
             {
                 this.transform.position = eventData.position;
                 eventData.Use();
@@ -44,7 +44,7 @@ namespace Arman.DevelopmentConsole
 
         public void OnEndDrag(PointerEventData eventData)
         {
-            isDraging = false;
+            isDragging = false;
             mustCheckForDrag = false;
             button.enabled = true;
             ;

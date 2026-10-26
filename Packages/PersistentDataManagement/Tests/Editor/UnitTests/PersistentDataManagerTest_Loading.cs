@@ -44,7 +44,7 @@ namespace Arman.PersistentDataManagement.Tests
         }
 
         [Test]
-        public void LoadingAChannelShoudCallDeserializeOnAllTheRegisteredSerializersOnThatChannelThatAreSaved()
+        public void LoadingAChannelShouldCallDeserializeOnAllTheRegisteredSerializersOnThatChannelThatAreSaved()
         {
             manager.Register(serializerA.Object, channel1);
             manager.Register(serializerB.Object, channel2);
