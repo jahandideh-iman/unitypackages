@@ -193,6 +193,111 @@ namespace Arman.PersistentDataManagement.Tests
             Assert.That(_dataEncoder.ReadInt("outerKey"), Is.EqualTo(1));
         }
 
+        [Test]
+        public void ReadingMissingKeysShouldReturnTheGivenDefaults()
+        {
+            Assert.That(_dataEncoder.HasKey("Missing"), Is.False);
+            Assert.That(_dataEncoder.ReadInt("Missing", 3), Is.EqualTo(3));
+            Assert.That(_dataEncoder.ReadFloat("Missing", 2.5f), Is.EqualTo(2.5f));
+            Assert.That(_dataEncoder.ReadString("Missing", "default"), Is.EqualTo("default"));
+        }
+
+        [Test]
+        public void ReadingMissingKeysWithoutDefaultsShouldReturnTheTypeDefaults()
+        {
+            Assert.That(_dataEncoder.ReadInt("Missing"), Is.EqualTo(0));
+            Assert.That(_dataEncoder.ReadFloat("Missing"), Is.EqualTo(0f));
+            Assert.That(_dataEncoder.ReadBoolean("Missing"), Is.False);
+            Assert.That(_dataEncoder.ReadString("Missing"), Is.EqualTo(""));
+        }
+
+        [Test]
+        public void AWrittenValueShouldWinOverTheDefault()
+        {
+            _dataEncoder.WriteInt("Key", 0);
+
+            Assert.That(_dataEncoder.ReadInt("Key", 9), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void KeysWrittenInsideABlockShouldNotBeVisibleOutsideIt()
+        {
+            _dataEncoder.BeginWritingBlock("block").WriteInt("innerKey", 1).EndWritingBlock();
+
+            Assert.That(_dataEncoder.HasKey("block"), Is.True);
+            Assert.That(_dataEncoder.HasKey("innerKey"), Is.False);
+        }
+
+        [Test]
+        public void ReadFromStreamShouldRestoreNestedBlocks()
+        {
+            _dataEncoder
+                .BeginWritingBlock("outer")
+                .WriteInt("outerKey", 1)
+                .BeginWritingBlock("inner")
+                .WriteString("innerKey", "innerValue")
+                .EndWritingBlock()
+                .EndWritingBlock();
+
+            var reloaded = new JSONPersistentDataEncoder();
+            reloaded.ReadFrom(ReaderOver(WrittenContent(_dataEncoder)));
+
+            reloaded.BeginReadingBlock("outer");
+            Assert.That(reloaded.ReadInt("outerKey"), Is.EqualTo(1));
+            reloaded.BeginReadingBlock("inner");
+            Assert.That(reloaded.ReadString("innerKey"), Is.EqualTo("innerValue"));
+            reloaded.EndReadingBlock();
+            reloaded.EndReadingBlock();
+        }
+
+        [Test]
+        public void ReadFromStreamShouldReplaceThePreviousContent()
+        {
+            var other = new JSONPersistentDataEncoder();
+            other.WriteInt("OtherKey", 2);
+
+            _dataEncoder.WriteInt("Key", 1);
+            _dataEncoder.ReadFrom(ReaderOver(WrittenContent(other)));
+
+            Assert.That(_dataEncoder.HasKey("Key"), Is.False);
+            Assert.That(_dataEncoder.ReadInt("OtherKey"), Is.EqualTo(2));
+        }
+
+        [Test]
+        public void ClearingInsideABlockShouldReturnWritingToTheRoot()
+        {
+            _dataEncoder.BeginWritingBlock("block");
+
+            _dataEncoder.Clear();
+            _dataEncoder.WriteInt("Key", 1);
+
+            Assert.That(_dataEncoder.ReadInt("Key"), Is.EqualTo(1));
+            Assert.That(_dataEncoder.HasKey("block"), Is.False);
+        }
+
+        [Test]
+        public void WritingStringsWithSpecialCharactersShouldSurviveAStreamRoundTrip()
+        {
+            const string value = "quote \" backslash \\ newline \n tab \t";
+            _dataEncoder.WriteString("Key", value);
+
+            var reloaded = new JSONPersistentDataEncoder();
+            reloaded.ReadFrom(ReaderOver(WrittenContent(_dataEncoder)));
+
+            Assert.That(reloaded.ReadString("Key"), Is.EqualTo(value));
+        }
+
+        private static string WrittenContent(JSONPersistentDataEncoder dataEncoder)
+        {
+            using (var stream = new MemoryStream())
+            using (var streamWriter = new StreamWriter(stream))
+            {
+                dataEncoder.WriteTo(streamWriter);
+                streamWriter.Flush();
+                return Encoding.UTF8.GetString(stream.ToArray());
+            }
+        }
+
         private static StreamReader ReaderOver(string content)
         {
             return new StreamReader(new MemoryStream(Encoding.UTF8.GetBytes(content)));

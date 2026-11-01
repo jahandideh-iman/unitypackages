@@ -154,5 +154,120 @@ namespace Arman.InventorySystem.Tests
                 Assert.That(_inventory.NumberOf(item), Is.EqualTo(2));
             }
         }
+
+        [Test]
+        public void SettingTheValueOfAnItemAgainShouldReplaceThePreviousValue()
+        {
+            _inventory.SetNumberOf(_itemA, 3);
+
+            _inventory.SetNumberOf(_itemA, 8);
+
+            Assert.That(_inventory.NumberOf(_itemA), Is.EqualTo(8));
+        }
+
+        [Test]
+        public void ItemsShouldReturnEveryItemThatHasAValue()
+        {
+            _inventory.SetNumberOf(_itemA, 1);
+            _inventory.SetNumberOf(_itemB, 0);
+
+            Assert.That(_inventory.Items(), Is.EquivalentTo(new[] { _itemA, _itemB }));
+        }
+
+        [Test]
+        public void ItemsOfANewInventoryShouldBeEmpty()
+        {
+            Assert.That(_inventory.Items(), Is.Empty);
+        }
+
+        [Test]
+        public void ChangingTheValueOfAnItemShouldStoreTheConstrainedValue()
+        {
+            _inventory.SetConstraint(_itemA, new MinMaxInventoryItemConstraint(0, 10));
+
+            _inventory.SetNumberOf(_itemA, 15);
+            Assert.That(_inventory.NumberOf(_itemA), Is.EqualTo(10));
+
+            _inventory.Decrease(_itemA, 25);
+            Assert.That(_inventory.NumberOf(_itemA), Is.EqualTo(0));
+
+            _inventory.Increase(_itemA, 4);
+            Assert.That(_inventory.NumberOf(_itemA), Is.EqualTo(4));
+        }
+
+        [Test]
+        public void AConstraintShouldOnlyApplyToTheItemItWasSetFor()
+        {
+            _inventory.SetConstraint(_itemA, new MinMaxInventoryItemConstraint(0, 10));
+
+            _inventory.SetNumberOf(_itemB, 15);
+
+            Assert.That(_inventory.NumberOf(_itemB), Is.EqualTo(15));
+        }
+
+        [Test]
+        public void SettingAConstraintShouldNotChangeTheCurrentValue()
+        {
+            _inventory.SetNumberOf(_itemA, 15);
+
+            _inventory.SetConstraint(_itemA, new MinMaxInventoryItemConstraint(0, 10));
+
+            Assert.That(_inventory.NumberOf(_itemA), Is.EqualTo(15));
+        }
+
+        [Test]
+        public void CallbacksShouldReceiveTheConstrainedValue()
+        {
+            int globalValue = 0;
+            int specificValue = 0;
+
+            _inventory.SetConstraint(_itemA, new MinMaxInventoryItemConstraint(0, 10));
+            _inventory.SetGlobalOnValueChangeCallback((i, nv) => globalValue = nv);
+            _inventory.SetSpecificOnValueChangeCallback(_itemA, (i, nv) => specificValue = nv);
+
+            _inventory.SetNumberOf(_itemA, 15);
+
+            Assert.That(globalValue, Is.EqualTo(10));
+            Assert.That(specificValue, Is.EqualTo(10));
+        }
+
+        [Test]
+        public void SettingAGlobalCallbackShouldReplaceThePreviousOne()
+        {
+            int firstCalls = 0;
+            int secondCalls = 0;
+
+            _inventory.SetGlobalOnValueChangeCallback((i, nv) => firstCalls++);
+            _inventory.SetGlobalOnValueChangeCallback((i, nv) => secondCalls++);
+
+            _inventory.SetNumberOf(_itemA, 1);
+
+            Assert.That(firstCalls, Is.EqualTo(0));
+            Assert.That(secondCalls, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void SettingASpecificCallbackShouldReplaceThePreviousOneForThatItem()
+        {
+            int firstCalls = 0;
+            int secondCalls = 0;
+
+            _inventory.SetSpecificOnValueChangeCallback(_itemA, (i, nv) => firstCalls++);
+            _inventory.SetSpecificOnValueChangeCallback(_itemA, (i, nv) => secondCalls++);
+
+            _inventory.SetNumberOf(_itemA, 1);
+
+            Assert.That(firstCalls, Is.EqualTo(0));
+            Assert.That(secondCalls, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void HavingShouldBeFalseWhenTheValueIsBelowTheAskedNumber()
+        {
+            _inventory.SetNumberOf(_itemA, 0);
+
+            Assert.That(_inventory.Has(_itemA, 1), Is.False);
+            Assert.That(_inventory.Has(_itemA, 0), Is.True);
+        }
     }
 }
