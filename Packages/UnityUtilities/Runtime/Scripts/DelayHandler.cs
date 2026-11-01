@@ -7,22 +7,28 @@ namespace Arman.UnityUtilities
 {
     public class DelayHandler : MonoBehaviour
     {
-        public string id;
-        public float duration;
-        public bool autoStart = false;
+        [FormerlySerializedAs("id")]
+        public string Id;
 
-        public UnityEvent timeoutEvent;
+        [FormerlySerializedAs("duration")]
+        public float Duration;
+
+        [FormerlySerializedAs("autoStart")]
+        public bool AutoStart = false;
+
+        [FormerlySerializedAs("timeoutEvent")]
+        public UnityEvent TimeoutEvent;
 
         void Start()
         {
-            if (autoStart)
+            if (AutoStart)
                 StartTimer();
         }
 
         public void StartTimer()
         {
             StopAllCoroutines();
-            StartCoroutine(WaitFor(duration));
+            StartCoroutine(WaitFor(Duration));
         }
 
         public void StartTimer(float newDuration)
@@ -39,7 +45,7 @@ namespace Arman.UnityUtilities
         private IEnumerator WaitFor(float duration)
         {
             yield return new WaitForSeconds(duration);
-            timeoutEvent.Invoke();
+            TimeoutEvent.Invoke();
         }
     }
 }

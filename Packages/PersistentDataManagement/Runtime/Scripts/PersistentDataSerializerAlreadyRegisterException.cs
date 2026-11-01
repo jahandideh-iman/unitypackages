@@ -2,18 +2,18 @@
 {
     public class PersistentDataSerializerAlreadyRegisterException : PersistentDataManagerException
     {
-        public IPersistentDataSerializer serializer;
+        public IPersistentDataSerializer Serializer;
 
         public PersistentDataSerializerAlreadyRegisterException(
             IPersistentDataSerializer serializer
         )
         {
-            this.serializer = serializer;
+            this.Serializer = serializer;
         }
 
         public override string ToString()
         {
-            return $"Serializer \"{serializer}\" is already registered";
+            return $"Serializer \"{Serializer}\" is already registered";
         }
     }
 }

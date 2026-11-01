@@ -11,9 +11,9 @@ namespace Arman.HttpConnection
 
     struct RequestSession
     {
-        public readonly HttpRequest request;
-        public readonly Action<string> onSuccess;
-        public readonly Action<string> onFailure;
+        public readonly HttpRequest Request;
+        public readonly Action<string> OnSuccess;
+        public readonly Action<string> OnFailure;
 
         public RequestSession(
             HttpRequest request,
@@ -21,20 +21,20 @@ namespace Arman.HttpConnection
             Action<string> onFailure
         )
         {
-            this.request = request;
-            this.onSuccess = onSuccess;
-            this.onFailure = onFailure;
+            this.Request = request;
+            this.OnSuccess = onSuccess;
+            this.OnFailure = onFailure;
         }
     }
 
     public struct HttpRequest
     {
-        public readonly HttpRequestType requestType;
-        public readonly string url;
-        public readonly string body;
-        public readonly Dictionary<string, string> headers;
-        public readonly Dictionary<string, string> parameters;
-        public readonly float? timeOut;
+        public readonly HttpRequestType RequestType;
+        public readonly string Url;
+        public readonly string Body;
+        public readonly Dictionary<string, string> Headers;
+        public readonly Dictionary<string, string> Parameters;
+        public readonly float? TimeOut;
 
         public HttpRequest(
             HttpRequestType requestType,
@@ -45,12 +45,12 @@ namespace Arman.HttpConnection
             float? timeOut
         )
         {
-            this.requestType = requestType;
-            this.url = url;
-            this.body = body;
-            this.headers = headers;
-            this.parameters = parameters;
-            this.timeOut = timeOut;
+            this.RequestType = requestType;
+            this.Url = url;
+            this.Body = body;
+            this.Headers = headers;
+            this.Parameters = parameters;
+            this.TimeOut = timeOut;
         }
     }
 }

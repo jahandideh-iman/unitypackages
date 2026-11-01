@@ -3,32 +3,36 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace Arman.DevelopmentConsole
 {
     public class DevelopmentCommand : MonoBehaviour
     {
-        public Text commandNameText;
-        public Text shortcutText;
+        [FormerlySerializedAs("commandNameText")]
+        public Text CommandNameText;
 
-        CommandInfo commandInfo;
+        [FormerlySerializedAs("shortcutText")]
+        public Text ShortcutText;
+
+        CommandInfo _commandInfo;
 
         internal void Init(CommandInfo commandInfo)
         {
-            this.commandInfo = commandInfo;
-            commandNameText.text = commandInfo.name;
-            shortcutText.text = string.Join("+", commandInfo.keyCodes.Select(k => k.ToString()));
+            this._commandInfo = commandInfo;
+            CommandNameText.text = commandInfo.Name;
+            ShortcutText.text = string.Join("+", commandInfo.KeyCodes.Select(k => k.ToString()));
         }
 
         public void Execute()
         {
-            if (commandInfo.HasNoInput())
-                commandInfo.Invoke();
+            if (_commandInfo.HasNoInput())
+                _commandInfo.Invoke();
             else
                 GameObject
                     .FindObjectOfType<DevelopmentConsolePanel>()
-                    .OpenCommandInputPromtFor(commandInfo);
+                    .OpenCommandInputPromtFor(_commandInfo);
         }
     }
 }

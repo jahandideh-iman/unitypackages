@@ -26,7 +26,7 @@ Namespace `Arman.ConfigurationManagement` (Unity types):
 | ----------------------------- | -------------------------------------------------------------------------------------------------------- |
 | `ScriptableConfiguration`     | Abstract `ScriptableObject` implementing `IConfigurer`.                                                  |
 | `UnityConfigurationMaster`    | A `ScriptableConfiguration` holding a `ScriptableConfiguration[]`; `RegisterSelf` registers all of them. |
-| `UnityConfigurationManager`   | `MonoBehaviour` manager that registers its `configurationMaster` on `Init()`.                            |
+| `UnityConfigurationManager`   | `MonoBehaviour` manager that registers its `ConfigurationMaster` on `Init()`.                            |
 | `AutoFillAssetArrayAttribute` | Inspector helper that populates a `ScriptableConfiguration[]` field.                                     |
 
 ## Usage
@@ -89,7 +89,7 @@ unityConfigurationManager.Configure(newEnemy);
 
 - **One namespace.** The runtime lives in `Arman.ConfigurationManagement`, and its tests in `Arman.ConfigurationManagement.Tests`.
 - **`UnityConfigurationManager.Init()` is not implicit.** It is what walks the assigned
-  `configurationMaster` and registers every configurer under it.
+  `ConfigurationMaster` and registers every configurer under it.
 - **One configurer per target type.** `Register<T>` keys a dictionary on `typeof(T)`, so registering
   a second configurer for the same `T` silently replaces the first. Use `CompositeConfigurer<T>` when
   you want several to apply.

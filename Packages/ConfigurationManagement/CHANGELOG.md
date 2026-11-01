@@ -5,6 +5,16 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Removed
+
+- The camelCase names of public and protected fields, renamed to PascalCase: `AutoFillAssetArrayAttribute.propertyName` → `AutoFillAssetArrayAttribute.PropertyName`, `UnityConfigurationManager.configurationMaster` → `UnityConfigurationManager.ConfigurationMaster`, `UnityConfigurationMaster.temp` → `UnityConfigurationMaster.Temp`, `UnityConfigurationMaster.scriptableConfigurers` → `UnityConfigurationMaster.ScriptableConfigurers`. **Breaking** — update references to the new names. Fields Unity serializes carry `[FormerlySerializedAs]` with the old name, so values already saved in scenes, prefabs and assets keep loading.
+
+### Changed
+
+- Renamed private fields that Unity does not serialize to `_camelCase`. No public API or serialized data changes.
+
 ## [0.3.0] - 2026-09-05
 
 ### Removed

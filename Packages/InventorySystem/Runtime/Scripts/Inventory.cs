@@ -13,84 +13,84 @@ namespace Arman.InventorySystem
             }
         }
 
-        Dictionary<T, int> itemNumbers = new Dictionary<T, int>();
-        Dictionary<T, IInventoryItemConstraint> itemConstraints =
+        Dictionary<T, int> _itemNumbers = new Dictionary<T, int>();
+        Dictionary<T, IInventoryItemConstraint> _itemConstraints =
             new Dictionary<T, IInventoryItemConstraint>();
 
-        IInventoryItemConstraint defaultConstraint = new EmptyConstraint();
+        IInventoryItemConstraint _defaultConstraint = new EmptyConstraint();
 
-        OnItemNumberChanged<T> globalOnItemNumberChangedCallback = delegate { };
-        Dictionary<T, OnItemNumberChanged<T>> specificOnItemNumberChangedCallbacks =
+        OnItemNumberChanged<T> _globalOnItemNumberChangedCallback = delegate { };
+        Dictionary<T, OnItemNumberChanged<T>> _specificOnItemNumberChangedCallbacks =
             new Dictionary<T, OnItemNumberChanged<T>>();
 
         public void SetNumberOf(T item, int number)
         {
             var constraint = ConstraintFor(item);
             var value = constraint.ApplyTo(number);
-            itemNumbers[item] = value;
+            _itemNumbers[item] = value;
 
             TryCallCallbacksFor(item, value);
         }
 
         public void Increase(T item, int number)
         {
-            SetNumberOf(item, itemNumbers[item] + number);
+            SetNumberOf(item, _itemNumbers[item] + number);
         }
 
         public void Decrease(T item, int number)
         {
-            SetNumberOf(item, itemNumbers[item] - number);
+            SetNumberOf(item, _itemNumbers[item] - number);
         }
 
         public int NumberOf(T item)
         {
-            return itemNumbers[item];
+            return _itemNumbers[item];
         }
 
         public bool Has(T item, int number)
         {
-            return itemNumbers[item] >= number;
+            return _itemNumbers[item] >= number;
         }
 
         public void SetConstraint(T item, IInventoryItemConstraint constraint)
         {
-            itemConstraints[item] = constraint;
+            _itemConstraints[item] = constraint;
         }
 
         //WARNING: It creates garbage.
         public IEnumerable<T> Items()
         {
-            return new List<T>(itemNumbers.Keys);
+            return new List<T>(_itemNumbers.Keys);
         }
 
         public void SetGlobalOnValueChangeCallback(OnItemNumberChanged<T> callback)
         {
-            globalOnItemNumberChangedCallback = callback;
+            _globalOnItemNumberChangedCallback = callback;
         }
 
         public void SetSpecificOnValueChangeCallback(T target, OnItemNumberChanged<T> callback)
         {
-            specificOnItemNumberChangedCallbacks[target] = callback;
+            _specificOnItemNumberChangedCallbacks[target] = callback;
         }
 
         private IInventoryItemConstraint ConstraintFor(T item)
         {
             IInventoryItemConstraint constraint;
 
-            itemConstraints.TryGetValue(item, out constraint);
+            _itemConstraints.TryGetValue(item, out constraint);
 
             if (constraint == null)
-                return defaultConstraint;
+                return _defaultConstraint;
             else
                 return constraint;
         }
 
         private void TryCallCallbacksFor(T item, int value)
         {
-            globalOnItemNumberChangedCallback.Invoke(item, value);
+            _globalOnItemNumberChangedCallback.Invoke(item, value);
 
-            if (specificOnItemNumberChangedCallbacks.ContainsKey(item))
-                specificOnItemNumberChangedCallbacks[item].Invoke(item, value);
+            if (_specificOnItemNumberChangedCallbacks.ContainsKey(item))
+                _specificOnItemNumberChangedCallbacks[item].Invoke(item, value);
         }
     }
 }

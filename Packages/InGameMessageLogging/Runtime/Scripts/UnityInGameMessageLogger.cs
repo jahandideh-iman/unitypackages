@@ -1,33 +1,39 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Arman.InGameMessageLogging
 {
     public class UnityInGameMessageLogger : MonoBehaviour, IInGameMessageLogger
     {
-        public LogMessage loggerMessagePrefab;
+        [FormerlySerializedAs("loggerMessagePrefab")]
+        public LogMessage LoggerMessagePrefab;
 
-        public GameObject messageContainer;
+        [FormerlySerializedAs("messageContainer")]
+        public GameObject MessageContainer;
 
-        public int capacity;
-        public float logLifeTime;
+        [FormerlySerializedAs("capacity")]
+        public int Capacity;
 
-        List<LogMessage> logs = new List<LogMessage>();
+        [FormerlySerializedAs("logLifeTime")]
+        public float LogLifeTime;
+
+        List<LogMessage> _logs = new List<LogMessage>();
 
         public void Log(string message)
         {
-            if (logs.Count >= capacity)
-                logs[0].ClearSelf();
+            if (_logs.Count >= Capacity)
+                _logs[0].ClearSelf();
 
-            var log = Instantiate(loggerMessagePrefab, messageContainer.transform, false)
-                .Setup(message, logLifeTime, RemoveLog);
+            var log = Instantiate(LoggerMessagePrefab, MessageContainer.transform, false)
+                .Setup(message, LogLifeTime, RemoveLog);
 
-            logs.Add(log);
+            _logs.Add(log);
         }
 
         void RemoveLog(LogMessage log)
         {
-            logs.Remove(log);
+            _logs.Remove(log);
         }
     }
 }

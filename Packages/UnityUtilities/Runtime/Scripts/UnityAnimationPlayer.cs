@@ -5,23 +5,23 @@ namespace Arman.UnityUtilities
     [RequireComponent(typeof(Animation))]
     public class UnityAnimationPlayer : MonoBehaviour
     {
-        Animation animationComp;
+        Animation _animationComp;
 
         private void Awake()
         {
-            animationComp = GetComponent<Animation>();
+            _animationComp = GetComponent<Animation>();
         }
 
         public void Play(string animationName)
         {
-            animationComp.Stop();
-            animationComp.Play(animationName);
+            _animationComp.Stop();
+            _animationComp.Play(animationName);
         }
 
         public void Play()
         {
-            animationComp.Stop();
-            animationComp.Play();
+            _animationComp.Stop();
+            _animationComp.Play();
         }
 
         public void Play(AnimationClip animationClip)
@@ -31,19 +31,19 @@ namespace Arman.UnityUtilities
 
         public void Play(AnimationClip animationClip, string animationName)
         {
-            animationComp.Stop();
-            animationComp.AddClip(animationClip, animationName);
-            animationComp.Play(animationName);
+            _animationComp.Stop();
+            _animationComp.AddClip(animationClip, animationName);
+            _animationComp.Play(animationName);
         }
 
         public void RemoveClip(string animationName)
         {
-            animationComp.RemoveClip(animationName);
+            _animationComp.RemoveClip(animationName);
         }
 
         public void Stop()
         {
-            animationComp.Stop();
+            _animationComp.Stop();
         }
     }
 }

@@ -10,7 +10,7 @@ Namespace `Arman.HttpConnection`:
 
 | Type                                        | Purpose                                                                                     |
 | ------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `HttpRequest`                               | Immutable request struct: `requestType`, `url`, `body`, `headers`, `parameters`, `timeOut`. |
+| `HttpRequest`                               | Immutable request struct: `RequestType`, `Url`, `Body`, `Headers`, `Parameters`, `TimeOut`. |
 | `HttpRequestType`                           | The HTTP method — `GET` or `POST`.                                                          |
 | `HttpRequestBuilder`                        | `SetType`, `SetURL`, `SetBody`, `AddHeader`, `AddParameter`, `SetTimeout`, `Build`.         |
 | `IHttpConnectionService`                    | `Request(request, onSuccess, onFailure)` and `IsTimeOut(msg)`.                              |

@@ -4,21 +4,21 @@ namespace Arman.AssetProviding
 {
     public class ChainedContainer<T>
     {
-        List<T> chainedObjects = new List<T>();
+        List<T> _chainedObjects = new List<T>();
 
         public void Add(T obj)
         {
-            chainedObjects.Add(obj);
+            _chainedObjects.Add(obj);
         }
 
         public void Remove(T obj)
         {
-            chainedObjects.Remove(obj);
+            _chainedObjects.Remove(obj);
         }
 
         protected List<T> ChainedObjects()
         {
-            return chainedObjects;
+            return _chainedObjects;
         }
     }
 }

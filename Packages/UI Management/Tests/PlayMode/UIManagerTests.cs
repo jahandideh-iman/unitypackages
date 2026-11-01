@@ -32,15 +32,15 @@ namespace Arman.UIManagement.Tests
                         {
                             go.AddComponent<Panel>(preAwake: panel =>
                                 {
-                                    SetField(panel, "backgroundImage", go.AddComponent<Image>());
+                                    SetField(panel, "BackgroundImage", go.AddComponent<Image>());
                                 })
                                 .Out(out _backgroundPanel);
                         }
                     );
                     go.AddComponent<UIManager>(preAwake: manager =>
                         {
-                            SetField(manager, "popupBackgroundPanel", _backgroundPanel);
-                            SetField(manager, "sortingOffsetBetweenPopups", _popupSortingOffset);
+                            SetField(manager, "PopupBackgroundPanel", _backgroundPanel);
+                            SetField(manager, "SortingOffsetBetweenPopups", _popupSortingOffset);
                         })
                         .Out(out _manager);
                 }

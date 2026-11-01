@@ -4,11 +4,11 @@ namespace Arman.PackageBasics
 {
     public class IDedChannel : IChannel
     {
-        public readonly int id;
+        public readonly int Id;
 
         public IDedChannel(int id)
         {
-            this.id = id;
+            this.Id = id;
         }
 
         // TODO: Refactor this.
@@ -25,17 +25,17 @@ namespace Arman.PackageBasics
                 return false;
             }
 
-            return id.Equals(other.id);
+            return Id.Equals(other.Id);
         }
 
         public override int GetHashCode()
         {
-            return 1877310944 + id.GetHashCode();
+            return 1877310944 + Id.GetHashCode();
         }
 
         public override string ToString()
         {
-            return id.ToString();
+            return Id.ToString();
         }
     }
 }

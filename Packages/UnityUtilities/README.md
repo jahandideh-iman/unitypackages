@@ -12,7 +12,7 @@ Everything lives in the `Arman.UnityUtilities` namespace.
 
 | Type                                                                        | Purpose                                                                                                                                      |
 | --------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `DelayHandler`                                                              | A coroutine timer. Raises `timeoutEvent` after `duration` seconds; `StartTimer()`, `StartTimer(float)`, `StopTimer()`, optional `autoStart`. |
+| `DelayHandler`                                                              | A coroutine timer. Raises `TimeoutEvent` after `Duration` seconds; `StartTimer()`, `StartTimer(float)`, `StopTimer()`, optional `AutoStart`. |
 | `UnityAnimationPlayer`                                                      | Wrapper over the legacy `Animation` component — `Play()`, `Play(name)`, `Play(clip)`, `RemoveClip(name)`, `Stop()`.                          |
 | `UnityAnimatorEventHandler`                                                 | Receives `OnAnimationEvent(string)` from an animation clip and invokes the matching named `UnityEvent`.                                      |
 | `UnityEventDelegator`                                                       | Holds a list of id/`UnityEvent` pairs; `Delegate(id)` invokes one, `DelegateAll()` invokes all.                                              |
@@ -49,11 +49,11 @@ delayHandler.StartTimer(2.5f);    // overrides it for this run
 delayHandler.StopTimer();
 ```
 
-Tick `autoStart` to have it begin in `Start()`.
+Tick `AutoStart` to have it begin in `Start()`.
 
 ### UnityAnimatorEventHandler
 
-Add the component, populate `animationEvents` with name/event pairs, then have an Animation Event on
+Add the component, populate `AnimationEvents` with name/event pairs, then have an Animation Event on
 the clip call `OnAnimationEvent` with the matching name. Each name fires its own `UnityEvent`, so one
 clip can drive several unrelated reactions.
 

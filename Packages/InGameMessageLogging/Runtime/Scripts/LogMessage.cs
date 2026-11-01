@@ -2,47 +2,54 @@
 using Arman.UnityUtilities;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Serialization;
 
 namespace Arman.InGameMessageLogging
 {
     public class LogMessage : MonoBehaviour
     {
-        public StringUnityEvent setTextAction;
+        [FormerlySerializedAs("setTextAction")]
+        public StringUnityEvent SetTextAction;
 
-        public FloatUnityEvent startTimeAction;
-        public UnityEvent fadeInAction;
-        public UnityEvent fadeOutAction;
+        [FormerlySerializedAs("startTimeAction")]
+        public FloatUnityEvent StartTimeAction;
 
-        Action<LogMessage> clearCallback;
+        [FormerlySerializedAs("fadeInAction")]
+        public UnityEvent FadeInAction;
 
-        string message;
+        [FormerlySerializedAs("fadeOutAction")]
+        public UnityEvent FadeOutAction;
+
+        Action<LogMessage> _clearCallback;
+
+        string _message;
 
         public LogMessage Setup(string message, float lifeTime, Action<LogMessage> clearCallback)
         {
-            this.message = message;
+            this._message = message;
 
-            this.clearCallback = clearCallback;
-            setTextAction.Invoke(message);
-            fadeInAction.Invoke();
+            this._clearCallback = clearCallback;
+            SetTextAction.Invoke(message);
+            FadeInAction.Invoke();
 
-            startTimeAction.Invoke(lifeTime);
+            StartTimeAction.Invoke(lifeTime);
 
             return this;
         }
 
         public string Message()
         {
-            return message;
+            return _message;
         }
 
         public void FadeOut()
         {
-            fadeOutAction.Invoke();
+            FadeOutAction.Invoke();
         }
 
         public void ClearSelf()
         {
-            clearCallback(this);
+            _clearCallback(this);
             Destroy(this.gameObject);
         }
     }

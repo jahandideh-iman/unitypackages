@@ -4,11 +4,11 @@ namespace Arman.PackageBasics
 {
     public class NamedChannel : IChannel
     {
-        readonly string name;
+        readonly string _name;
 
         public NamedChannel(string name)
         {
-            this.name = name;
+            this._name = name;
         }
 
         // TODO: Refactor this.
@@ -25,17 +25,17 @@ namespace Arman.PackageBasics
                 return false;
             }
 
-            return name.Equals(other.name);
+            return _name.Equals(other._name);
         }
 
         public override int GetHashCode()
         {
-            return 1877310944 + EqualityComparer<string>.Default.GetHashCode(name);
+            return 1877310944 + EqualityComparer<string>.Default.GetHashCode(_name);
         }
 
         public override string ToString()
         {
-            return name;
+            return _name;
         }
     }
 }

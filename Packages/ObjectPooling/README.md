@@ -66,7 +66,7 @@ rather configure it as a scene component or as an asset:
 
 ```csharp
 // MonoBehaviour variant: prefab, container and initial reserve are Inspector fields.
-// Tick `autoSetup` to have Awake() call Setup(), or call it yourself.
+// Tick `AutoSetup` to have Awake() call Setup(), or call it yourself.
 bulletPool.Setup();
 Bullet bullet = bulletPool.Acquire();
 

@@ -18,14 +18,14 @@ lifetime, eviction); how a message looks, fades in and fades out is authored on 
 
 | Field                 | Meaning                                                          |
 | --------------------- | ---------------------------------------------------------------- |
-| `loggerMessagePrefab` | The `LogMessage` prefab instantiated per message.                |
-| `messageContainer`    | The parent `GameObject` messages are added under.                |
-| `capacity`            | Maximum messages on screen; the oldest is cleared when exceeded. |
-| `logLifeTime`         | Seconds a message lives before clearing itself.                  |
+| `LoggerMessagePrefab` | The `LogMessage` prefab instantiated per message.                |
+| `MessageContainer`    | The parent `GameObject` messages are added under.                |
+| `Capacity`            | Maximum messages on screen; the oldest is cleared when exceeded. |
+| `LogLifeTime`         | Seconds a message lives before clearing itself.                  |
 
-`LogMessage` exposes four events the prefab wires up: `setTextAction` (`StringUnityEvent`, receives
-the message), `fadeInAction`, `startTimeAction` (`FloatUnityEvent`, receives the lifetime) and
-`fadeOutAction`.
+`LogMessage` exposes four events the prefab wires up: `SetTextAction` (`StringUnityEvent`, receives
+the message), `FadeInAction`, `StartTimeAction` (`FloatUnityEvent`, receives the lifetime) and
+`FadeOutAction`.
 
 ## Usage
 
@@ -55,14 +55,14 @@ logger.Log("Level loaded");
 1. Build a `LogMessage` prefab with whatever visuals you want (a `Text`, a `CanvasGroup`, an
    `Animator`).
 2. On the `LogMessage` component, wire the events:
-   - `setTextAction` → the text component's `text` setter,
-   - `fadeInAction` → your fade-in animation,
-   - `startTimeAction` → a `DelayHandler.StartTimer(float)` from `Unity Utilities`,
-   - `fadeOutAction` → your fade-out animation.
+   - `SetTextAction` → the text component's `text` setter,
+   - `FadeInAction` → your fade-in animation,
+   - `StartTimeAction` → a `DelayHandler.StartTimer(float)` from `Unity Utilities`,
+   - `FadeOutAction` → your fade-out animation.
 3. Point the `DelayHandler`'s timeout at `LogMessage.FadeOut`, and have the end of the fade-out call
    `LogMessage.ClearSelf`.
-4. Assign the prefab and a container to `UnityInGameMessageLogger`, and set `capacity` and
-   `logLifeTime`.
+4. Assign the prefab and a container to `UnityInGameMessageLogger`, and set `Capacity` and
+   `LogLifeTime`.
 
 A worked example ships as the _In Game Message Logging Example_ sample, which wires an `InputField`
 to the logger — import it from the package's Samples tab in the Package Manager.
@@ -72,10 +72,10 @@ to the logger — import it from the package's Samples tab in the Package Manage
 - **Nothing hooks Unity's console.** This does not subscribe to `Application.logMessageReceived`;
   you call `Log` explicitly. Route `Debug.Log` into it yourself if you want both.
 - **`ClearSelf` destroys the message GameObject**, so every message costs an `Instantiate`. Keep
-  `capacity` small and don't log per frame.
-- **`capacity` must be at least 1.** `Log` clears `logs[0]` once the list reaches `capacity`, so a
+  `Capacity` small and don't log per frame.
+- **`Capacity` must be at least 1.** `Log` clears `_logs[0]` once the list reaches `Capacity`, so a
   capacity of 0 throws on the first call.
-- **Eviction is by insertion order.** At `capacity`, the oldest message is cleared to make room —
+- **Eviction is by insertion order.** At `Capacity`, the oldest message is cleared to make room —
   which invokes its clear callback and destroys it immediately, without fading out.
-- **Presentation is entirely your prefab's job.** If `fadeOutAction` is never wired to something that
-  calls `ClearSelf`, messages accumulate until `capacity` evicts them.
+- **Presentation is entirely your prefab's job.** If `FadeOutAction` is never wired to something that
+  calls `ClearSelf`, messages accumulate until `Capacity` evicts them.

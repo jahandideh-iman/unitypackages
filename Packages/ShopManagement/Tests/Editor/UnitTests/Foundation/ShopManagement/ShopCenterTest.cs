@@ -12,12 +12,12 @@ namespace Arman.ShopManagement.Tests
 
     public class ShopCenterTest
     {
-        IShopCenter shopCenter;
+        IShopCenter _shopCenter;
 
         [SetUp]
         public void Setup()
         {
-            shopCenter = new ShopCenter();
+            _shopCenter = new ShopCenter();
         }
 
         // A handler that answers every purchase the same way. Passing null as the
@@ -57,11 +57,11 @@ namespace Arman.ShopManagement.Tests
             var package1 = new FakeShopPackage();
             var package2 = new FakeShopPackage();
 
-            shopCenter.AddPackage(package1);
-            shopCenter.AddPackage(package2);
+            _shopCenter.AddPackage(package1);
+            _shopCenter.AddPackage(package2);
 
-            Assert.That(shopCenter.Packages(), Contains.Item(package1));
-            Assert.That(shopCenter.Packages(), Contains.Item(package2));
+            Assert.That(_shopCenter.Packages(), Contains.Item(package1));
+            Assert.That(_shopCenter.Packages(), Contains.Item(package2));
         }
 
         [Test]
@@ -70,13 +70,13 @@ namespace Arman.ShopManagement.Tests
             var package1 = new FakeShopPackage();
             var package2 = new FakeShopPackage();
 
-            shopCenter.AddPackage(package1);
-            shopCenter.AddPackage(package2);
+            _shopCenter.AddPackage(package1);
+            _shopCenter.AddPackage(package2);
 
-            shopCenter.RemovePackage(package1);
+            _shopCenter.RemovePackage(package1);
 
-            Assert.That(shopCenter.Packages(), Has.No.Member(package1));
-            Assert.That(shopCenter.Packages(), Has.Member(package2));
+            Assert.That(_shopCenter.Packages(), Has.No.Member(package1));
+            Assert.That(_shopCenter.Packages(), Has.Member(package2));
         }
 
         [Test]
@@ -88,19 +88,19 @@ namespace Arman.ShopManagement.Tests
             var packageB1 = new FakeShopPackageB();
             var packageB2 = new FakeShopPackageB();
 
-            shopCenter.AddPackage(packageA1);
-            shopCenter.AddPackage(packageA2);
+            _shopCenter.AddPackage(packageA1);
+            _shopCenter.AddPackage(packageA2);
 
-            shopCenter.AddPackage(packageB1);
-            shopCenter.AddPackage(packageB2);
+            _shopCenter.AddPackage(packageB1);
+            _shopCenter.AddPackage(packageB2);
 
-            Assert.That(shopCenter.PackagesOfType<FakeShopPackageA>(), Contains.Item(packageA1));
-            Assert.That(shopCenter.PackagesOfType<FakeShopPackageA>(), Contains.Item(packageA2));
-            Assert.That(shopCenter.PackagesOfType<FakeShopPackageA>(), Has.Count.EqualTo(2));
+            Assert.That(_shopCenter.PackagesOfType<FakeShopPackageA>(), Contains.Item(packageA1));
+            Assert.That(_shopCenter.PackagesOfType<FakeShopPackageA>(), Contains.Item(packageA2));
+            Assert.That(_shopCenter.PackagesOfType<FakeShopPackageA>(), Has.Count.EqualTo(2));
 
-            Assert.That(shopCenter.PackagesOfType<FakeShopPackageB>(), Contains.Item(packageB1));
-            Assert.That(shopCenter.PackagesOfType<FakeShopPackageB>(), Contains.Item(packageB2));
-            Assert.That(shopCenter.PackagesOfType<FakeShopPackageB>(), Has.Count.EqualTo(2));
+            Assert.That(_shopCenter.PackagesOfType<FakeShopPackageB>(), Contains.Item(packageB1));
+            Assert.That(_shopCenter.PackagesOfType<FakeShopPackageB>(), Contains.Item(packageB2));
+            Assert.That(_shopCenter.PackagesOfType<FakeShopPackageB>(), Has.Count.EqualTo(2));
         }
 
         [Test]
@@ -112,10 +112,10 @@ namespace Arman.ShopManagement.Tests
             var packageAPurchaseHandler = PurchaseHandler(shouldSucceed: false);
             var packageBPurchaseHandler = PurchaseHandler(shouldSucceed: false);
 
-            shopCenter.AssignPurchaseHandler<FakeShopPackageA>(packageAPurchaseHandler.Object);
-            shopCenter.AssignPurchaseHandler<FakeShopPackageB>(packageBPurchaseHandler.Object);
+            _shopCenter.AssignPurchaseHandler<FakeShopPackageA>(packageAPurchaseHandler.Object);
+            _shopCenter.AssignPurchaseHandler<FakeShopPackageB>(packageBPurchaseHandler.Object);
 
-            shopCenter.Purchase(packageA, delegate { }, delegate { });
+            _shopCenter.Purchase(packageA, delegate { }, delegate { });
 
             packageAPurchaseHandler.Verify(
                 h =>
@@ -128,7 +128,7 @@ namespace Arman.ShopManagement.Tests
             );
             packageBPurchaseHandler.VerifyNoOtherCalls();
 
-            shopCenter.Purchase(packageB, delegate { }, delegate { });
+            _shopCenter.Purchase(packageB, delegate { }, delegate { });
 
             packageBPurchaseHandler.Verify(
                 h =>
@@ -158,11 +158,11 @@ namespace Arman.ShopManagement.Tests
             var package = new FakeShopPackageA();
             bool isPurchaseSuccessful = false;
 
-            shopCenter.AssignPurchaseHandler<FakeShopPackageA>(
+            _shopCenter.AssignPurchaseHandler<FakeShopPackageA>(
                 PurchaseHandler(shouldSucceed: true).Object
             );
 
-            shopCenter.Purchase(
+            _shopCenter.Purchase(
                 package,
                 onSuccess: (r) => isPurchaseSuccessful = true,
                 onFailure: delegate { }
@@ -178,11 +178,11 @@ namespace Arman.ShopManagement.Tests
             var package = new FakeShopPackageA();
             bool isPurchaseFailed = false;
 
-            shopCenter.AssignPurchaseHandler<FakeShopPackageA>(
+            _shopCenter.AssignPurchaseHandler<FakeShopPackageA>(
                 PurchaseHandler(shouldSucceed: false).Object
             );
 
-            shopCenter.Purchase(
+            _shopCenter.Purchase(
                 package,
                 onSuccess: delegate { },
                 onFailure: (r) => isPurchaseFailed = true
@@ -197,14 +197,14 @@ namespace Arman.ShopManagement.Tests
         {
             var package = new FakeShopPackageA();
 
-            shopCenter.AssignPurchaseHandler<FakeShopPackageA>(
+            _shopCenter.AssignPurchaseHandler<FakeShopPackageA>(
                 PurchaseHandler(shouldSucceed: true).Object
             );
 
             IShopPackage purchasedPackage = null;
-            shopCenter.SetPurchaseSuccessCallback((p, r) => purchasedPackage = p);
+            _shopCenter.SetPurchaseSuccessCallback((p, r) => purchasedPackage = p);
 
-            shopCenter.Purchase(package, onSuccess: delegate { }, onFailure: delegate { });
+            _shopCenter.Purchase(package, onSuccess: delegate { }, onFailure: delegate { });
 
             Assert.That(purchasedPackage, Is.SameAs(package));
         }
@@ -214,14 +214,14 @@ namespace Arman.ShopManagement.Tests
         {
             var package = new FakeShopPackageA();
 
-            shopCenter.AssignPurchaseHandler<FakeShopPackageA>(
+            _shopCenter.AssignPurchaseHandler<FakeShopPackageA>(
                 PurchaseHandler(shouldSucceed: false).Object
             );
 
             IShopPackage purchasedPackage = null;
-            shopCenter.SetPurchaseFailureCallback((p, r) => purchasedPackage = p);
+            _shopCenter.SetPurchaseFailureCallback((p, r) => purchasedPackage = p);
 
-            shopCenter.Purchase(package, onSuccess: delegate { }, onFailure: delegate { });
+            _shopCenter.Purchase(package, onSuccess: delegate { }, onFailure: delegate { });
 
             Assert.That(purchasedPackage, Is.SameAs(package));
         }
