@@ -13,7 +13,7 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `InvariantJsonNumber`, a `NiceJson` number node that serializes with the invariant culture, so the JSON it writes parses back on every device locale. `float` and `double` use the round-trip format.
+- `JsonObjectExtensions.AddInvariant(key, float)`, which adds a float to a `NiceJson` `JsonObject` with the invariant culture and the round-trip format, so the JSON it writes parses back to the same float on every device locale.
 
 ### Changed
 

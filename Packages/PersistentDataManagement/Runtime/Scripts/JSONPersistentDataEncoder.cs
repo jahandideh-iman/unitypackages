@@ -52,7 +52,7 @@ namespace Arman.PersistentDataManagement
 
         public IWritablePersistentDataEncoder WriteInt(string key, int value)
         {
-            CurrentBlock().Add(key, new InvariantJsonNumber(value));
+            CurrentBlock().Add(key, value);
             return this;
         }
 
@@ -74,7 +74,7 @@ namespace Arman.PersistentDataManagement
 
         public IWritablePersistentDataEncoder WriteFloat(string key, float value)
         {
-            CurrentBlock().Add(key, new InvariantJsonNumber(value));
+            CurrentBlock().AddInvariant(key, value);
             return this;
         }
 

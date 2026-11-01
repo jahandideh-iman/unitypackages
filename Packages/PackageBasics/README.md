@@ -22,8 +22,8 @@ Namespace `Arman.Utility.Core`:
 Namespace `NiceJson` — a bundled third-party JSON parser and serializer (`JsonNode`, `JsonObject`,
 `JsonArray`, `JsonBasic`). MIT licensed; see `Third Party Notices.md`.
 
-Namespace `Arman.PackageBasics` — `InvariantJsonNumber`, a `JsonBasic` number that serializes with
-the invariant culture, so the JSON it writes parses back on every device locale.
+Namespace `Arman.PackageBasics` — `JsonObjectExtensions.AddInvariant(key, float)`, which adds a
+float to a `JsonObject` so that the JSON it writes parses back on every device locale.
 
 ## Usage
 
@@ -84,7 +84,7 @@ Writing a number that has to parse back on every device locale:
 ```csharp
 using Arman.PackageBasics;
 
-payload["speed"] = new InvariantJsonNumber(1.5f);
+payload.AddInvariant("speed", 1.5f);
 payload.ToJsonString(); // {"name":"player","speed":1.5}, also on de-DE or fr-FR
 ```
 
@@ -104,6 +104,9 @@ payload.ToJsonString(); // {"name":"player","speed":1.5}, also on de-DE or fr-FR
   namespace and leave it unmodified so it stays upgradable.
 - **`NiceJson` writes numbers with the device culture.** Assigning a `float`, `double`, `int` or
   `long` to a node formats it with `ToString()`, so on a comma-decimal locale such as de-DE `1.5f`
-  becomes `1,5` and the JSON does not parse back. Only `decimal` uses the invariant culture. Wrap a
-  number in `InvariantJsonNumber` when the JSON has to be read back. Parsing already uses the
-  invariant culture.
+  becomes `1,5` and the JSON does not parse back. Only `decimal` uses the invariant culture. Add a
+  float with `AddInvariant` when the JSON has to be read back. Parsing already uses the invariant
+  culture.
+- **`AddInvariant` is not an `Add` overload on purpose.** `JsonObject.Add(string, JsonNode)` accepts
+  a float through NiceJson's implicit conversion, and C# chooses an applicable instance method over
+  an extension method, so an extension named `Add` would never be called.
