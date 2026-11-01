@@ -1,7 +1,6 @@
 ﻿using System.Globalization;
 using System.IO;
 using System.Text;
-using System.Threading;
 using NUnit.Framework;
 
 namespace Arman.PersistentDataManagement.Tests
@@ -56,8 +55,8 @@ namespace Arman.PersistentDataManagement.Tests
             string cultureName
         )
         {
-            var originalCulture = Thread.CurrentThread.CurrentCulture;
-            Thread.CurrentThread.CurrentCulture = new CultureInfo(cultureName);
+            var originalCulture = CultureInfo.CurrentCulture;
+            CultureInfo.CurrentCulture = new CultureInfo(cultureName);
             try
             {
                 _dataEncoder.WriteFloat("Key", 1.5f);
@@ -74,7 +73,7 @@ namespace Arman.PersistentDataManagement.Tests
             }
             finally
             {
-                Thread.CurrentThread.CurrentCulture = originalCulture;
+                CultureInfo.CurrentCulture = originalCulture;
             }
         }
 
