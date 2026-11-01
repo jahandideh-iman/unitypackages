@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using Arman.PackageBasics;
 using NiceJson;
 
 namespace Arman.PersistentDataManagement
@@ -73,13 +74,13 @@ namespace Arman.PersistentDataManagement
 
         public IWritablePersistentDataEncoder WriteFloat(string key, float value)
         {
-            CurrentBlock().Add(key, value);
+            CurrentBlock().AddInvariant(key, value);
             return this;
         }
 
         public bool ReadBoolean(string key, bool defaultValue = false)
         {
-            return HasKey(key) ? (bool)CurrentBlock()[key] : default;
+            return HasKey(key) ? (bool)CurrentBlock()[key] : defaultValue;
         }
 
         public IWritablePersistentDataEncoder WriteBoolean(string key, bool value)

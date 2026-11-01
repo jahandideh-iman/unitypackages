@@ -2,7 +2,7 @@ This package contains third-party software components governed by the license(s)
 
 ---
 
-Component Name: NiceJson 1.3.2
+Component Name: NiceJson 1.3.3
 
 Location: `Runtime/ThirdParties/NiceJson.cs`
 
