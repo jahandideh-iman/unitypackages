@@ -9,7 +9,7 @@ A single static class, `ServiceLocator`, in the `Arman.ServiceLocating` namespac
 
 | Member                                        | Behaviour                                                                                                             |
 | --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `Init()`                                      | Creates the backing instance. Call once at startup — every other member throws `NullReferenceException` until you do. |
+| `Init()`                                      | Creates the backing instance. Call once at startup — `Register`, `UnRegister`, `Replace` and `Find` throw `NullReferenceException` until you do. |
 | `IsInited()`                                  | Whether `Init()` has run and `Clear()` has not.                                                                       |
 | `Register<TInterface, TImplementation>(impl)` | Registers `impl`, constrained to `TImplementation : TInterface`.                                                      |
 | `Find<T>()`                                   | Returns the first registration assignable to `T`. Throws if there is none.                                            |
@@ -39,8 +39,8 @@ ServiceLocator.Clear();
 
 ## Things to know
 
-- **`Init()` is not implicit.** Calling any other member first throws `NullReferenceException`, not a
-  helpful message.
+- **`Init()` is not implicit.** Calling `Register`, `UnRegister`, `Replace` or `Find` first throws
+  `NullReferenceException`, not a helpful message. `IsInited()` and `Clear()` are safe to call at any time.
 - **Resolution is a linear `is T` scan** over the registration list, returning the first match. Fine
   at the handful-of-services scale this is built for; it is not a hot-path lookup.
 - **Registration does not detect duplicates.** Registering the same interface twice leaves both in

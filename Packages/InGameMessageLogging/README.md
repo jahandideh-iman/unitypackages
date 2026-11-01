@@ -10,9 +10,9 @@ lifetime, eviction); how a message looks, fades in and fades out is authored on 
 
 | Type                       | Namespace                                 | Purpose                                                                    |
 | -------------------------- | ----------------------------------------- | -------------------------------------------------------------------------- |
-| `IInGameMessageLogger`     | `Arman.Foundation.InGameMessageLogging`   | The contract — a single `Log(string message)`.                             |
-| `UnityInGameMessageLogger` | `Arman.Presentation.InGameMessageLogging` | `MonoBehaviour` implementation that instantiates one message per log call. |
-| `LogMessage`               | `Arman.Presentation.InGameMessageLogging` | The message view, driven by `UnityEvent`s.                                 |
+| `IInGameMessageLogger`     | `Arman.InGameMessageLogging`   | The contract — a single `Log(string message)`.                             |
+| `UnityInGameMessageLogger` | `Arman.InGameMessageLogging` | `MonoBehaviour` implementation that instantiates one message per log call. |
+| `LogMessage`               | `Arman.InGameMessageLogging` | The message view, driven by `UnityEvent`s.                                 |
 
 `UnityInGameMessageLogger` is configured in the Inspector:
 
@@ -32,7 +32,7 @@ the message), `fadeInAction`, `startTimeAction` (`FloatUnityEvent`, receives the
 Log from anywhere that can reach the component, behind the interface:
 
 ```csharp
-using Arman.Foundation.InGameMessageLogging;
+using Arman.InGameMessageLogging;
 
 public class Enemy : MonoBehaviour
 {
@@ -43,7 +43,7 @@ public class Enemy : MonoBehaviour
 ```
 
 ```csharp
-using Arman.Presentation.InGameMessageLogging;
+using Arman.InGameMessageLogging;
 
 // The logger is a MonoBehaviour in the scene — reference it, don't construct it.
 IInGameMessageLogger logger = inGameMessageLoggerComponent;
@@ -73,6 +73,8 @@ to the logger — import it from the package's Samples tab in the Package Manage
   you call `Log` explicitly. Route `Debug.Log` into it yourself if you want both.
 - **`ClearSelf` destroys the message GameObject**, so every message costs an `Instantiate`. Keep
   `capacity` small and don't log per frame.
+- **`capacity` must be at least 1.** `Log` clears `logs[0]` once the list reaches `capacity`, so a
+  capacity of 0 throws on the first call.
 - **Eviction is by insertion order.** At `capacity`, the oldest message is cleared to make room —
   which invokes its clear callback and destroys it immediately, without fading out.
 - **Presentation is entirely your prefab's job.** If `fadeOutAction` is never wired to something that
