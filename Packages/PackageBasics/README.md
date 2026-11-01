@@ -22,6 +22,9 @@ Namespace `Arman.Utility.Core`:
 Namespace `NiceJson` — a bundled third-party JSON parser and serializer (`JsonNode`, `JsonObject`,
 `JsonArray`, `JsonBasic`). MIT licensed; see `Third Party Notices.md`.
 
+Namespace `Arman.PackageBasics` — `InvariantJsonNumber`, a `JsonBasic` number that serializes with
+the invariant culture, so the JSON it writes parses back on every device locale.
+
 ## Usage
 
 `IContainer<T>` holds items of a common base type and retrieves them by their concrete subtype:
@@ -76,6 +79,15 @@ payload["name"] = "player";
 string json = payload.ToJsonString();
 ```
 
+Writing a number that has to parse back on every device locale:
+
+```csharp
+using Arman.PackageBasics;
+
+payload["speed"] = new InvariantJsonNumber(1.5f);
+payload.ToJsonString(); // {"name":"player","speed":1.5}, also on de-DE or fr-FR
+```
+
 ## Things to know
 
 - **`IChannel` is an identity, not a container.** It carries no payload; it exists so other packages
@@ -90,3 +102,8 @@ string json = payload.ToJsonString();
   returns whichever matching item was added first.
 - **`NiceJson` is vendored third-party code** under `Runtime/ThirdParties/`. Keep it in its own
   namespace and leave it unmodified so it stays upgradable.
+- **`NiceJson` writes numbers with the device culture.** Assigning a `float`, `double`, `int` or
+  `long` to a node formats it with `ToString()`, so on a comma-decimal locale such as de-DE `1.5f`
+  becomes `1,5` and the JSON does not parse back. Only `decimal` uses the invariant culture. Wrap a
+  number in `InvariantJsonNumber` when the JSON has to be read back. Parsing already uses the
+  invariant culture.

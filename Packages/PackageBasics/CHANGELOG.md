@@ -11,6 +11,10 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The camelCase names of public and protected fields, renamed to PascalCase: `IDedChannel.id` → `IDedChannel.Id`. **Breaking** — update references to the new names.
 
+### Added
+
+- `InvariantJsonNumber`, a `NiceJson` number node that serializes with the invariant culture, so the JSON it writes parses back on every device locale. `float` and `double` use the round-trip format.
+
 ### Changed
 
 - Renamed private fields that Unity does not serialize to `_camelCase`. No public API or serialized data changes.
