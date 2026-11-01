@@ -8,9 +8,9 @@ lifetime, eviction); how a message looks, fades in and fades out is authored on 
 
 ## What it provides
 
-| Type                       | Namespace                                 | Purpose                                                                    |
-| -------------------------- | ----------------------------------------- | -------------------------------------------------------------------------- |
-| `IInGameMessageLogger`     | `Arman.InGameMessageLogging`   | The contract — a single `Log(string message)`.                             |
+| Type                       | Namespace                    | Purpose                                                                    |
+| -------------------------- | ---------------------------- | -------------------------------------------------------------------------- |
+| `IInGameMessageLogger`     | `Arman.InGameMessageLogging` | The contract — a single `Log(string message)`.                             |
 | `UnityInGameMessageLogger` | `Arman.InGameMessageLogging` | `MonoBehaviour` implementation that instantiates one message per log call. |
 | `LogMessage`               | `Arman.InGameMessageLogging` | The message view, driven by `UnityEvent`s.                                 |
 
