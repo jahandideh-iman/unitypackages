@@ -8,21 +8,21 @@
     public class CacheableEntity<T> : Entity
         where T : ICache
     {
-        readonly T cache;
+        readonly T _cache;
 
         public CacheableEntity(T cache)
         {
-            this.cache = cache;
+            this._cache = cache;
         }
 
         protected override void OnComponentAdded(IComponent component)
         {
-            cache.TryCache(component);
+            _cache.TryCache(component);
         }
 
         public T Cache()
         {
-            return cache;
+            return _cache;
         }
     }
 }

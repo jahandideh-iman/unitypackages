@@ -6,37 +6,37 @@ namespace Arman.PersistentDataManagement
 {
     public class JSONPersistentDataEncoder : IPersistentDataEncoder
     {
-        private JsonObject root;
-        private Stack<JsonObject> blockStack;
+        private JsonObject _root;
+        private Stack<JsonObject> _blockStack;
 
         public JSONPersistentDataEncoder()
         {
-            root = new JsonObject();
-            blockStack = new Stack<JsonObject>();
-            blockStack.Push(root);
+            _root = new JsonObject();
+            _blockStack = new Stack<JsonObject>();
+            _blockStack.Push(_root);
         }
 
         public void Clear()
         {
-            root.Clear();
-            blockStack.Clear();
-            blockStack.Push(root);
+            _root.Clear();
+            _blockStack.Clear();
+            _blockStack.Push(_root);
         }
 
         public void WriteTo(StreamWriter stream)
         {
-            stream.Write(root.ToJsonString());
+            stream.Write(_root.ToJsonString());
         }
 
         public void ReadFrom(StreamReader stream)
         {
             var content = stream.ReadToEnd();
 
-            root = string.IsNullOrWhiteSpace(content)
+            _root = string.IsNullOrWhiteSpace(content)
                 ? new JsonObject()
                 : (JsonObject)JsonNode.ParseJsonString(content);
 
-            blockStack.Push(root);
+            _blockStack.Push(_root);
         }
 
         public bool HasKey(string key)
@@ -118,17 +118,17 @@ namespace Arman.PersistentDataManagement
 
         private JsonObject CurrentBlock()
         {
-            return blockStack.Peek();
+            return _blockStack.Peek();
         }
 
         private void PushBlock(JsonObject jsonObject)
         {
-            blockStack.Push(jsonObject);
+            _blockStack.Push(jsonObject);
         }
 
         private void PopBlock()
         {
-            blockStack.Pop();
+            _blockStack.Pop();
         }
     }
 }

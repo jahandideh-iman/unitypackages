@@ -18,16 +18,16 @@ namespace Arman.PersistentDataManagement
             }
         }
 
-        IPersistentDataIOStreamFactory persistentDataIOStreamFactory;
-        IPersistentDataEncoder persistentDataEncoder;
+        IPersistentDataIOStreamFactory _persistentDataIOStreamFactory;
+        IPersistentDataEncoder _persistentDataEncoder;
 
-        SerializerContainer allSerializers = new Container<IPersistentDataSerializer>();
-        Dictionary<IChannel, SerializerContainer> channelSerializers =
+        SerializerContainer _allSerializers = new Container<IPersistentDataSerializer>();
+        Dictionary<IChannel, SerializerContainer> _channelSerializers =
             new Dictionary<IChannel, SerializerContainer>();
 
-        IChannel defaultChannel = new InternalChannel();
+        IChannel _defaultChannel = new InternalChannel();
 
-        int saveVersion;
+        int _saveVersion;
 
         public PersistentDataManager(
             IPersistentDataIOStreamFactory persistentDataIOStreamFactory,
@@ -35,14 +35,14 @@ namespace Arman.PersistentDataManagement
             int saveVersion
         )
         {
-            this.persistentDataIOStreamFactory = persistentDataIOStreamFactory;
-            this.persistentDataEncoder = persistentDataEncoder;
-            this.saveVersion = saveVersion;
+            this._persistentDataIOStreamFactory = persistentDataIOStreamFactory;
+            this._persistentDataEncoder = persistentDataEncoder;
+            this._saveVersion = saveVersion;
         }
 
         public void Register(IPersistentDataSerializer serializer)
         {
-            Register(serializer, defaultChannel);
+            Register(serializer, _defaultChannel);
         }
 
         public void Register(IPersistentDataSerializer serializer, IChannel channel)
@@ -52,13 +52,13 @@ namespace Arman.PersistentDataManagement
 
             TryCreateChannelData(channel);
 
-            channelSerializers[channel].Add(serializer);
-            allSerializers.Add(serializer);
+            _channelSerializers[channel].Add(serializer);
+            _allSerializers.Add(serializer);
         }
 
         public void SaveAll()
         {
-            foreach (var channel in channelSerializers.Keys)
+            foreach (var channel in _channelSerializers.Keys)
                 Save(channel);
         }
 
@@ -67,20 +67,20 @@ namespace Arman.PersistentDataManagement
             if (ChannelDoesNotExists(channel))
                 throw new PersistentDataChannelNotFoundException(channel);
 
-            persistentDataEncoder.Clear();
+            _persistentDataEncoder.Clear();
 
-            WriteMetaDataTo(persistentDataEncoder);
-            WriteDataTo(persistentDataEncoder, channelSerializers[channel].Items());
+            WriteMetaDataTo(_persistentDataEncoder);
+            WriteDataTo(_persistentDataEncoder, _channelSerializers[channel].Items());
 
-            using (var writeStream = persistentDataIOStreamFactory.CreateWriteStreamFor(channel))
-                persistentDataEncoder.WriteTo(writeStream);
+            using (var writeStream = _persistentDataIOStreamFactory.CreateWriteStreamFor(channel))
+                _persistentDataEncoder.WriteTo(writeStream);
         }
 
         void WriteMetaDataTo(IWritablePersistentDataEncoder dataEncoder)
         {
             dataEncoder.BeginWritingBlock("MetaData");
 
-            dataEncoder.WriteInt("Version", saveVersion);
+            dataEncoder.WriteInt("Version", _saveVersion);
 
             dataEncoder.EndWritingBlock();
         }
@@ -110,7 +110,7 @@ namespace Arman.PersistentDataManagement
 
         public void LoadAll()
         {
-            foreach (var channel in channelSerializers.Keys)
+            foreach (var channel in _channelSerializers.Keys)
                 Load(channel);
         }
 
@@ -119,26 +119,26 @@ namespace Arman.PersistentDataManagement
             if (ChannelDoesNotExists(channel))
                 throw new PersistentDataChannelNotFoundException(channel);
 
-            if (persistentDataIOStreamFactory.HasReadableStreamFor(channel) == false)
+            if (_persistentDataIOStreamFactory.HasReadableStreamFor(channel) == false)
                 return;
 
-            using (var readStream = persistentDataIOStreamFactory.CreateReadStreamFor(channel))
+            using (var readStream = _persistentDataIOStreamFactory.CreateReadStreamFor(channel))
             {
-                persistentDataEncoder.Clear();
-                persistentDataEncoder.ReadFrom(readStream);
+                _persistentDataEncoder.Clear();
+                _persistentDataEncoder.ReadFrom(readStream);
 
-                persistentDataEncoder.BeginReadingBlock("Data");
+                _persistentDataEncoder.BeginReadingBlock("Data");
 
-                foreach (var serializer in channelSerializers[channel].Items())
-                    TryDeserialize(serializer, persistentDataEncoder);
+                foreach (var serializer in _channelSerializers[channel].Items())
+                    TryDeserialize(serializer, _persistentDataEncoder);
 
-                persistentDataEncoder.EndReadingBlock();
+                _persistentDataEncoder.EndReadingBlock();
             }
         }
 
         public void Delete(IChannel channel)
         {
-            persistentDataIOStreamFactory.Delete(channel);
+            _persistentDataIOStreamFactory.Delete(channel);
         }
 
         private void TryDeserialize(
@@ -156,23 +156,23 @@ namespace Arman.PersistentDataManagement
 
         public bool Contains(IPersistentDataSerializer serializer)
         {
-            return allSerializers.Contains(serializer);
+            return _allSerializers.Contains(serializer);
         }
 
         private bool IsSerializerRegistered(IPersistentDataSerializer serializer)
         {
-            return allSerializers.Contains(serializer);
+            return _allSerializers.Contains(serializer);
         }
 
         private bool ChannelDoesNotExists(IChannel channel)
         {
-            return channelSerializers.ContainsKey(channel) == false;
+            return _channelSerializers.ContainsKey(channel) == false;
         }
 
         private void TryCreateChannelData(IChannel channel)
         {
             if (ChannelDoesNotExists(channel))
-                channelSerializers.Add(channel, new Container<IPersistentDataSerializer>());
+                _channelSerializers.Add(channel, new Container<IPersistentDataSerializer>());
         }
     }
 }

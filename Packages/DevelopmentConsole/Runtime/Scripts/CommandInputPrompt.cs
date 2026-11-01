@@ -2,27 +2,31 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace Arman.DevelopmentConsole
 {
     public class CommandInputPrompt : MonoBehaviour
     {
-        public RectTransform inputFieldsContainer;
-        public InputField inputFieldPrefab;
+        [FormerlySerializedAs("inputFieldsContainer")]
+        public RectTransform InputFieldsContainer;
 
-        List<InputField> inputFields = new List<InputField>();
+        [FormerlySerializedAs("inputFieldPrefab")]
+        public InputField InputFieldPrefab;
 
-        CommandInfo commandInfo;
+        List<InputField> _inputFields = new List<InputField>();
+
+        CommandInfo _commandInfo;
 
         public void Init(CommandInfo commandInfo)
         {
-            this.commandInfo = commandInfo;
+            this._commandInfo = commandInfo;
             this.gameObject.SetActive(true);
 
-            foreach (var param in commandInfo.methodInfo.GetParameters())
+            foreach (var param in commandInfo.MethodInfo.GetParameters())
             {
-                var inputField = Instantiate(inputFieldPrefab, inputFieldsContainer, false);
+                var inputField = Instantiate(InputFieldPrefab, InputFieldsContainer, false);
                 inputField.placeholder.As<Text>().text = param.Name;
 
                 var type = param.ParameterType;
@@ -35,7 +39,7 @@ namespace Arman.DevelopmentConsole
                 else
                     Debug.LogErrorFormat("Parameter of type {0} is not supported", type);
 
-                inputFields.Add(inputField);
+                _inputFields.Add(inputField);
             }
         }
 
@@ -46,13 +50,13 @@ namespace Arman.DevelopmentConsole
 
         public void Execute()
         {
-            var parameters = commandInfo.methodInfo.GetParameters();
+            var parameters = _commandInfo.MethodInfo.GetParameters();
             var inputs = new object[parameters.Length];
 
             for (int i = 0; i < parameters.Length; ++i)
             {
                 var type = parameters[i].ParameterType;
-                var stringValue = inputFields[i].text;
+                var stringValue = _inputFields[i].text;
                 object value = null;
                 if (type == typeof(int))
                     value = int.Parse(stringValue);
@@ -66,17 +70,17 @@ namespace Arman.DevelopmentConsole
                 inputs[i] = value;
             }
 
-            commandInfo.Invoke(inputs);
+            _commandInfo.Invoke(inputs);
 
             Close();
         }
 
         void Close()
         {
-            foreach (var field in inputFields)
+            foreach (var field in _inputFields)
                 Destroy(field.gameObject);
 
-            inputFields.Clear();
+            _inputFields.Clear();
             this.gameObject.SetActive(false);
         }
     }

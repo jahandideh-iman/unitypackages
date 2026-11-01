@@ -49,8 +49,8 @@ Then put a `DevelopmentConsolePanel` prefab in your scene. On `Awake` it scans t
 for `DevelopmentOptionsDefinition` subclasses and builds one group per `group` string, with a button
 per command. Nothing else registers anything.
 
-The panel also exposes `onErrorDetected`, `onToolsPanelOpened` and `onToolsPanelClosed` as
-`UnityEvent`s. `onErrorDetected` fires whenever Unity logs an error or an exception. It ships with no
+The panel also exposes `OnErrorDetected`, `OnToolsPanelOpened` and `OnToolsPanelClosed` as
+`UnityEvent`s. `OnErrorDetected` fires whenever Unity logs an error or an exception. It ships with no
 listener attached, so wire it to whatever you want — flashing the dev button red is a cheap way to
 notice that something has gone wrong off-screen.
 

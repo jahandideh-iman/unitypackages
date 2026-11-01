@@ -13,18 +13,18 @@ namespace Arman.HttpConnection
         // TODO: Find a better way.
         const string TIME_OUT_ERROR_MESSAGE = "Timeout";
 
-        float defaultTimeout = 5f;
+        float _defaultTimeout = 5f;
 
         public void SetDefaultTimeOut(float timeOut)
         {
-            this.defaultTimeout = timeOut;
+            this._defaultTimeout = timeOut;
         }
 
         public void Request(HttpRequest request, Action<string> onSuccess, Action<string> onFailure)
         {
             var webRequest = CreateWebRequestFrom(request);
-            webRequest.timeout = (int)(request.timeOut != null ? request.timeOut : defaultTimeout);
-            Debug.Log($"Requesting {request.requestType}:{webRequest.url}");
+            webRequest.timeout = (int)(request.TimeOut != null ? request.TimeOut : _defaultTimeout);
+            Debug.Log($"Requesting {request.RequestType}:{webRequest.url}");
             StartCoroutine(Connecting(webRequest, onSuccess, onFailure));
         }
 
@@ -32,20 +32,20 @@ namespace Arman.HttpConnection
         {
             UnityWebRequest webRequest;
 
-            switch (request.requestType)
+            switch (request.RequestType)
             {
                 case HttpRequestType.POST:
-                    var postData = Encoding.UTF8.GetBytes(request.body);
+                    var postData = Encoding.UTF8.GetBytes(request.Body);
                     // Note: It seems giving request.body directly to UnityWebRequest doesn't work.
-                    webRequest = UnityWebRequest.PostWwwForm(request.url, "fake");
+                    webRequest = UnityWebRequest.PostWwwForm(request.Url, "fake");
                     webRequest.uploadHandler = new UploadHandlerRaw(postData);
-                    AddHeaders(webRequest, request.headers);
+                    AddHeaders(webRequest, request.Headers);
                     return webRequest;
 
                 case HttpRequestType.GET:
-                    var parameters = FormatedParameters(request.parameters);
-                    webRequest = UnityWebRequest.Get(request.url + parameters);
-                    AddHeaders(webRequest, request.headers);
+                    var parameters = FormatedParameters(request.Parameters);
+                    webRequest = UnityWebRequest.Get(request.Url + parameters);
+                    AddHeaders(webRequest, request.Headers);
                     return webRequest;
             }
 

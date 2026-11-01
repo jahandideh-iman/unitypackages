@@ -5,11 +5,11 @@ namespace Arman.PersistentDataManagement
 {
     public class FileBasedPersistentDataIOStreamFactory : IPersistentDataIOStreamFactory
     {
-        public string path;
+        public string Path;
 
         public FileBasedPersistentDataIOStreamFactory(string path)
         {
-            this.path = path;
+            this.Path = path;
         }
 
         public bool HasReadableStreamFor(IChannel channel)
@@ -25,7 +25,7 @@ namespace Arman.PersistentDataManagement
 
         public StreamWriter CreateWriteStreamFor(IChannel channel)
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(FilePathFor(channel)));
+            Directory.CreateDirectory(System.IO.Path.GetDirectoryName(FilePathFor(channel)));
             FileStream fs = new FileStream(FilePathFor(channel), FileMode.Create);
             return new StreamWriter(fs);
         }
@@ -39,7 +39,7 @@ namespace Arman.PersistentDataManagement
 
         private string FilePathFor(IChannel channel)
         {
-            return Path.Combine(path, channel.ToString());
+            return System.IO.Path.Combine(Path, channel.ToString());
         }
     }
 }

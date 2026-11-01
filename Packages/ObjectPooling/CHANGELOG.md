@@ -10,10 +10,16 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - `MonobehaviorObjectPool<T>`, renamed to `MonoBehaviourObjectPool<T>` to match Unity's `MonoBehaviour` spelling. **Breaking** — update references to the new name.
+- The camelCase names of public and protected fields, renamed to PascalCase: `MonoBehaviourObjectPool.internalPool` → `MonoBehaviourObjectPool.InternalPool`, `ScriptableObjectPool.internalPool` → `ScriptableObjectPool.InternalPool`, `UnityComponentObjectPool.poolingContainer` → `UnityComponentObjectPool.PoolingContainer`, `UnityComponentObjectPool.componentPrefab` → `UnityComponentObjectPool.ComponentPrefab`. **Breaking** — update references to the new names.
 
 ### Added
 
 - `MonoBehaviourObjectPool<T>`, renamed from `MonobehaviorObjectPool<T>` with no change in behaviour.
+
+### Changed
+
+- Renamed serialized fields to PascalCase: `MonoBehaviourObjectPool.componentPrefab` → `MonoBehaviourObjectPool.ComponentPrefab`, `MonoBehaviourObjectPool.poolingContainer` → `MonoBehaviourObjectPool.PoolingContainer`, `MonoBehaviourObjectPool.initialReserve` → `MonoBehaviourObjectPool.InitialReserve`, `MonoBehaviourObjectPool.autoSetup` → `MonoBehaviourObjectPool.AutoSetup`, `ScriptableObjectPool.componentPrefab` → `ScriptableObjectPool.ComponentPrefab`, `ScriptableObjectPool.initialReserve` → `ScriptableObjectPool.InitialReserve`. Each carries `[FormerlySerializedAs]` with its old name, so values already saved in scenes, prefabs and assets keep loading.
+- Renamed private fields that Unity does not serialize to `_camelCase`. No public API or serialized data changes.
 
 ## [0.3.0] - 2026-09-05
 

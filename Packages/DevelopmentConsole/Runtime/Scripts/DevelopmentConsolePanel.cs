@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 // TODO: Refactor this whole shit.
@@ -11,22 +12,38 @@ namespace Arman.DevelopmentConsole
 {
     public class DevelopmentConsolePanel : MonoBehaviour
     {
-        public DevelopmentGroup groupPrefab;
-        public CommandInputPrompt commandInputPrompt;
-        public Canvas toolsPanel;
-        public Button devButton;
-        public Text devButtonText;
-        public GameObject groupsContainer;
+        [FormerlySerializedAs("groupPrefab")]
+        public DevelopmentGroup GroupPrefab;
 
-        public UnityEvent onErrorDetected;
-        public UnityEvent onToolsPanelOpened;
-        public UnityEvent onToolsPanelClosed;
+        [FormerlySerializedAs("commandInputPrompt")]
+        public CommandInputPrompt CommandInputPrompt;
 
-        List<ShortCutInfo> shortCutInfos = new List<ShortCutInfo>();
+        [FormerlySerializedAs("toolsPanel")]
+        public Canvas ToolsPanel;
+
+        [FormerlySerializedAs("devButton")]
+        public Button DevButton;
+
+        [FormerlySerializedAs("devButtonText")]
+        public Text DevButtonText;
+
+        [FormerlySerializedAs("groupsContainer")]
+        public GameObject GroupsContainer;
+
+        [FormerlySerializedAs("onErrorDetected")]
+        public UnityEvent OnErrorDetected;
+
+        [FormerlySerializedAs("onToolsPanelOpened")]
+        public UnityEvent OnToolsPanelOpened;
+
+        [FormerlySerializedAs("onToolsPanelClosed")]
+        public UnityEvent OnToolsPanelClosed;
+
+        List<ShortCutInfo> _shortCutInfos = new List<ShortCutInfo>();
 
         private void Awake()
         {
-            toolsPanel.gameObject.SetActive(false);
+            ToolsPanel.gameObject.SetActive(false);
             Init();
         }
 
@@ -51,7 +68,7 @@ namespace Arman.DevelopmentConsole
         void CheckForErros(string condition, string stackTrace, LogType type)
         {
             if (type == LogType.Error || type == LogType.Exception)
-                onErrorDetected.Invoke();
+                OnErrorDetected.Invoke();
         }
 
         // TODO: Refactor this shit.
@@ -74,20 +91,20 @@ namespace Arman.DevelopmentConsole
                 var attribute = (attributes[0] as ShortCutAttribute);
 
                 var shortCutInfo = new ShortCutInfo(
-                    attribute.keyCodes,
+                    attribute.KeyCodes,
                     () => method.Invoke(null, null)
                 );
 
-                shortCutInfos.Add(shortCutInfo);
+                _shortCutInfos.Add(shortCutInfo);
             }
         }
 
         private void Update()
         {
-            foreach (var shortCut in shortCutInfos)
+            foreach (var shortCut in _shortCutInfos)
             {
-                if (ArePressed(shortCut.keyCodes))
-                    shortCut.action();
+                if (ArePressed(shortCut.KeyCodes))
+                    shortCut.Action();
             }
         }
 
@@ -129,25 +146,25 @@ namespace Arman.DevelopmentConsole
                 var attributes = method.GetCustomAttributes(typeof(DevOptionAttribute), false);
                 var attribute = (attributes[0] as DevOptionAttribute);
 
-                if (groups.ContainsKey(attribute.group) == false)
-                    groups[attribute.group] = new List<string>();
+                if (groups.ContainsKey(attribute.Group) == false)
+                    groups[attribute.Group] = new List<string>();
 
-                groups[attribute.group].Add(attribute.commandName);
+                groups[attribute.Group].Add(attribute.CommandName);
 
-                var commandInfo = new CommandInfo(attribute.commandName, method);
+                var commandInfo = new CommandInfo(attribute.CommandName, method);
 
                 var shortcuts = method.GetCustomAttributes(typeof(ShortCutAttribute), false);
                 if (shortcuts.Length > 0)
                 {
-                    commandInfo.SetShortcut((shortcuts[0] as ShortCutAttribute).keyCodes);
+                    commandInfo.SetShortcut((shortcuts[0] as ShortCutAttribute).KeyCodes);
                 }
 
-                commands.Add(attribute.commandName, commandInfo);
+                commands.Add(attribute.CommandName, commandInfo);
             }
 
             foreach (var group in groups)
             {
-                var groupObject = Instantiate(groupPrefab, this.groupsContainer.transform, false);
+                var groupObject = Instantiate(GroupPrefab, this.GroupsContainer.transform, false);
 
                 groupObject.Init(group.Key);
 
@@ -183,35 +200,35 @@ namespace Arman.DevelopmentConsole
         [ShortCut(KeyCode.LeftShift, KeyCode.D)]
         public void Toggle()
         {
-            toolsPanel.gameObject.SetActive(!toolsPanel.gameObject.activeSelf);
-            if (toolsPanel.gameObject.activeSelf)
-                onToolsPanelOpened.Invoke();
+            ToolsPanel.gameObject.SetActive(!ToolsPanel.gameObject.activeSelf);
+            if (ToolsPanel.gameObject.activeSelf)
+                OnToolsPanelOpened.Invoke();
             else
-                onToolsPanelClosed.Invoke();
+                OnToolsPanelClosed.Invoke();
         }
 
         // TODO: Refactor this shit
         [DevOptionAttribute("Other", "Toggle Dev Visibility")]
         public void ToggleHideDevToolsButton()
         {
-            var color = devButton.image.color;
+            var color = DevButton.image.color;
             if (color.a <= 0.1)
             {
                 color.a = 1;
-                devButtonText.enabled = true;
+                DevButtonText.enabled = true;
             }
             else
             {
                 color.a = 0;
-                devButtonText.enabled = false;
+                DevButtonText.enabled = false;
             }
 
-            devButton.image.color = color;
+            DevButton.image.color = color;
         }
 
         public void OpenCommandInputPromtFor(CommandInfo commandInfo)
         {
-            commandInputPrompt.Init(commandInfo);
+            CommandInputPrompt.Init(commandInfo);
         }
     }
 }

@@ -5,16 +5,16 @@ namespace Arman.ConfigurationManagement
 {
     public class DynamicConfigurer<T> : IConfigurer<T>
     {
-        private List<Action<T>> configActions = new List<Action<T>>();
+        private List<Action<T>> _configActions = new List<Action<T>>();
 
         public void AddConfigAction(Action<T> action)
         {
-            configActions.Add(action);
+            _configActions.Add(action);
         }
 
         public void Configure(T entity)
         {
-            foreach (var confAction in configActions)
+            foreach (var confAction in _configActions)
                 TryExecute(confAction, entity);
         }
 

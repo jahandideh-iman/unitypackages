@@ -1,43 +1,45 @@
 ﻿using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Arman.ConfigurationManagement
 {
     public class UnityConfigurationManager : MonoBehaviour, IConfigurationManager
     {
-        public UnityConfigurationMaster configurationMaster;
+        [FormerlySerializedAs("configurationMaster")]
+        public UnityConfigurationMaster ConfigurationMaster;
 
-        ConfigurationManager internalConfigManager = new ConfigurationManager();
+        ConfigurationManager _internalConfigManager = new ConfigurationManager();
 
         public void Init()
         {
-            configurationMaster.RegisterSelf(this);
+            ConfigurationMaster.RegisterSelf(this);
             //foreach (var configurer in configurationMaster.Configurations())
             //    configurer.RegisterSelf(this);
         }
 
         public void Configure<T>(T target)
         {
-            internalConfigManager.Configure<T>(target);
+            _internalConfigManager.Configure<T>(target);
         }
 
         public bool Contains<T>(IConfigurer<T> configurer)
         {
-            return internalConfigManager.Contains<T>(configurer);
+            return _internalConfigManager.Contains<T>(configurer);
         }
 
         public IConfigurer<T> FindConfigurer<T>()
         {
-            return internalConfigManager.FindConfigurer<T>();
+            return _internalConfigManager.FindConfigurer<T>();
         }
 
         public void Register<T>(IConfigurer<T> configurer)
         {
-            internalConfigManager.Register<T>(configurer);
+            _internalConfigManager.Register<T>(configurer);
         }
 
         public IConfigurer<T> RemoveConfigurer<T>()
         {
-            return internalConfigManager.RemoveConfigurer<T>();
+            return _internalConfigManager.RemoveConfigurer<T>();
         }
     }
 }

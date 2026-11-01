@@ -9,8 +9,8 @@ namespace Arman.PersistentDataManagement
     // NOTE: This voilates the PersistentDataEncoder's interface. Do not use this class.s
     public class PlayerPrefsPersistentDataEncoder : IPersistentDataEncoder
     {
-        private StringBuilder blockPath = new StringBuilder();
-        private Stack<string> blockStack = new Stack<string>();
+        private StringBuilder _blockPath = new StringBuilder();
+        private Stack<string> _blockStack = new Stack<string>();
 
         public PlayerPrefsPersistentDataEncoder()
         {
@@ -107,23 +107,23 @@ namespace Arman.PersistentDataManagement
 
         private void PushBlock(string block)
         {
-            blockStack.Push(block);
-            blockPath.Append("_");
-            blockPath.Append(block);
+            _blockStack.Push(block);
+            _blockPath.Append("_");
+            _blockPath.Append(block);
         }
 
         private void PopBlock()
         {
-            var block = blockStack.Pop();
+            var block = _blockStack.Pop();
             // Removing block name
-            blockPath.Remove(blockPath.Length - block.Length, block.Length);
+            _blockPath.Remove(_blockPath.Length - block.Length, block.Length);
             // Removing separator
-            blockPath.Remove(blockPath.Length - 1, 1);
+            _blockPath.Remove(_blockPath.Length - 1, 1);
         }
 
         private string ConvertToBlockKey(string key)
         {
-            return $"{blockPath.ToString()}_{key}";
+            return $"{_blockPath.ToString()}_{key}";
         }
     }
 }

@@ -6,25 +6,25 @@ namespace Arman.ComponentSystem
     public class SpecializedEntity<T> : ISpecializedEntity<T>
         where T : IComponent
     {
-        Entity basicEntity = new Entity();
+        Entity _basicEntity = new Entity();
 
-        List<T> compList = new List<T>();
+        List<T> _compList = new List<T>();
 
         public void AddComponent(T component)
         {
-            basicEntity.AddComponent(component);
-            compList.Add(component);
+            _basicEntity.AddComponent(component);
+            _compList.Add(component);
         }
 
         public List<T> AllComponents()
         {
-            return compList;
+            return _compList;
         }
 
         public U GetComponent<U>()
             where U : T
         {
-            return basicEntity.GetComponent<U>();
+            return _basicEntity.GetComponent<U>();
         }
     }
 }

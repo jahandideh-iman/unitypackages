@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Serialization;
 
 namespace Arman.UnityUtilities
 {
@@ -10,17 +11,21 @@ namespace Arman.UnityUtilities
         [System.Serializable]
         public class AnimationEvent
         {
-            public string name;
-            public UnityEvent action;
+            [FormerlySerializedAs("name")]
+            public string Name;
+
+            [FormerlySerializedAs("action")]
+            public UnityEvent Action;
         }
 
-        public List<AnimationEvent> animationEvents;
+        [FormerlySerializedAs("animationEvents")]
+        public List<AnimationEvent> AnimationEvents;
 
         void OnAnimationEvent(string eventName)
         {
-            foreach (var animEvt in animationEvents)
-                if (animEvt.name.Equals(eventName))
-                    animEvt.action.Invoke();
+            foreach (var animEvt in AnimationEvents)
+                if (animEvt.Name.Equals(eventName))
+                    animEvt.Action.Invoke();
         }
     }
 }

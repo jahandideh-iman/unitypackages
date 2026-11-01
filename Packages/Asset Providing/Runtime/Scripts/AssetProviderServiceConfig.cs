@@ -1,24 +1,27 @@
 ﻿using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Arman.AssetProviding
 {
     [CreateAssetMenu(menuName = ContextMenuConsts.ROOT_CATEGORY + "Asset Provider Service Config")]
     public class AssetProviderServiceConfig : ScriptableObject
     {
+        [FormerlySerializedAs("syncProviders")]
         [SerializeField]
-        AssetProviderConfig[] syncProviders;
+        AssetProviderConfig[] SyncProviders;
 
+        [FormerlySerializedAs("asyncProviders")]
         [SerializeField]
-        AssetProviderConfig[] asyncProviders;
+        AssetProviderConfig[] AsyncProviders;
 
         public ChainedAssetProviderService CreateAssetProviderService()
         {
             var service = new ChainedAssetProviderService();
 
-            foreach (var config in syncProviders)
+            foreach (var config in SyncProviders)
                 service.AddSyncProvider(config.CreateSyncProvider());
 
-            foreach (var config in asyncProviders)
+            foreach (var config in AsyncProviders)
                 service.AddAsyncProvider(config.CreateAsyncProvider());
 
             return service;

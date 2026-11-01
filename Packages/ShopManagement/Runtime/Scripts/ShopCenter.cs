@@ -8,43 +8,43 @@ namespace Arman.ShopManagement
     {
         class PurchaseHandlingData
         {
-            public Type targetPackageType;
+            public Type TargetPackageType;
 
-            public IPurchaseHandler purchaseHandler;
+            public IPurchaseHandler PurchaseHandler;
 
             public PurchaseHandlingData(Type packageType, IPurchaseHandler purchaseHandler)
             {
-                this.targetPackageType = packageType;
-                this.purchaseHandler = purchaseHandler;
+                this.TargetPackageType = packageType;
+                this.PurchaseHandler = purchaseHandler;
             }
 
             public bool IsAppliedTo(IShopPackage shopPackage)
             {
-                return shopPackage.GetType().IsSubclassOf(targetPackageType)
-                    || shopPackage.GetType().Equals(targetPackageType);
+                return shopPackage.GetType().IsSubclassOf(TargetPackageType)
+                    || shopPackage.GetType().Equals(TargetPackageType);
             }
         }
 
-        List<IShopPackage> packages = new List<IShopPackage>();
-        List<PurchaseHandlingData> purchaseHandlingDataList = new List<PurchaseHandlingData>();
+        List<IShopPackage> _packages = new List<IShopPackage>();
+        List<PurchaseHandlingData> _purchaseHandlingDataList = new List<PurchaseHandlingData>();
 
-        Action<IShopPackage, IPurchaseSuccessResult> globalOnPurchaseSucceeded = delegate { };
-        Action<IShopPackage, IPurchaseFailureResult> globalOnPurchaseFailed = delegate { };
+        Action<IShopPackage, IPurchaseSuccessResult> _globalOnPurchaseSucceeded = delegate { };
+        Action<IShopPackage, IPurchaseFailureResult> _globalOnPurchaseFailed = delegate { };
 
         public void AddPackage(IShopPackage package)
         {
-            packages.Add(package);
+            _packages.Add(package);
         }
 
         public void RemovePackage(IShopPackage package)
         {
-            packages.Remove(package);
+            _packages.Remove(package);
         }
 
         public void AssignPurchaseHandler<T>(IPurchaseHandler purchaseHandler)
             where T : IShopPackage
         {
-            purchaseHandlingDataList.Add(new PurchaseHandlingData(typeof(T), purchaseHandler));
+            _purchaseHandlingDataList.Add(new PurchaseHandlingData(typeof(T), purchaseHandler));
         }
 
         public void Purchase(
@@ -70,7 +70,7 @@ namespace Arman.ShopManagement
         {
             ApplyPackage(package);
             onSuccess(result);
-            globalOnPurchaseSucceeded.Invoke(package, result);
+            _globalOnPurchaseSucceeded.Invoke(package, result);
         }
 
         private void HandlePurchaseFailure(
@@ -80,7 +80,7 @@ namespace Arman.ShopManagement
         )
         {
             onFailure(result);
-            globalOnPurchaseFailed.Invoke(package, result);
+            _globalOnPurchaseFailed.Invoke(package, result);
         }
 
         private void ApplyPackage(IShopPackage package)
@@ -92,32 +92,32 @@ namespace Arman.ShopManagement
             Action<IShopPackage, IPurchaseSuccessResult> onPurchaseSucceeded
         )
         {
-            this.globalOnPurchaseSucceeded = onPurchaseSucceeded;
+            this._globalOnPurchaseSucceeded = onPurchaseSucceeded;
         }
 
         public void SetPurchaseFailureCallback(
             Action<IShopPackage, IPurchaseFailureResult> onPurchaseFailed
         )
         {
-            this.globalOnPurchaseFailed = onPurchaseFailed;
+            this._globalOnPurchaseFailed = onPurchaseFailed;
         }
 
         public ICollection<IShopPackage> Packages()
         {
-            return packages;
+            return _packages;
         }
 
         public ICollection<T> PackagesOfType<T>()
             where T : IShopPackage
         {
-            return packages.Where(p => p is T).Cast<T>().ToList();
+            return _packages.Where(p => p is T).Cast<T>().ToList();
         }
 
         private IPurchaseHandler FindPurchaseHandlerFor(IShopPackage package)
         {
-            foreach (var data in purchaseHandlingDataList)
+            foreach (var data in _purchaseHandlingDataList)
                 if (data.IsAppliedTo(package))
-                    return data.purchaseHandler;
+                    return data.PurchaseHandler;
 
             return null;
         }

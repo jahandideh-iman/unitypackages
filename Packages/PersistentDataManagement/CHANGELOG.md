@@ -11,11 +11,16 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `IPersistentDataWrapper`, `IReadablePersistentDataWrapper`, `IWritablePersistentDataWrapper`, `JSONPersistentDataWrapper`, `PlayerPrefsPersistentDataWrapper` and `EmptyPersistentDataWrapper`. **Breaking** — update references to the `...Encoder` names below.
 - `EmptyPersistetDataIOStreamFactory`, `FileBasedPersistetDataIOStreamFactory` and `MemoryBasedPersistetDataIOStreamFactory`, whose names misspelled "Persistent". **Breaking** — update references to the `...PersistentDataIOStreamFactory` names below.
+- The camelCase names of public and protected fields, renamed to PascalCase: `FileBasedPersistentDataIOStreamFactory.path` → `FileBasedPersistentDataIOStreamFactory.Path`, `PersistentDataChannelNotFoundException.channel` → `PersistentDataChannelNotFoundException.Channel`, `PersistentDataSerializerAlreadyRegisterException.serializer` → `PersistentDataSerializerAlreadyRegisterException.Serializer`. **Breaking** — update references to the new names.
 
 ### Added
 
 - `IPersistentDataEncoder`, `IReadablePersistentDataEncoder`, `IWritablePersistentDataEncoder`, `JSONPersistentDataEncoder`, `PlayerPrefsPersistentDataEncoder` and `EmptyPersistentDataEncoder`, renamed from the `...Wrapper` types with no change in behaviour.
 - `EmptyPersistentDataIOStreamFactory`, `FileBasedPersistentDataIOStreamFactory` and `MemoryBasedPersistentDataIOStreamFactory`, renamed from the misspelled `...PersistetDataIOStreamFactory` types with no change in behaviour.
+
+### Changed
+
+- Renamed private fields that Unity does not serialize to `_camelCase`. No public API or serialized data changes.
 
 ## [0.3.0] - 2026-09-05
 

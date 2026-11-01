@@ -5,41 +5,41 @@ namespace Arman.ObjectPooling.Tests
 {
     public class FakePoolable : IPoolable
     {
-        public int id;
+        public int Id;
 
-        public bool isActive = false;
+        public bool IsActive = false;
 
-        public bool onAcquiredIsCalled = false;
-        public bool onReleaseIsCalled = false;
+        public bool OnAcquiredIsCalled = false;
+        public bool OnReleaseIsCalled = false;
 
         public FakePoolable(int id)
         {
-            this.id = id;
+            this.Id = id;
         }
 
         public void OnAcquired()
         {
-            onAcquiredIsCalled = true;
+            OnAcquiredIsCalled = true;
         }
 
         public void OnReleased()
         {
-            onReleaseIsCalled = true;
+            OnReleaseIsCalled = true;
         }
 
         public void SetActive(bool isActive)
         {
-            this.isActive = isActive;
+            this.IsActive = isActive;
         }
     }
 
     public class TestableObjectPool : ObjectPool<FakePoolable>
     {
-        public bool createMethodIsCalled = false;
+        public bool CreateMethodIsCalled = false;
 
         protected override FakePoolable CreateObject()
         {
-            this.createMethodIsCalled = true;
+            this.CreateMethodIsCalled = true;
             return new FakePoolable(1);
         }
 
@@ -56,49 +56,49 @@ namespace Arman.ObjectPooling.Tests
 
     public class ObjectPoolTest
     {
-        TestableObjectPool pool;
+        TestableObjectPool _pool;
 
         [SetUp]
         public void Setup()
         {
-            pool = new TestableObjectPool();
+            _pool = new TestableObjectPool();
         }
 
         [Test]
         public void ANewPoolShouldBeEmpty()
         {
-            Assert.That(pool.Size(), Is.EqualTo(0));
+            Assert.That(_pool.Size(), Is.EqualTo(0));
         }
 
         [Test]
         public void AcquiringShouldCreateAObjectAndActivateItWhenNoObjectIsInThePool()
         {
-            var obj = pool.Acquire();
+            var obj = _pool.Acquire();
 
-            Assert.That(pool.createMethodIsCalled);
-            Assert.That(obj.isActive, Is.True);
-            Assert.That(obj.onAcquiredIsCalled, Is.True);
+            Assert.That(_pool.CreateMethodIsCalled);
+            Assert.That(obj.IsActive, Is.True);
+            Assert.That(obj.OnAcquiredIsCalled, Is.True);
         }
 
         [Test]
         public void ReleasingAnObjectShouldDeactivateTheObjectAndReturnItToThePool()
         {
-            var obj = pool.Acquire();
+            var obj = _pool.Acquire();
 
-            pool.Release(obj);
+            _pool.Release(obj);
 
-            Assert.That(obj.isActive, Is.False);
-            Assert.That(obj.onReleaseIsCalled, Is.True);
-            Assert.That(pool.Size(), Is.EqualTo(1));
+            Assert.That(obj.IsActive, Is.False);
+            Assert.That(obj.OnReleaseIsCalled, Is.True);
+            Assert.That(_pool.Size(), Is.EqualTo(1));
         }
 
         [Test]
         public void AcquiringShouldNotCreateANewObjectWhenWhenThereAreObjectInThePool()
         {
-            var firstObject = pool.Acquire();
-            pool.Release(firstObject);
+            var firstObject = _pool.Acquire();
+            _pool.Release(firstObject);
 
-            var secondObject = pool.Acquire();
+            var secondObject = _pool.Acquire();
 
             Assert.That(firstObject, Is.SameAs(secondObject));
         }
@@ -106,20 +106,20 @@ namespace Arman.ObjectPooling.Tests
         [Test]
         public void ReservingShouldAddToTheSizeOfThePool()
         {
-            pool.Reserve(3);
-            pool.Reserve(2);
+            _pool.Reserve(3);
+            _pool.Reserve(2);
 
-            Assert.That(pool.Size(), Is.EqualTo(5));
+            Assert.That(_pool.Size(), Is.EqualTo(5));
         }
 
         [Test]
         public void AcquiringShouldDecreaseTheSizeOfThePool()
         {
-            pool.Reserve(3);
+            _pool.Reserve(3);
 
-            pool.Acquire();
+            _pool.Acquire();
 
-            Assert.That(pool.Size(), Is.EqualTo(2));
+            Assert.That(_pool.Size(), Is.EqualTo(2));
         }
     }
 }
