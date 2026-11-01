@@ -13,11 +13,11 @@ namespace Arman.DevelopmentConsole
         public DevelopmentCommand CommandPrefab;
 
         [FormerlySerializedAs("gourpNameText")]
-        public Text GourpNameText;
+        public Text GroupNameText;
 
         public void Init(string groupName)
         {
-            this.GourpNameText.text = groupName;
+            this.GroupNameText.text = groupName;
         }
 
         public void AddCommand(CommandInfo commandInfo)
