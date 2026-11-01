@@ -5,6 +5,24 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-11-01
+
+### Removed
+
+- The camelCase names of public and protected fields, renamed to PascalCase: `IDedChannel.id` → `IDedChannel.Id`. **Breaking** — update references to the new names.
+
+### Added
+
+- `JsonObjectExtensions.AddInvariant(key, float)`, which adds a float to a `NiceJson` `JsonObject` with the invariant culture and the round-trip format, so the JSON it writes parses back to the same float on every device locale.
+
+### Changed
+
+- Renamed private fields that Unity does not serialize to `_camelCase`. No public API or serialized data changes.
+
+### Fixed
+
+- `NiceJson` writes `decimal` values with the invariant culture, so on a comma-decimal locale such as German or French `ToJsonString()` emits `1.5` instead of the invalid `1,5`. The bundled `NiceJson` is upstream 1.3.3.
+
 ## [0.3.0] - 2026-09-05
 
 ### Removed

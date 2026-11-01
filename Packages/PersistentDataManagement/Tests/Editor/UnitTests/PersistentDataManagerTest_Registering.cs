@@ -8,21 +8,21 @@ namespace Arman.PersistentDataManagement.Tests
         [Test]
         public void HasTheRegisterSerializersWithoutChannel()
         {
-            manager.Register(serializerA.Object);
-            manager.Register(serializerB.Object);
+            Manager.Register(SerializerA.Object);
+            Manager.Register(SerializerB.Object);
 
-            Assert.That(manager.Contains(serializerA.Object));
-            Assert.That(manager.Contains(serializerB.Object));
+            Assert.That(Manager.Contains(SerializerA.Object));
+            Assert.That(Manager.Contains(SerializerB.Object));
         }
 
         [Test]
         public void HasTheRegisterSerializersWithChannel()
         {
-            manager.Register(serializerA.Object, channel1);
-            manager.Register(serializerB.Object, channel2);
+            Manager.Register(SerializerA.Object, Channel1);
+            Manager.Register(SerializerB.Object, Channel2);
 
-            Assert.That(manager.Contains(serializerA.Object));
-            Assert.That(manager.Contains(serializerB.Object));
+            Assert.That(Manager.Contains(SerializerA.Object));
+            Assert.That(Manager.Contains(SerializerB.Object));
         }
 
         [Test]
@@ -30,8 +30,8 @@ namespace Arman.PersistentDataManagement.Tests
         {
             var action = new TestDelegate(() =>
             {
-                manager.Register(serializerA.Object, channel1);
-                manager.Register(serializerA.Object, channel2);
+                Manager.Register(SerializerA.Object, Channel1);
+                Manager.Register(SerializerA.Object, Channel2);
             });
 
             Assert.That(
@@ -39,7 +39,7 @@ namespace Arman.PersistentDataManagement.Tests
                 Throws.Exception.InstanceOf<PersistentDataSerializerAlreadyRegisterException>()
             );
 
-            // TODO: Shoud I not assert that serializerA is not registered in channelB?
+            // TODO: Should I not assert that serializerA is not registered in channelB?
         }
     }
 }

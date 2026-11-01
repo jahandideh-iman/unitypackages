@@ -5,6 +5,14 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-11-01
+
+### Changed
+
+- Renamed serialized fields to PascalCase: `AssetProviderServiceConfig.syncProviders` → `AssetProviderServiceConfig.SyncProviders`, `AssetProviderServiceConfig.asyncProviders` → `AssetProviderServiceConfig.AsyncProviders`, `ResourcesAssetProviderConfig.resourcesPathPrefix` → `ResourcesAssetProviderConfig.ResourcesPathPrefix`, `TableBasedAssetProviderConfig.assets` → `TableBasedAssetProviderConfig.Assets`. Each carries `[FormerlySerializedAs]` with its old name, so values already saved in scenes, prefabs and assets keep loading.
+- `TableBasedAssetProviderConfig.Entry` serializes its `ID` and `Asset` properties directly (`[field: SerializeField]`) in place of the private `id` and `asset` fields behind them. Each backing field carries `[FormerlySerializedAs]` with the old field name, so existing table entries keep loading; the public properties are unchanged.
+- Renamed private fields that Unity does not serialize to `_camelCase`. No public API or serialized data changes.
+
 ## [0.3.0] - 2026-09-05
 
 ### Removed

@@ -5,6 +5,21 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-11-01
+
+### Fixed
+
+- An updatable that pauses its own channel during `AdvanceTime` no longer lets the rest of that channel update in the same tick. The paused state was checked once per channel, so the remaining updatables still ran until the next tick.
+
+### Removed
+
+- The camelCase names of public and protected fields, renamed to PascalCase: `ChannelData.channel` → `ChannelData.Channel`, `ChannelData.parent` → `ChannelData.Parent`, `ChannelData.timeScale` → `ChannelData.TimeScale`, `ChannelData.isPaused` → `ChannelData.IsPaused`, `ChannelData.updatables` → `ChannelData.Updatables`. **Breaking** — update references to the new names.
+
+### Changed
+
+- Renamed private fields that Unity does not serialize to `_camelCase`. No public API or serialized data changes.
+- Updated `com.arman.package-basics` to `0.4.0`.
+
 ## [0.3.0] - 2026-09-05
 
 ### Added

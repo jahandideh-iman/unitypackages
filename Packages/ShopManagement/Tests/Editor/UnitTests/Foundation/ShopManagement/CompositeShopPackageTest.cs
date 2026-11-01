@@ -7,7 +7,7 @@ namespace Arman.ShopManagement.Tests
     public class CompositeShopPackageTest
     {
         [Test]
-        public void ApplyingShoudDelegateApplyingToAllComponents()
+        public void ApplyingShouldDelegateApplyingToAllComponents()
         {
             var composite = new CompositeShopPackage();
 

@@ -7,16 +7,16 @@ namespace Arman.Mocks.Foundation.ShopManagement.Core
     // generated proxy type cannot express.
     public class FakeShopPackage : IShopPackage
     {
-        bool isApplied = false;
+        bool _isApplied = false;
 
         public bool IsApplied()
         {
-            return isApplied;
+            return _isApplied;
         }
 
         public void Apply()
         {
-            isApplied = true;
+            _isApplied = true;
         }
     }
 }

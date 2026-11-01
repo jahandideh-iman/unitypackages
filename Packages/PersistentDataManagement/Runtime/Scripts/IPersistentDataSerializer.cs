@@ -4,7 +4,7 @@
     {
         string Key();
 
-        void SerializeTo(IWritablePersistentDataWrapper persistentDataWrapper);
-        void DeserializeFrom(IReadablePersistentDataWrapper persistentDataWrapper);
+        void SerializeTo(IWritablePersistentDataEncoder persistentDataEncoder);
+        void DeserializeFrom(IReadablePersistentDataEncoder persistentDataEncoder);
     }
 }

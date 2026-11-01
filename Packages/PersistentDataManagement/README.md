@@ -1,7 +1,7 @@
 # Persistent Data Management
 
 Saving and loading game state, split into three replaceable parts: _what_ is saved
-(`IPersistentDataSerializer`), _how it is encoded_ (`IPersistentDataWrapper`), and _where it goes_
+(`IPersistentDataSerializer`), _how it is encoded_ (`IPersistentDataEncoder`), and _where it goes_
 (`IPersistentDataIOStreamFactory`). Systems register a serializer and never learn whether their data
 ends up in a JSON file, a memory stream or a test double.
 
@@ -10,31 +10,31 @@ the world's, or load only settings on boot.
 
 ## What it provides
 
-Namespace `Arman.Foundation.Core.PersistentDataManagement`:
+Namespace `Arman.PersistentDataManagement`:
 
-| Type                                                              | Purpose                                                                                           |
-| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `IPersistentDataSerializer`                                       | `Key()`, `SerializeTo(...)`, `DeserializeFrom(...)` — implemented by anything with state to save. |
-| `IPersistentDataWrapper`                                          | The encoding. Splits into `IWritablePersistentDataWrapper` and `IReadablePersistentDataWrapper`.  |
-| `IPersistentDataIOStreamFactory`                                  | Supplies a `StreamReader`/`StreamWriter` per channel.                                             |
-| `IPersistentDataManager` / `PersistentDataManager`                | Registration, `Save`/`SaveAll`, `Load`/`LoadAll`, `Delete`.                                       |
-| `MemoryBasedPersistetDataIOStreamFactory`                         | In-memory streams — for tests.                                                                    |
-| `EmptyPersistentDataWrapper`, `EmptyPersistetDataIOStreamFactory` | No-op stand-ins.                                                                                  |
+| Type                                                               | Purpose                                                                                           |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
+| `IPersistentDataSerializer`                                        | `Key()`, `SerializeTo(...)`, `DeserializeFrom(...)` — implemented by anything with state to save. |
+| `IPersistentDataEncoder`                                           | The encoding. Splits into `IWritablePersistentDataEncoder` and `IReadablePersistentDataEncoder`.  |
+| `IPersistentDataIOStreamFactory`                                   | Supplies a `StreamReader`/`StreamWriter` per channel.                                             |
+| `IPersistentDataManager` / `PersistentDataManager`                 | Registration, `Save`/`SaveAll`, `Load`/`LoadAll`, `Delete`.                                       |
+| `MemoryBasedPersistentDataIOStreamFactory`                         | In-memory streams — for tests.                                                                    |
+| `EmptyPersistentDataEncoder`, `EmptyPersistentDataIOStreamFactory` | No-op stand-ins.                                                                                  |
 
-Namespace `Arman.Foundation.Unity.PersistentDataManagement`:
+The same namespace holds the file, JSON and `PlayerPrefs` encoders and streams:
 
-| Type                                    | Purpose                                                        |
-| --------------------------------------- | -------------------------------------------------------------- |
-| `JSONPersistentDataWrapper`             | JSON encoding, via the `NiceJson` bundled in `Package Basics`. |
-| `FileBasedPersistetDataIOStreamFactory` | One file per channel under a directory you pass in.            |
-| `PlayerPrefsPersistentDataWrapper`      | `PlayerPrefs` backing — see the warning below.                 |
+| Type                                     | Purpose                                                        |
+| ---------------------------------------- | -------------------------------------------------------------- |
+| `JSONPersistentDataEncoder`              | JSON encoding, via the `NiceJson` bundled in `Package Basics`. |
+| `FileBasedPersistentDataIOStreamFactory` | One file per channel under a directory you pass in.            |
+| `PlayerPrefsPersistentDataEncoder`       | `PlayerPrefs` backing — see the warning below.                 |
 
 ## Usage
 
 Implement a serializer for each thing that has state. `Key()` names its block in the save:
 
 ```csharp
-using Arman.Foundation.Core.PersistentDataManagement;
+using Arman.PersistentDataManagement;
 
 public class PlayerProgress : IPersistentDataSerializer
 {
@@ -44,14 +44,14 @@ public class PlayerProgress : IPersistentDataSerializer
 
     public string Key() => "PlayerProgress";
 
-    public void SerializeTo(IWritablePersistentDataWrapper data)
+    public void SerializeTo(IWritablePersistentDataEncoder data)
     {
         data.WriteInt("level", _level)
             .WriteFloat("health", _health)
             .WriteString("name", _name);
     }
 
-    public void DeserializeFrom(IReadablePersistentDataWrapper data)
+    public void DeserializeFrom(IReadablePersistentDataEncoder data)
     {
         _level  = data.ReadInt("level", 1);
         _health = data.ReadFloat("health", 100f);
@@ -63,13 +63,13 @@ public class PlayerProgress : IPersistentDataSerializer
 Assemble a manager and register against channels:
 
 ```csharp
-using Arman.Foundation.Unity.PersistentDataManagement;
-using Arman.Utility.Core;
+using Arman.PackageBasics;
+using Arman.PersistentDataManagement;
 using UnityEngine;
 
 var manager = new PersistentDataManager(
-    new FileBasedPersistetDataIOStreamFactory(Application.persistentDataPath),
-    new JSONPersistentDataWrapper(),
+    new FileBasedPersistentDataIOStreamFactory(Application.persistentDataPath),
+    new JSONPersistentDataEncoder(),
     saveVersion: 1);
 
 IChannel player   = new NamedChannel("player");
@@ -78,6 +78,9 @@ IChannel settings = new NamedChannel("settings");
 manager.Register(new PlayerProgress(), player);
 manager.Register(new AudioSettings(), settings);
 ```
+
+`PersistentDataManagerFactory.CreateDefault(saveVersion)` builds the same JSON-file manager under
+`Application.persistentDataPath`, for when the defaults are what you want.
 
 Save and load, whole or by channel:
 
@@ -92,7 +95,7 @@ manager.LoadAll();
 Nested blocks let a serializer write structured data:
 
 ```csharp
-public void SerializeTo(IWritablePersistentDataWrapper data)
+public void SerializeTo(IWritablePersistentDataEncoder data)
 {
     data.BeginWritingBlock("position")
         .WriteFloat("x", _x)
@@ -100,7 +103,7 @@ public void SerializeTo(IWritablePersistentDataWrapper data)
         .EndWritingBlock();
 }
 
-public void DeserializeFrom(IReadablePersistentDataWrapper data)
+public void DeserializeFrom(IReadablePersistentDataEncoder data)
 {
     if (data.HasKey("position") == false)
         return;
@@ -118,17 +121,17 @@ Swap the stream factory; nothing else changes:
 
 ```csharp
 var manager = new PersistentDataManager(
-    new MemoryBasedPersistetDataIOStreamFactory(),
-    new JSONPersistentDataWrapper(),
+    new MemoryBasedPersistentDataIOStreamFactory(),
+    new JSONPersistentDataEncoder(),
     saveVersion: 1);
 ```
 
 ## Things to know
 
-- **Do not use `PlayerPrefsPersistentDataWrapper`.** It is marked in-source as violating the
-  `IPersistentDataWrapper` contract — `Clear`, `WriteTo` and `ReadFrom` are all no-ops, so it ignores
-  the stream layer entirely. It ships for compatibility; prefer `JSONPersistentDataWrapper`.
-- **The save file is named after the channel.** `FileBasedPersistetDataIOStreamFactory` uses
+- **Do not use `PlayerPrefsPersistentDataEncoder`.** It is marked in-source as violating the
+  `IPersistentDataEncoder` contract — `Clear`, `WriteTo` and `ReadFrom` are all no-ops, so it ignores
+  the stream layer entirely. It ships for compatibility; prefer `JSONPersistentDataEncoder`.
+- **The save file is named after the channel.** `FileBasedPersistentDataIOStreamFactory` uses
   `channel.ToString()` as the filename, so two channels whose `ToString()` matches overwrite each
   other. Give every `NamedChannel` a distinct name.
 - **Registering the same serializer twice throws** `PersistentDataSerializerAlreadyRegisterException`.
@@ -138,9 +141,10 @@ var manager = new PersistentDataManager(
   which is why `DeserializeFrom` should supply sensible fallbacks.
 - **A serializer with no matching block in the file is skipped**, not reset. Adding a new serializer
   to an existing save works without a migration.
-- **A truncated or empty save file loads as "nothing saved yet".** `JSONPersistentDataWrapper` treats
-  empty content, and a block key that is not present, as absent rather than an error — so a save
-  interrupted mid-write costs you that channel's data, not every later load of it.
+- **An empty save file loads as "nothing saved yet".** `JSONPersistentDataEncoder` treats empty or
+  whitespace-only content as absent, and a block key that is not present as absent rather than an error.
+  A file cut off mid-write is not valid JSON, so `Load` throws while parsing it and applies none of
+  its data.
 - **The save version is written but never verified on load.** The `saveVersion` passed to the
   constructor records a `Version` in the metadata block for your own migration logic; the manager
   itself does not compare it.

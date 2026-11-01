@@ -11,8 +11,8 @@ namespace Arman.PersistentDataManagement
         public static IPersistentDataManager CreateDefault(int saveVersion = 0)
         {
             return new PersistentDataManager(
-                new FileBasedPersistetDataIOStreamFactory(Application.persistentDataPath),
-                new JSONPersistentDataWrapper(),
+                new FileBasedPersistentDataIOStreamFactory(Application.persistentDataPath),
+                new JSONPersistentDataEncoder(),
                 saveVersion
             );
         }

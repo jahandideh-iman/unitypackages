@@ -70,6 +70,7 @@ Each agent tool reads its own folders, so some files exist twice. When you chang
 | Starting or finishing a branch                                           | [`feature-worktree`](./.agents/skills/feature-worktree/SKILL.md)                 |
 | Planning work, superpowers workflows, the project subagents              | [`.agents/rules/process.md`](./.agents/rules/process.md)                         |
 | Any feature's design or plan                                             | [`docs/INDEX.md`](./docs/INDEX.md)                                               |
+| Any change, before starting or calling it done                           | [`.agents/rules/engineering.md`](./.agents/rules/engineering.md)                 |
 
 ## Commands
 

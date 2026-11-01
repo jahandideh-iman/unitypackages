@@ -5,22 +5,22 @@ namespace Arman.ShopManagement
 {
     public class CompositeShopPackage : IShopPackage
     {
-        List<IShopPackage> packages = new List<IShopPackage>();
+        List<IShopPackage> _packages = new List<IShopPackage>();
 
         public void Apply()
         {
-            foreach (var package in packages)
+            foreach (var package in _packages)
                 package.Apply();
         }
 
         public void Add(IShopPackage package)
         {
-            packages.Add(package);
+            _packages.Add(package);
         }
 
         public ICollection<IShopPackage> Packages()
         {
-            return packages;
+            return _packages;
         }
     }
 }

@@ -10,12 +10,12 @@ namespace Arman.ConfigurationManagement
         public T[] ShallowCopy<T>(T[] array)
             where T : ScriptableObject
         {
-            var coppies = new T[array.Length];
+            var copies = new T[array.Length];
 
             for (int i = 0; i < array.Length; i++)
-                coppies[i] = Instantiate(array[i]);
+                copies[i] = Instantiate(array[i]);
 
-            return coppies;
+            return copies;
         }
     }
 }

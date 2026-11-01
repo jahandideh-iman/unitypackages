@@ -8,14 +8,14 @@ namespace Arman.UIManagement
     [RequireComponent(typeof(GraphicRaycaster))]
     public abstract class Window : UIElement
     {
-        protected UIManager uiManager;
+        protected UIManager UIManager;
 
-        private Canvas canvas;
+        private Canvas _canvas;
 
         internal void Init(UIManager manager)
         {
-            canvas = GetComponent<Canvas>();
-            this.uiManager = manager;
+            _canvas = GetComponent<Canvas>();
+            this.UIManager = manager;
             InternalInit(manager);
         }
 
@@ -27,14 +27,14 @@ namespace Arman.UIManagement
 
         public void SetSorting(int order, int layer)
         {
-            canvas.overrideSorting = true;
-            canvas.sortingOrder = order;
-            canvas.sortingLayerID = layer;
+            _canvas.overrideSorting = true;
+            _canvas.sortingOrder = order;
+            _canvas.sortingLayerID = layer;
         }
 
         public int SortingOrder()
         {
-            return canvas.sortingOrder;
+            return _canvas.sortingOrder;
         }
     }
 }

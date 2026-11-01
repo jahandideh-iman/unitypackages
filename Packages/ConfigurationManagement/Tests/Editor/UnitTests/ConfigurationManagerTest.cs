@@ -17,11 +17,11 @@ namespace Arman.ConfigurationManagement.Tests
 
     class FakeConfigurer<T> : IConfigurer<T>
     {
-        public bool configurationCalled = false;
+        public bool ConfigurationCalled = false;
 
         public void Configure(T entity)
         {
-            configurationCalled = true;
+            ConfigurationCalled = true;
         }
 
         public void RegisterSelf(IConfigurationManager manager) { }
@@ -29,70 +29,70 @@ namespace Arman.ConfigurationManagement.Tests
 
     public class ConfigurationManagerTest
     {
-        ConfigurationManager configManager;
+        ConfigurationManager _configManager;
 
-        FakeConfigurer<TypeA> configurerA;
-        FakeConfigurer<TypeB> configurerB;
+        FakeConfigurer<TypeA> _configurerA;
+        FakeConfigurer<TypeB> _configurerB;
 
         [SetUp]
         public void Setup()
         {
-            configManager = new ConfigurationManager();
+            _configManager = new ConfigurationManager();
 
-            configurerA = new FakeConfigurer<TypeA>();
-            configurerB = new FakeConfigurer<TypeB>();
+            _configurerA = new FakeConfigurer<TypeA>();
+            _configurerB = new FakeConfigurer<TypeB>();
         }
 
         [Test]
         public void HasTheRegisteredConfigurers()
         {
-            configManager.Register(configurerA);
-            configManager.Register(configurerB);
+            _configManager.Register(_configurerA);
+            _configManager.Register(_configurerB);
 
-            Assert.That(configManager.Contains(configurerA));
-            Assert.That(configManager.Contains(configurerB));
+            Assert.That(_configManager.Contains(_configurerA));
+            Assert.That(_configManager.Contains(_configurerB));
         }
 
         [Test]
         public void ConfigurersCanBeRemoved()
         {
-            configManager.Register(configurerA);
-            configManager.Register(configurerB);
+            _configManager.Register(_configurerA);
+            _configManager.Register(_configurerB);
 
-            var removedA = configManager.RemoveConfigurer<TypeA>();
-            var removedB = configManager.RemoveConfigurer<TypeB>();
+            var removedA = _configManager.RemoveConfigurer<TypeA>();
+            var removedB = _configManager.RemoveConfigurer<TypeB>();
 
-            Assert.That(removedA, Is.SameAs(configurerA));
-            Assert.That(removedB, Is.SameAs(configurerB));
-            Assert.That(configManager.Contains(configurerA), Is.False);
-            Assert.That(configManager.Contains(configurerB), Is.False);
+            Assert.That(removedA, Is.SameAs(_configurerA));
+            Assert.That(removedB, Is.SameAs(_configurerB));
+            Assert.That(_configManager.Contains(_configurerA), Is.False);
+            Assert.That(_configManager.Contains(_configurerB), Is.False);
         }
 
         [Test]
         public void DelegatesTheConfigurationToTheCorrectConfigurer()
         {
-            configManager.Register(configurerA);
-            configManager.Register(configurerB);
+            _configManager.Register(_configurerA);
+            _configManager.Register(_configurerB);
 
-            configManager.Configure(new TypeA());
+            _configManager.Configure(new TypeA());
 
-            Assert.That(configurerA.configurationCalled, Is.True);
-            Assert.That(configurerB.configurationCalled, Is.False);
+            Assert.That(_configurerA.ConfigurationCalled, Is.True);
+            Assert.That(_configurerB.ConfigurationCalled, Is.False);
         }
 
         [Test]
-        public void MultiConfigurersCanBePartialyRemoved()
+        public void MultiConfigurersCanBePartiallyRemoved()
         {
             var configurerAB = new FakeMultiConfigurerAB();
 
-            configManager.Register<TypeA>(configurerAB);
-            configManager.Register<TypeB>(configurerAB);
+            _configManager.Register<TypeA>(configurerAB);
+            _configManager.Register<TypeB>(configurerAB);
 
-            var removedA = configManager.RemoveConfigurer<TypeA>();
+            var removedA = _configManager.RemoveConfigurer<TypeA>();
 
             Assert.That(removedA, Is.SameAs(configurerAB));
-            Assert.That(configManager.FindConfigurer<TypeA>(), Is.Null);
-            Assert.That(configManager.FindConfigurer<TypeB>(), Is.SameAs(configurerAB));
+            Assert.That(_configManager.FindConfigurer<TypeA>(), Is.Null);
+            Assert.That(_configManager.FindConfigurer<TypeB>(), Is.SameAs(configurerAB));
         }
     }
 }

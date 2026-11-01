@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Arman.PackageBasics;
+using Moq;
 using NUnit.Framework;
 
 namespace Arman.UpdateManagement.Tests
@@ -7,70 +8,90 @@ namespace Arman.UpdateManagement.Tests
     [TestFixture]
     public class UpdateManagerTest_ChannelStateChangedEvent
     {
-        IUpdateManager manager = null!;
-        IChannel channel = null!;
+        IUpdateManager _manager = null!;
+        IChannel _channel = null!;
 
-        List<(IChannel channel, bool isPaused)> raised = null!;
+        List<(IChannel channel, bool isPaused)> _raised = null!;
 
         [SetUp]
         public void Setup()
         {
-            manager = new UpdateManager();
-            channel = new NamedChannel("Channel");
+            _manager = new UpdateManager();
+            _channel = new NamedChannel("Channel");
 
-            raised = new List<(IChannel channel, bool isPaused)>();
+            _raised = new List<(IChannel channel, bool isPaused)>();
         }
 
         [Test]
         public void PausingARegisteredChannelShouldRaiseTheEvent()
         {
-            manager.RegisterChannel(channel);
-            manager.ChannelStateChangedEvent += Record;
+            _manager.RegisterChannel(_channel);
+            _manager.ChannelStateChangedEvent += Record;
 
-            manager.Pause(channel);
+            _manager.Pause(_channel);
 
-            Assert.That(raised, Is.EqualTo(new[] { (channel, true) }));
+            Assert.That(_raised, Is.EqualTo(new[] { (_channel, true) }));
         }
 
         [Test]
         public void ResumingARegisteredChannelShouldRaiseTheEvent()
         {
-            manager.RegisterChannel(channel);
-            manager.Pause(channel);
+            _manager.RegisterChannel(_channel);
+            _manager.Pause(_channel);
 
-            manager.ChannelStateChangedEvent += Record;
+            _manager.ChannelStateChangedEvent += Record;
 
-            manager.Resume(channel);
+            _manager.Resume(_channel);
 
-            Assert.That(raised, Is.EqualTo(new[] { (channel, false) }));
+            Assert.That(_raised, Is.EqualTo(new[] { (_channel, false) }));
         }
 
         [Test]
         public void PausingAnUnregisteredChannelShouldNotRaiseTheEvent()
         {
-            manager.ChannelStateChangedEvent += Record;
+            _manager.ChannelStateChangedEvent += Record;
 
-            manager.Pause(new NamedChannel("Unregistered"));
+            _manager.Pause(new NamedChannel("Unregistered"));
 
-            Assert.That(raised, Is.Empty);
+            Assert.That(_raised, Is.Empty);
         }
 
         [Test]
         public void AnUnsubscribedHandlerShouldNotBeCalled()
         {
-            manager.RegisterChannel(channel);
+            _manager.RegisterChannel(_channel);
 
-            manager.ChannelStateChangedEvent += Record;
-            manager.ChannelStateChangedEvent -= Record;
+            _manager.ChannelStateChangedEvent += Record;
+            _manager.ChannelStateChangedEvent -= Record;
 
-            manager.Pause(channel);
+            _manager.Pause(_channel);
 
-            Assert.That(raised, Is.Empty);
+            Assert.That(_raised, Is.Empty);
+        }
+
+        [Test]
+        public void AnUpdatableThatPausesItsOwnChannelShouldStopTheRestOfTheChannelFromUpdating()
+        {
+            var updateManager = new UpdateManager();
+
+            // Updatables are walked back to front, so the pauser (registered last) runs first.
+            var skipped = new Mock<IUpdatable>();
+            var pauser = new Mock<IUpdatable>();
+            pauser
+                .Setup(updatable => updatable.UpdateTime(It.IsAny<float>()))
+                .Callback(() => updateManager.Pause(_channel));
+
+            updateManager.RegisterUpdatable(skipped.Object, _channel);
+            updateManager.RegisterUpdatable(pauser.Object, _channel);
+
+            updateManager.AdvanceTime(1f);
+
+            skipped.Verify(updatable => updatable.UpdateTime(It.IsAny<float>()), Times.Never);
         }
 
         void Record(IChannel channel, bool isPaused)
         {
-            raised.Add((channel, isPaused));
+            _raised.Add((channel, isPaused));
         }
     }
 }

@@ -10,64 +10,64 @@ namespace Arman.EventManagement.Tests
         // the tests care about which object came back, not about calls made on it.
         class FakeGameEvent : IGameEvent { }
 
-        IEventManager manager;
+        IEventManager _manager;
 
-        Mock<IEventListener> listener1;
-        Mock<IEventListener> listener2;
+        Mock<IEventListener> _listener1;
+        Mock<IEventListener> _listener2;
 
         [SetUp]
         public void Setup()
         {
-            manager = new EventManager();
+            _manager = new EventManager();
 
-            listener1 = new Mock<IEventListener>();
-            listener2 = new Mock<IEventListener>();
+            _listener1 = new Mock<IEventListener>();
+            _listener2 = new Mock<IEventListener>();
         }
 
         [Test]
-        public void RegisteringListenrerShouldAddThemToManager()
+        public void RegisteringListenerShouldAddThemToManager()
         {
-            manager.Register(listener1.Object);
-            manager.Register(listener2.Object);
+            _manager.Register(_listener1.Object);
+            _manager.Register(_listener2.Object);
 
-            Assert.That(manager.Has(listener1.Object));
-            Assert.That(manager.Has(listener2.Object));
+            Assert.That(_manager.Has(_listener1.Object));
+            Assert.That(_manager.Has(_listener2.Object));
         }
 
         [Test]
-        public void UnregisteringListenrerShouldRemoveThemFromManager()
+        public void UnregisteringListenerShouldRemoveThemFromManager()
         {
-            manager.Register(listener1.Object);
+            _manager.Register(_listener1.Object);
 
-            manager.UnRegister(listener1.Object);
+            _manager.UnRegister(_listener1.Object);
 
-            Assert.That(manager.Has(listener1.Object), Is.False);
+            Assert.That(_manager.Has(_listener1.Object), Is.False);
         }
 
         [Test]
         public void PropagatingAnEventShouldNotifyRegisteredListeners()
         {
-            manager.Register(listener1.Object);
-            manager.Register(listener2.Object);
+            _manager.Register(_listener1.Object);
+            _manager.Register(_listener2.Object);
 
             IGameEvent evt = new FakeGameEvent();
-            manager.Propagate(evt, this);
+            _manager.Propagate(evt, this);
 
-            listener1.Verify(listener => listener.OnEvent(evt, this), Times.Once);
-            listener2.Verify(listener => listener.OnEvent(evt, this), Times.Once);
+            _listener1.Verify(listener => listener.OnEvent(evt, this), Times.Once);
+            _listener2.Verify(listener => listener.OnEvent(evt, this), Times.Once);
         }
 
         [Test]
         public void PropagatingAnEventShouldNotNotifyUnRegisteredListeners()
         {
-            manager.Register(listener1.Object);
-            manager.UnRegister(listener1.Object);
+            _manager.Register(_listener1.Object);
+            _manager.UnRegister(_listener1.Object);
 
             IGameEvent evt = new FakeGameEvent();
-            manager.Propagate(evt, this);
-            manager.Propagate(evt, this);
+            _manager.Propagate(evt, this);
+            _manager.Propagate(evt, this);
 
-            listener1.Verify(
+            _listener1.Verify(
                 listener => listener.OnEvent(It.IsAny<IGameEvent>(), It.IsAny<object>()),
                 Times.Never
             );
@@ -76,13 +76,13 @@ namespace Arman.EventManagement.Tests
         [Test]
         public void ClearingShouldRemoveAllListeners()
         {
-            manager.Register(listener1.Object);
-            manager.Register(listener2.Object);
+            _manager.Register(_listener1.Object);
+            _manager.Register(_listener2.Object);
 
-            manager.Clear();
+            _manager.Clear();
 
-            Assert.That(manager.Has(listener1.Object), Is.False);
-            Assert.That(manager.Has(listener2.Object), Is.False);
+            Assert.That(_manager.Has(_listener1.Object), Is.False);
+            Assert.That(_manager.Has(_listener2.Object), Is.False);
         }
     }
 }

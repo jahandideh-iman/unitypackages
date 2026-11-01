@@ -1,42 +1,43 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using Arman.PackageBasics;
 using NiceJson;
 
 namespace Arman.PersistentDataManagement
 {
-    public class JSONPersistentDataWrapper : IPersistentDataWrapper
+    public class JSONPersistentDataEncoder : IPersistentDataEncoder
     {
-        private JsonObject root;
-        private Stack<JsonObject> blockStack;
+        private JsonObject _root;
+        private Stack<JsonObject> _blockStack;
 
-        public JSONPersistentDataWrapper()
+        public JSONPersistentDataEncoder()
         {
-            root = new JsonObject();
-            blockStack = new Stack<JsonObject>();
-            blockStack.Push(root);
+            _root = new JsonObject();
+            _blockStack = new Stack<JsonObject>();
+            _blockStack.Push(_root);
         }
 
         public void Clear()
         {
-            root.Clear();
-            blockStack.Clear();
-            blockStack.Push(root);
+            _root.Clear();
+            _blockStack.Clear();
+            _blockStack.Push(_root);
         }
 
         public void WriteTo(StreamWriter stream)
         {
-            stream.Write(root.ToJsonString());
+            stream.Write(_root.ToJsonString());
         }
 
         public void ReadFrom(StreamReader stream)
         {
             var content = stream.ReadToEnd();
 
-            root = string.IsNullOrWhiteSpace(content)
+            _root = string.IsNullOrWhiteSpace(content)
                 ? new JsonObject()
                 : (JsonObject)JsonNode.ParseJsonString(content);
 
-            blockStack.Push(root);
+            _blockStack.Push(_root);
         }
 
         public bool HasKey(string key)
@@ -49,7 +50,7 @@ namespace Arman.PersistentDataManagement
             return HasKey(key) ? (int)CurrentBlock()[key] : defaultValue;
         }
 
-        public IWritablePersistentDataWrapper WriteInt(string key, int value)
+        public IWritablePersistentDataEncoder WriteInt(string key, int value)
         {
             CurrentBlock().Add(key, value);
             return this;
@@ -60,7 +61,7 @@ namespace Arman.PersistentDataManagement
             return HasKey(key) ? (string)CurrentBlock()[key] : defaultValue;
         }
 
-        public IWritablePersistentDataWrapper WriteString(string key, string value)
+        public IWritablePersistentDataEncoder WriteString(string key, string value)
         {
             CurrentBlock().Add(key, value);
             return this;
@@ -71,24 +72,24 @@ namespace Arman.PersistentDataManagement
             return HasKey(key) ? (float)CurrentBlock()[key] : defaultValue;
         }
 
-        public IWritablePersistentDataWrapper WriteFloat(string key, float value)
+        public IWritablePersistentDataEncoder WriteFloat(string key, float value)
         {
-            CurrentBlock().Add(key, value);
+            CurrentBlock().AddInvariant(key, value);
             return this;
         }
 
         public bool ReadBoolean(string key, bool defaultValue = false)
         {
-            return HasKey(key) ? (bool)CurrentBlock()[key] : default;
+            return HasKey(key) ? (bool)CurrentBlock()[key] : defaultValue;
         }
 
-        public IWritablePersistentDataWrapper WriteBoolean(string key, bool value)
+        public IWritablePersistentDataEncoder WriteBoolean(string key, bool value)
         {
             CurrentBlock().Add(key, value);
             return this;
         }
 
-        public IWritablePersistentDataWrapper BeginWritingBlock(string key)
+        public IWritablePersistentDataEncoder BeginWritingBlock(string key)
         {
             var block = new JsonObject();
             CurrentBlock().Add(key, block);
@@ -96,7 +97,7 @@ namespace Arman.PersistentDataManagement
             return this;
         }
 
-        public IWritablePersistentDataWrapper EndWritingBlock()
+        public IWritablePersistentDataEncoder EndWritingBlock()
         {
             PopBlock();
             return this;
@@ -118,17 +119,17 @@ namespace Arman.PersistentDataManagement
 
         private JsonObject CurrentBlock()
         {
-            return blockStack.Peek();
+            return _blockStack.Peek();
         }
 
         private void PushBlock(JsonObject jsonObject)
         {
-            blockStack.Push(jsonObject);
+            _blockStack.Push(jsonObject);
         }
 
         private void PopBlock()
         {
-            blockStack.Pop();
+            _blockStack.Pop();
         }
     }
 }

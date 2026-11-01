@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace Arman.DevelopmentConsole
@@ -7,35 +8,36 @@ namespace Arman.DevelopmentConsole
     [RequireComponent(typeof(Button))]
     public class ButtonDragabler : MonoBehaviour, IDragHandler, IEndDragHandler, IBeginDragHandler
     {
-        public float dragThreshold;
+        [FormerlySerializedAs("dragThreshold")]
+        public float DragThreshold;
 
-        Button button;
-        bool mustCheckForDrag = false;
-        bool isDraging = false;
+        Button _button;
+        bool _mustCheckForDrag = false;
+        bool _isDragging = false;
 
         void Awake()
         {
-            button = this.transform.GetComponent<Button>();
+            _button = this.transform.GetComponent<Button>();
         }
 
         public void OnBeginDrag(PointerEventData eventData)
         {
-            mustCheckForDrag = true;
+            _mustCheckForDrag = true;
         }
 
         public void OnDrag(PointerEventData eventData)
         {
-            if (mustCheckForDrag)
+            if (_mustCheckForDrag)
             {
-                if (Vector2.Distance(eventData.position, eventData.pressPosition) >= dragThreshold)
+                if (Vector2.Distance(eventData.position, eventData.pressPosition) >= DragThreshold)
                 {
-                    isDraging = true;
-                    mustCheckForDrag = false;
-                    button.enabled = false;
+                    _isDragging = true;
+                    _mustCheckForDrag = false;
+                    _button.enabled = false;
                 }
             }
 
-            if (isDraging)
+            if (_isDragging)
             {
                 this.transform.position = eventData.position;
                 eventData.Use();
@@ -44,9 +46,9 @@ namespace Arman.DevelopmentConsole
 
         public void OnEndDrag(PointerEventData eventData)
         {
-            isDraging = false;
-            mustCheckForDrag = false;
-            button.enabled = true;
+            _isDragging = false;
+            _mustCheckForDrag = false;
+            _button.enabled = true;
             ;
         }
     }

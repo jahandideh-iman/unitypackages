@@ -1,17 +1,18 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace Arman.PersistentDataManagement.Samples
 {
     public class ExamplePersistentDataSerializer : IPersistentDataSerializer
     {
-        PersistentDataExample persistentDataExample;
+        PersistentDataExample _persistentDataExample;
 
         public ExamplePersistentDataSerializer(PersistentDataExample persistentDataExample)
         {
-            this.persistentDataExample = persistentDataExample;
+            this._persistentDataExample = persistentDataExample;
         }
 
         public string Key()
@@ -19,80 +20,88 @@ namespace Arman.PersistentDataManagement.Samples
             return "ExampleSerializer";
         }
 
-        public void DeserializeFrom(IReadablePersistentDataWrapper persistentDataWrapper)
+        public void DeserializeFrom(IReadablePersistentDataEncoder persistentDataEncoder)
         {
-            persistentDataExample.intValue = persistentDataWrapper.ReadInt("int");
-            persistentDataExample.floatValue = persistentDataWrapper.ReadFloat("float");
-            persistentDataExample.stringValue = persistentDataWrapper.ReadString("string");
+            _persistentDataExample.IntValue = persistentDataEncoder.ReadInt("int");
+            _persistentDataExample.FloatValue = persistentDataEncoder.ReadFloat("float");
+            _persistentDataExample.StringValue = persistentDataEncoder.ReadString("string");
         }
 
-        public void SerializeTo(IWritablePersistentDataWrapper persistentDataWrapper)
+        public void SerializeTo(IWritablePersistentDataEncoder persistentDataEncoder)
         {
-            persistentDataWrapper.WriteInt("int", persistentDataExample.intValue);
-            persistentDataWrapper.WriteFloat("float", persistentDataExample.floatValue);
-            persistentDataWrapper.WriteString("string", persistentDataExample.stringValue);
+            persistentDataEncoder.WriteInt("int", _persistentDataExample.IntValue);
+            persistentDataEncoder.WriteFloat("float", _persistentDataExample.FloatValue);
+            persistentDataEncoder.WriteString("string", _persistentDataExample.StringValue);
         }
     }
 
     public class PersistentDataExample : MonoBehaviour
     {
-        IPersistentDataManager persistentDataManager;
+        IPersistentDataManager _persistentDataManager;
 
-        public Text intText;
-        public Text floatText;
-        public Text stringText;
+        [FormerlySerializedAs("intText")]
+        public Text IntText;
 
+        [FormerlySerializedAs("floatText")]
+        public Text FloatText;
+
+        [FormerlySerializedAs("stringText")]
+        public Text StringText;
+
+        [FormerlySerializedAs("intValue")]
         [HideInInspector]
-        public int intValue;
+        public int IntValue;
 
+        [FormerlySerializedAs("floatValue")]
         [HideInInspector]
-        public float floatValue;
+        public float FloatValue;
 
+        [FormerlySerializedAs("stringValue")]
         [HideInInspector]
-        public string stringValue;
+        public string StringValue;
 
         private void Awake()
         {
-            persistentDataManager = PersistentDataManagerFactory.CreateDefault();
+            _persistentDataManager = PersistentDataManagerFactory.CreateDefault();
 
-            persistentDataManager.Register(new ExamplePersistentDataSerializer(this));
+            _persistentDataManager.Register(new ExamplePersistentDataSerializer(this));
             UpdateGUI();
         }
 
         public void SetInt(string valueStr)
         {
-            intValue = int.Parse(valueStr);
+            IntValue = int.Parse(valueStr);
             UpdateGUI();
         }
 
         public void SetFloat(string valueStr)
         {
-            floatValue = float.Parse(valueStr);
+            FloatValue = float.Parse(valueStr);
             UpdateGUI();
         }
 
         public void SetString(string valueStr)
         {
-            stringValue = valueStr;
+            StringValue = valueStr;
             UpdateGUI();
         }
 
         public void Save()
         {
-            persistentDataManager.SaveAll();
+            _persistentDataManager.SaveAll();
         }
 
         public void Load()
         {
-            persistentDataManager.LoadAll();
+            _persistentDataManager.LoadAll();
             UpdateGUI();
         }
 
         void UpdateGUI()
         {
-            intText.text = $"int is {intValue}";
-            floatText.text = $"float is {floatValue}";
-            stringText.text = $"string is \"{stringValue}\"";
+            IntText.text = $"int is {IntValue}";
+            FloatText.text = $"float is {FloatValue}";
+            StringText.text = $"string is \"{StringValue}\"";
         }
     }
 }

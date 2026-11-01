@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Object = UnityEngine.Object;
 
 namespace Arman.AssetProviding
@@ -11,46 +12,40 @@ namespace Arman.AssetProviding
         [Serializable]
         public struct Entry
         {
-            [SerializeField]
-            string id;
+            [field: SerializeField]
+            [field: FormerlySerializedAs("id")]
+            public string ID { get; private set; }
 
-            [SerializeField]
-            Object asset;
-
-            public string ID
-            {
-                get => id;
-            }
-            public Object Asset
-            {
-                get => asset;
-            }
+            [field: SerializeField]
+            [field: FormerlySerializedAs("asset")]
+            public Object Asset { get; private set; }
         }
 
+        [FormerlySerializedAs("assets")]
         [SerializeField]
-        Entry[] assets;
+        Entry[] Assets;
 
-        Dictionary<string, Object> assetsTable = new Dictionary<string, Object>();
+        Dictionary<string, Object> _assetsTable = new Dictionary<string, Object>();
 
         public void OnBeforeSerialize() { }
 
         public void OnAfterDeserialize()
         {
-            assetsTable.Clear();
+            _assetsTable.Clear();
 
-            foreach (var entry in assets)
+            foreach (var entry in Assets)
                 if (entry.Asset != null)
-                    assetsTable.Add(entry.ID, entry.Asset);
+                    _assetsTable.Add(entry.ID, entry.Asset);
         }
 
         public override IAsyncUnityAssetProvider CreateAsyncProvider()
         {
-            return new TableBasedAssetProvider(assetsTable);
+            return new TableBasedAssetProvider(_assetsTable);
         }
 
         public override ISyncUnityAssetProvider CreateSyncProvider()
         {
-            return new TableBasedAssetProvider(assetsTable);
+            return new TableBasedAssetProvider(_assetsTable);
         }
     }
 }

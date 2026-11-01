@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace Arman.UIManagement
@@ -11,16 +12,18 @@ namespace Arman.UIManagement
     [RequireComponent(typeof(Canvas))]
     public class UIManager : MonoBehaviour
     {
+        [FormerlySerializedAs("popupBackgroundPanel")]
         [SerializeField]
-        private Panel popupBackgroundPanel = default;
+        private Panel PopupBackgroundPanel = default;
 
+        [FormerlySerializedAs("sortingOffsetBetweenPopups")]
         [SerializeField]
-        private int sortingOffsetBetweenPopups = default;
+        private int SortingOffsetBetweenPopups = default;
 
-        private Canvas canvas;
-        private Window mainWindow;
+        private Canvas _canvas;
+        private Window _mainWindow;
 
-        private readonly List<Window> windowsStack = new();
+        private readonly List<Window> _windowsStack = new();
 
         private readonly Dictionary<PopupWindow, CancellationTokenSource> _runningTransitions =
             new();
@@ -29,12 +32,12 @@ namespace Arman.UIManagement
 
         void Awake()
         {
-            canvas = GetComponent<Canvas>();
+            _canvas = GetComponent<Canvas>();
         }
 
         public void Init()
         {
-            popupBackgroundPanel.Init(this);
+            PopupBackgroundPanel.Init(this);
             HidePopupPanel();
             _inputBlocker = CreateInputBlocker(MainTransform());
         }
@@ -43,16 +46,16 @@ namespace Arman.UIManagement
         {
             Assert(window != null, "Main window must not be null");
 
-            this.mainWindow = window;
+            this._mainWindow = window;
             ClearLingeringWindows();
             PushOnStack(window);
 
-            this.mainWindow.Init(this);
+            this._mainWindow.Init(this);
         }
 
         public Window MainWindow()
         {
-            return mainWindow;
+            return _mainWindow;
         }
 
         void Update()
@@ -72,7 +75,7 @@ namespace Arman.UIManagement
         public T OpenPopUp<T>(T popup)
             where T : PopupWindow
         {
-            Assert(mainWindow != null, "Main window must not be null");
+            Assert(_mainWindow != null, "Main window must not be null");
             AttachToSelf(popup);
             popup.Init(this);
             SetPopupSortingOrder(popup);
@@ -93,23 +96,23 @@ namespace Arman.UIManagement
         private void SetPopupSortingOrder(Window popup)
         {
             popup.SetSorting(
-                CurrentFocusedWindow().SortingOrder() + sortingOffsetBetweenPopups,
-                canvas.sortingLayerID
+                CurrentFocusedWindow().SortingOrder() + SortingOffsetBetweenPopups,
+                _canvas.sortingLayerID
             );
         }
 
         private void FocusPopupPanelOn(Window window)
         {
-            popupBackgroundPanel.SetVisible(true);
-            popupBackgroundPanel.RestoreAlpha();
-            popupBackgroundPanel.SetSorting(window.SortingOrder() - 1, canvas.sortingLayerID);
+            PopupBackgroundPanel.SetVisible(true);
+            PopupBackgroundPanel.RestoreAlpha();
+            PopupBackgroundPanel.SetSorting(window.SortingOrder() - 1, _canvas.sortingLayerID);
 
             window.OnFocused();
         }
 
         public void Close(PopupWindow window)
         {
-            Assert(windowsStack.Contains(window), "Window must be in the stack to close it");
+            Assert(_windowsStack.Contains(window), "Window must be in the stack to close it");
             Assert(!_closingPopups.Contains(window), "Window is already closing");
 
             InternalClose().Forget();
@@ -125,7 +128,7 @@ namespace Arman.UIManagement
                         return;
                 }
 
-                windowsStack.Remove(window);
+                _windowsStack.Remove(window);
                 DestroyWindow(window);
                 if (FocusedWindowIsMainWindow())
                     HidePopupPanel();
@@ -193,24 +196,24 @@ namespace Arman.UIManagement
             {
                 // Set on every show, as Window.SetSorting is, so the order survives reactivation.
                 _inputBlocker.overrideSorting = true;
-                _inputBlocker.sortingLayerID = canvas.sortingLayerID;
+                _inputBlocker.sortingLayerID = _canvas.sortingLayerID;
                 _inputBlocker.sortingOrder = short.MaxValue;
             }
         }
 
         public void SetMainCamera(Camera camera)
         {
-            canvas.worldCamera = camera;
+            _canvas.worldCamera = camera;
         }
 
         private void HidePopupPanel()
         {
-            popupBackgroundPanel.SetVisible(false);
+            PopupBackgroundPanel.SetVisible(false);
         }
 
         private bool FocusedWindowIsMainWindow()
         {
-            return CurrentFocusedWindow() == mainWindow;
+            return CurrentFocusedWindow() == _mainWindow;
         }
 
         private bool IsNotFocused(Window window)
@@ -220,12 +223,12 @@ namespace Arman.UIManagement
 
         private Window CurrentFocusedWindow()
         {
-            return windowsStack.Last();
+            return _windowsStack.Last();
         }
 
         private void PushOnStack(Window window)
         {
-            windowsStack.Add(window);
+            _windowsStack.Add(window);
         }
 
         private void ClearLingeringWindows()
@@ -235,10 +238,10 @@ namespace Arman.UIManagement
             CancelAllTransitions();
 
             // It is assumed that Main Window will be destroyed on its own.
-            for (int i = 1; i < windowsStack.Count; i++)
-                DestroyWindow(windowsStack[i]);
+            for (int i = 1; i < _windowsStack.Count; i++)
+                DestroyWindow(_windowsStack[i]);
             //var lingering = windowsStack.Skip(1).ToList();
-            windowsStack.Clear();
+            _windowsStack.Clear();
 
             HidePopupPanel();
         }
@@ -262,7 +265,7 @@ namespace Arman.UIManagement
 
         public Panel BackgroundPanel()
         {
-            return popupBackgroundPanel;
+            return PopupBackgroundPanel;
         }
 
         private static Canvas CreateInputBlocker(Transform parent)

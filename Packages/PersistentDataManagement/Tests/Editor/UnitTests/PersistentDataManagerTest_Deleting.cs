@@ -11,11 +11,11 @@ namespace Arman.PersistentDataManagement.Tests
         {
             var streamFactory = StreamFactory();
 
-            manager = CreateManager(streamFactory.Object, emptyDataWrapper);
+            Manager = CreateManager(streamFactory.Object, EmptyDataEncoder);
 
-            manager.Delete(channel1);
+            Manager.Delete(Channel1);
 
-            streamFactory.Verify(f => f.Delete(channel1), Times.Once);
+            streamFactory.Verify(f => f.Delete(Channel1), Times.Once);
         }
 
         [Test]
@@ -23,7 +23,7 @@ namespace Arman.PersistentDataManagement.Tests
         {
             var action = new TestDelegate(() =>
             {
-                manager.Delete(new NamedChannel("UnregisteredChannel"));
+                Manager.Delete(new NamedChannel("UnregisteredChannel"));
             });
 
             Assert.That(action, Throws.Nothing);

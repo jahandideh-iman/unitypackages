@@ -1,11 +1,13 @@
 ﻿using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Arman.UIManagement
 {
     public class PopupWindow : Window
     {
+        [FormerlySerializedAs("closeOnBackButtonPressed")]
         [SerializeField]
-        bool closeOnBackButtonPressed;
+        bool CloseOnBackButtonPressed;
 
         [field: SerializeField]
         public Transition? InTransition { get; private set; }
@@ -17,13 +19,13 @@ namespace Arman.UIManagement
 
         public override void OnBackButtonPressed()
         {
-            if (closeOnBackButtonPressed)
+            if (CloseOnBackButtonPressed)
                 Close();
         }
 
         public void Close()
         {
-            uiManager.Close(this);
+            UIManager.Close(this);
         }
     }
 }

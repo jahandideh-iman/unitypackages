@@ -3,7 +3,7 @@ using Arman.PackageBasics;
 
 namespace Arman.PersistentDataManagement
 {
-    public class EmptyPersistetDataIOStreamFactory : IPersistentDataIOStreamFactory
+    public class EmptyPersistentDataIOStreamFactory : IPersistentDataIOStreamFactory
     {
         public StreamReader CreateReadStreamFor(IChannel channel)
         {

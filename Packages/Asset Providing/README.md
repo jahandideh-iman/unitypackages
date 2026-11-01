@@ -45,10 +45,12 @@ GameObject enemy = service.ISyncUnityAssetProvider.LoadAssetById<GameObject>("En
 var config = await service.IAsyncUnityAssetProvider.LoadAssetByTypeAsync<GameSettings>();
 ```
 
-Adding a second provider makes the first one a fast path and the second a fallback:
+Providers are consulted in the order they were added, so an override table added before the
+Resources provider is checked first, and Resources answers whatever the table does not hold:
 
 ```csharp
-service.AddSyncProvider(new TableBasedAssetProvider(overrides)); // consulted first
+var service = new ChainedAssetProviderService();
+service.AddSyncProvider(new TableBasedAssetProvider(overrides)); // checked first
 service.AddSyncProvider(new ResourcesAssetProvider("Prefabs/")); // fallback
 ```
 
@@ -72,6 +74,9 @@ ChainedAssetProviderService service = serviceConfig.CreateAssetProviderService()
 - **`ResourcesAssetProvider` prefixes every id.** `new ResourcesAssetProvider("Prefabs/")` turns
   `LoadAssetById<T>("Enemy")` into a `Resources.Load` of `Prefabs/Enemy`.
 - **A chained provider returns the first non-null result**, in the order providers were added.
+- **`TableBasedAssetProvider` throws for an unknown id.** `LoadAssetById` indexes the table, so a
+  missing key raises `KeyNotFoundException` rather than returning `null`, and the chain does not fall
+  through to later providers. Place it where a miss should fail, or catch the exception in a wrapper.
 - **`IAssetProviderService` exposes providers, it does not proxy them.** Go through
   `service.ISyncUnityAssetProvider` / `service.IAsyncUnityAssetProvider` to load.
 - **`TableBasedAssetProvider` takes its table at construction**; the `TableBasedAssetProviderConfig`

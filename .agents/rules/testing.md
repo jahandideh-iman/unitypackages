@@ -53,4 +53,4 @@ Two cases genuinely need a real type, and both are in the tree as examples:
 
 Do **not** fix a duplicate-assembly error by turning `overrideReferences` off — that silently widens the assembly's reference set.
 
-**Moq is loose by default:** an unconfigured method returns `default`. Any collaborator with a fluent interface (`IPersistentDataWrapper.WriteInt` and friends return the wrapper) or a meaningful `bool` (`HasReadableStreamFor`, `HasKey`) needs an explicit `Setup`, or the code under test dereferences a null it never saw before. See `PersistentDataManagerTestContext` for the shared factory helpers this repo uses.
+**Moq is loose by default:** an unconfigured method returns `default`. Any collaborator with a fluent interface (`IPersistentDataEncoder.WriteInt` and friends return the encoder) or a meaningful `bool` (`HasReadableStreamFor`, `HasKey`) needs an explicit `Setup`, or the code under test dereferences a null it never saw before. See `PersistentDataManagerTestContext` for the shared factory helpers this repo uses.

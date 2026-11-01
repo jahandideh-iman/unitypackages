@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace Arman.UIManagement
@@ -7,14 +8,15 @@ namespace Arman.UIManagement
     [RequireComponent(typeof(CanvasGroup))]
     public class Panel : Window
     {
+        [FormerlySerializedAs("backgroundImage")]
         [SerializeField]
-        Image backgroundImage = default;
+        Image BackgroundImage = default;
 
-        float originalAlpha;
+        float _originalAlpha;
 
         private void Awake()
         {
-            originalAlpha = backgroundImage.color.a;
+            _originalAlpha = BackgroundImage.color.a;
         }
 
         public void SetVisible(bool visible)
@@ -24,14 +26,14 @@ namespace Arman.UIManagement
 
         public void SetAlpha(float opacity)
         {
-            var color = backgroundImage.color;
+            var color = BackgroundImage.color;
             color.a = opacity;
-            backgroundImage.color = color;
+            BackgroundImage.color = color;
         }
 
         public void RestoreAlpha()
         {
-            SetAlpha(originalAlpha);
+            SetAlpha(_originalAlpha);
         }
     }
 }

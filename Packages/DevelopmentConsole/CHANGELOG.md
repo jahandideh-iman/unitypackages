@@ -5,6 +5,20 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-11-01
+
+### Fixed
+
+- The error logged for an unsupported command parameter type reads "is not supported" instead of "is not supproted".
+
+### Removed
+
+- The camelCase names of public and protected fields, renamed to PascalCase: `ButtonDragabler.dragThreshold` → `ButtonDragabler.DragThreshold`, `CommandInfo.name` → `CommandInfo.Name`, `CommandInfo.methodInfo` → `CommandInfo.MethodInfo`, `CommandInfo.keyCodes` → `CommandInfo.KeyCodes`, `CommandInputPrompt.inputFieldsContainer` → `CommandInputPrompt.InputFieldsContainer`, `CommandInputPrompt.inputFieldPrefab` → `CommandInputPrompt.InputFieldPrefab`, `DevelopmentCommand.commandNameText` → `DevelopmentCommand.CommandNameText`, `DevelopmentCommand.shortcutText` → `DevelopmentCommand.ShortcutText`, `DevelopmentConsolePanel.groupPrefab` → `DevelopmentConsolePanel.GroupPrefab`, `DevelopmentConsolePanel.commandInputPrompt` → `DevelopmentConsolePanel.CommandInputPrompt`, `DevelopmentConsolePanel.toolsPanel` → `DevelopmentConsolePanel.ToolsPanel`, `DevelopmentConsolePanel.devButton` → `DevelopmentConsolePanel.DevButton`, `DevelopmentConsolePanel.devButtonText` → `DevelopmentConsolePanel.DevButtonText`, `DevelopmentConsolePanel.groupsContainer` → `DevelopmentConsolePanel.GroupsContainer`, `DevelopmentConsolePanel.onErrorDetected` → `DevelopmentConsolePanel.OnErrorDetected`, `DevelopmentConsolePanel.onToolsPanelOpened` → `DevelopmentConsolePanel.OnToolsPanelOpened`, `DevelopmentConsolePanel.onToolsPanelClosed` → `DevelopmentConsolePanel.OnToolsPanelClosed`, `DevelopmentGroup.commandPrefab` → `DevelopmentGroup.CommandPrefab`, `DevelopmentGroup.gourpNameText` → `DevelopmentGroup.GroupNameText` (also fixing its spelling), `DevOptionAttribute.group` → `DevOptionAttribute.Group`, `DevOptionAttribute.commandName` → `DevOptionAttribute.CommandName`, `FPSProfiler.text` → `FPSProfiler.Text`, `FPSProfiler.intervalDuration` → `FPSProfiler.IntervalDuration`, `ShortCutAttribute.keyCodes` → `ShortCutAttribute.KeyCodes`, `ShortCutInfo.keyCodes` → `ShortCutInfo.KeyCodes`, `ShortCutInfo.action` → `ShortCutInfo.Action`. **Breaking** — update references to the new names. Fields Unity serializes carry `[FormerlySerializedAs]` with the old name, so values already saved in scenes, prefabs and assets keep loading.
+
+### Changed
+
+- Renamed private fields that Unity does not serialize to `_camelCase`. No public API or serialized data changes.
+
 ## [0.2.0] - 2026-09-02
 
 ### Added

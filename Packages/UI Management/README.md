@@ -17,7 +17,7 @@ Everything lives in the `Arman.UIManagement` namespace.
 | `UIElement`   | Base `MonoBehaviour` with an `InternalOnDestroy` hook.                                                                                             |
 | `Window`      | Abstract `UIElement` on its own `Canvas` + `GraphicRaycaster`; overridable `InternalInit`, `OnBackButtonPressed`, `OnFocused`.                     |
 | `MainWindow`  | The bottom-of-stack window.                                                                                                                        |
-| `PopupWindow` | A window with `Close()`, a `closeOnBackButtonPressed` toggle, and optional `InTransition` and `OutTransition`.                                     |
+| `PopupWindow` | A window with `Close()`, a `CloseOnBackButtonPressed` toggle, and optional `InTransition` and `OutTransition`.                                     |
 | `Transition`  | Abstract component that animates a popup in or out: `UniTask Play(CancellationToken)`.                                                             |
 | `Panel`       | A `Window` with a `CanvasGroup` and background image — `SetVisible`, `SetAlpha`, `RestoreAlpha`. Used for the popup dimmer.                        |
 
@@ -76,7 +76,7 @@ public class SettingsPopup : PopupWindow
 }
 ```
 
-Tick `closeOnBackButtonPressed` in the Inspector to get the default Escape-closes-me behaviour without
+Tick `CloseOnBackButtonPressed` in the Inspector to get the default Escape-closes-me behaviour without
 writing an override.
 
 For a world-space canvas, point the manager at your camera:
@@ -143,7 +143,7 @@ ignored, and `IsTransitioning()` is `true`.
   main window destroys itself — typically because the scene unloaded.
 - **Every `Window` needs its own `Canvas` and `GraphicRaycaster`** (`[RequireComponent]`), because
   sorting is done per-window with `overrideSorting`.
-- **Popup spacing comes from `sortingOffsetBetweenPopups`** on the manager. Leave it at 0 and popups
+- **Popup spacing comes from `SortingOffsetBetweenPopups`** on the manager. Leave it at 0 and popups
   will share a sorting order with the dimmer sitting one below — set it to a value larger than the
   depth of any single window's internal sorting.
 - **Escape is read through the legacy `Input` class** in `Update`, so this does not work with the new

@@ -6,11 +6,11 @@ namespace Arman.DevelopmentConsole
     [AttributeUsage(System.AttributeTargets.Method, AllowMultiple = false)]
     public class ShortCutAttribute : Attribute
     {
-        public readonly KeyCode[] keyCodes;
+        public readonly KeyCode[] KeyCodes;
 
         public ShortCutAttribute(params KeyCode[] keyCodes)
         {
-            this.keyCodes = keyCodes;
+            this.KeyCodes = keyCodes;
         }
     }
 }

@@ -1,21 +1,23 @@
 ﻿using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Arman.AssetProviding
 {
     [CreateAssetMenu(menuName = ContextMenuConsts.PROVIDER_CATEGORY + "Resources Folder Provider")]
     public class ResourcesAssetProviderConfig : AssetProviderConfig
     {
+        [FormerlySerializedAs("resourcesPathPrefix")]
         [SerializeField]
-        string resourcesPathPrefix;
+        string ResourcesPathPrefix;
 
         public override IAsyncUnityAssetProvider CreateAsyncProvider()
         {
-            return new ResourcesAssetProvider(resourcesPathPrefix);
+            return new ResourcesAssetProvider(ResourcesPathPrefix);
         }
 
         public override ISyncUnityAssetProvider CreateSyncProvider()
         {
-            return new ResourcesAssetProvider(resourcesPathPrefix);
+            return new ResourcesAssetProvider(ResourcesPathPrefix);
         }
     }
 }

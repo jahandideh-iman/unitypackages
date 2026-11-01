@@ -4,37 +4,37 @@ namespace Arman.EventManagement
 {
     public class EventManager : IEventManager
     {
-        private List<IEventListener> listeners = new List<IEventListener>();
-        List<IEventListener> listenersCopy = new List<IEventListener>();
+        private List<IEventListener> _listeners = new List<IEventListener>();
+        List<IEventListener> _listenersCopy = new List<IEventListener>();
 
         public void Register(IEventListener listener)
         {
-            if (listeners.Contains(listener) == false)
-                listeners.Add(listener);
+            if (_listeners.Contains(listener) == false)
+                _listeners.Add(listener);
         }
 
         public void UnRegister(IEventListener listener)
         {
-            listeners.Remove(listener);
+            _listeners.Remove(listener);
         }
 
         public void Propagate(IGameEvent evt, object sender)
         {
-            listenersCopy.Clear();
-            listenersCopy.AddRange(listeners);
+            _listenersCopy.Clear();
+            _listenersCopy.AddRange(_listeners);
 
-            foreach (var listener in listenersCopy)
+            foreach (var listener in _listenersCopy)
                 listener.OnEvent(evt, sender);
         }
 
         public bool Has(IEventListener listener)
         {
-            return listeners.Contains(listener);
+            return _listeners.Contains(listener);
         }
 
         public void Clear()
         {
-            listeners.Clear();
+            _listeners.Clear();
         }
     }
 }

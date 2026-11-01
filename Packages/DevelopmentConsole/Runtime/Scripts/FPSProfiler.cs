@@ -1,66 +1,70 @@
 ﻿using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace Arman.DevelopmentConsole
 {
     public class FPSProfiler : MonoBehaviour
     {
-        public Text text;
-        public float intervalDuration;
+        [FormerlySerializedAs("text")]
+        public Text Text;
 
-        int totalFrames = 0;
-        int intervalframes;
-        float intervalRemainingTime;
+        [FormerlySerializedAs("intervalDuration")]
+        public float IntervalDuration;
 
-        bool isProfilingStarted = false;
+        int _totalFrames = 0;
+        int _intervalframes;
+        float _intervalRemainingTime;
 
-        float averageFPS;
-        float maxFPS;
-        float minFPS;
-        float fps;
+        bool _isProfilingStarted = false;
+
+        float _averageFPS;
+        float _maxFPS;
+        float _minFPS;
+        float _fps;
 
         void Awake()
         {
-            intervalRemainingTime = intervalDuration;
+            _intervalRemainingTime = IntervalDuration;
         }
 
         public void StartProfiling()
         {
-            totalFrames = 0;
-            averageFPS = 0;
-            maxFPS = 0;
-            minFPS = float.MaxValue;
+            _totalFrames = 0;
+            _averageFPS = 0;
+            _maxFPS = 0;
+            _minFPS = float.MaxValue;
 
-            isProfilingStarted = true;
+            _isProfilingStarted = true;
         }
 
         public void StopProfiling()
         {
-            isProfilingStarted = false;
+            _isProfilingStarted = false;
 
-            Debug.LogFormat("Average: {0} | Min: {1} | Max: {2}", averageFPS, minFPS, maxFPS);
+            Debug.LogFormat("Average: {0} | Min: {1} | Max: {2}", _averageFPS, _minFPS, _maxFPS);
         }
 
         void Update()
         {
-            intervalRemainingTime -= Time.unscaledDeltaTime;
-            intervalframes++;
-            if (intervalRemainingTime <= 0)
+            _intervalRemainingTime -= Time.unscaledDeltaTime;
+            _intervalframes++;
+            if (_intervalRemainingTime <= 0)
             {
-                fps = intervalframes / intervalDuration;
-                intervalRemainingTime = intervalDuration;
-                intervalframes = 0;
+                _fps = _intervalframes / IntervalDuration;
+                _intervalRemainingTime = IntervalDuration;
+                _intervalframes = 0;
             }
-            text.text = fps.ToString();
+            Text.text = _fps.ToString();
 
-            if (isProfilingStarted)
+            if (_isProfilingStarted)
             {
-                ++totalFrames;
+                ++_totalFrames;
 
-                averageFPS += (fps - averageFPS) / totalFrames;
+                _averageFPS += (_fps - _averageFPS) / _totalFrames;
 
-                maxFPS = Mathf.Max(maxFPS, fps);
-                minFPS = Mathf.Min(minFPS, fps);
+                _maxFPS = Mathf.Max(_maxFPS, _fps);
+                _minFPS = Mathf.Min(_minFPS, _fps);
             }
         }
     }

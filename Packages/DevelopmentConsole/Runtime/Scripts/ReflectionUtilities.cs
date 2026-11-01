@@ -17,7 +17,7 @@ namespace Arman.DevelopmentConsole
             //    allTypes.AddRange(assembly..GetTypes())
             //}
 
-            //var assembely = Assembly.GetExecutingAssembly();
+            //var assembly = Assembly.GetExecutingAssembly();
             var allTypes = GetAllTypes(type);
             List<Type> targetTypes = new List<Type>();
 
