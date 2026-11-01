@@ -1,0 +1,22 @@
+{
+    "name": "Arman.InGameMessageLogging.Tests.PlayMode",
+    "rootNamespace": "",
+    "references": [
+        "Arman.InGameMessageLogging",
+        "Arman.UnityUtilities",
+        "UnityEngine.TestRunner"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -225,5 +225,173 @@ namespace Arman.ShopManagement.Tests
 
             Assert.That(purchasedPackage, Is.SameAs(package));
         }
+
+        [Test]
+        public void ANewShopCenterShouldHaveNoPackages()
+        {
+            Assert.That(_shopCenter.Packages(), Is.Empty);
+        }
+
+        [Test]
+        public void PackagesOfABaseTypeShouldIncludePackagesOfItsSubtypes()
+        {
+            var packageA = new FakeShopPackageA();
+            var packageB = new FakeShopPackageB();
+
+            _shopCenter.AddPackage(packageA);
+            _shopCenter.AddPackage(packageB);
+
+            Assert.That(
+                _shopCenter.PackagesOfType<FakeShopPackage>(),
+                Is.EquivalentTo(new FakeShopPackage[] { packageA, packageB })
+            );
+        }
+
+        [Test]
+        public void PackagesOfATypeThatWasNeverAddedShouldBeEmpty()
+        {
+            _shopCenter.AddPackage(new FakeShopPackageA());
+
+            Assert.That(_shopCenter.PackagesOfType<FakeShopPackageB>(), Is.Empty);
+        }
+
+        [Test]
+        public void APurchaseHandlerAssignedToABaseTypeShouldHandleItsSubtypes()
+        {
+            var package = new FakeShopPackageA();
+            var handler = FakePurchaseHandler.Succeeding(new FakePurchaseSuccessResult());
+
+            _shopCenter.AssignPurchaseHandler<FakeShopPackage>(handler);
+
+            _shopCenter.Purchase(package, delegate { }, delegate { });
+
+            Assert.That(handler.PurchasedPackages, Is.EqualTo(new IShopPackage[] { package }));
+            Assert.That(package.IsApplied(), Is.True);
+        }
+
+        [Test]
+        public void TheFirstAssignedMatchingPurchaseHandlerShouldHandleThePurchase()
+        {
+            var package = new FakeShopPackageA();
+            var first = FakePurchaseHandler.Succeeding(new FakePurchaseSuccessResult());
+            var second = FakePurchaseHandler.Succeeding(new FakePurchaseSuccessResult());
+
+            _shopCenter.AssignPurchaseHandler<FakeShopPackage>(first);
+            _shopCenter.AssignPurchaseHandler<FakeShopPackageA>(second);
+
+            _shopCenter.Purchase(package, delegate { }, delegate { });
+
+            Assert.That(first.PurchasedPackages, Is.EqualTo(new IShopPackage[] { package }));
+            Assert.That(second.PurchasedPackages, Is.Empty);
+        }
+
+        [Test]
+        public void PurchasingShouldGiveTheHandlersSuccessResultToBothCallbacks()
+        {
+            var package = new FakeShopPackageA();
+            var result = new FakePurchaseSuccessResult();
+            IPurchaseSuccessResult? localResult = null;
+            IPurchaseSuccessResult? globalResult = null;
+
+            _shopCenter.AssignPurchaseHandler<FakeShopPackageA>(
+                FakePurchaseHandler.Succeeding(result)
+            );
+            _shopCenter.SetPurchaseSuccessCallback((p, r) => globalResult = r);
+
+            _shopCenter.Purchase(package, onSuccess: r => localResult = r, onFailure: delegate { });
+
+            Assert.That(localResult, Is.SameAs(result));
+            Assert.That(globalResult, Is.SameAs(result));
+        }
+
+        [Test]
+        public void PurchasingShouldGiveTheHandlersFailureResultToBothCallbacks()
+        {
+            var package = new FakeShopPackageA();
+            var result = new FakePurchaseFailureResult();
+            IPurchaseFailureResult? localResult = null;
+            IPurchaseFailureResult? globalResult = null;
+
+            _shopCenter.AssignPurchaseHandler<FakeShopPackageA>(
+                FakePurchaseHandler.Failing(result)
+            );
+            _shopCenter.SetPurchaseFailureCallback((p, r) => globalResult = r);
+
+            _shopCenter.Purchase(package, onSuccess: delegate { }, onFailure: r => localResult = r);
+
+            Assert.That(localResult, Is.SameAs(result));
+            Assert.That(globalResult, Is.SameAs(result));
+        }
+
+        [Test]
+        public void AFailedPurchaseShouldNotCallTheGlobalSuccessCallback()
+        {
+            var package = new FakeShopPackageA();
+            bool successCalled = false;
+
+            _shopCenter.AssignPurchaseHandler<FakeShopPackageA>(
+                FakePurchaseHandler.Failing(new FakePurchaseFailureResult())
+            );
+            _shopCenter.SetPurchaseSuccessCallback((p, r) => successCalled = true);
+
+            _shopCenter.Purchase(package, delegate { }, delegate { });
+
+            Assert.That(successCalled, Is.False);
+        }
+
+        [Test]
+        public void ASucceededPurchaseShouldNotCallTheGlobalFailureCallback()
+        {
+            var package = new FakeShopPackageA();
+            bool failureCalled = false;
+
+            _shopCenter.AssignPurchaseHandler<FakeShopPackageA>(
+                FakePurchaseHandler.Succeeding(new FakePurchaseSuccessResult())
+            );
+            _shopCenter.SetPurchaseFailureCallback((p, r) => failureCalled = true);
+
+            _shopCenter.Purchase(package, delegate { }, delegate { });
+
+            Assert.That(failureCalled, Is.False);
+        }
+
+        [Test]
+        public void ThePackageShouldBeAppliedBeforeThePurchaseCallbacksRun()
+        {
+            var package = new FakeShopPackageA();
+            bool appliedWhenLocalCalled = false;
+            bool appliedWhenGlobalCalled = false;
+
+            _shopCenter.AssignPurchaseHandler<FakeShopPackageA>(
+                FakePurchaseHandler.Succeeding(new FakePurchaseSuccessResult())
+            );
+            _shopCenter.SetPurchaseSuccessCallback(
+                (p, r) => appliedWhenGlobalCalled = package.IsApplied()
+            );
+
+            _shopCenter.Purchase(
+                package,
+                onSuccess: r => appliedWhenLocalCalled = package.IsApplied(),
+                onFailure: delegate { }
+            );
+
+            Assert.That(appliedWhenLocalCalled, Is.True);
+            Assert.That(appliedWhenGlobalCalled, Is.True);
+        }
+
+        [Test]
+        public void PurchasingShouldNotRequireThePackageToBeAddedToTheShopCenter()
+        {
+            var package = new FakeShopPackageA();
+
+            _shopCenter.AssignPurchaseHandler<FakeShopPackageA>(
+                FakePurchaseHandler.Succeeding(new FakePurchaseSuccessResult())
+            );
+
+            _shopCenter.Purchase(package, delegate { }, delegate { });
+
+            Assert.That(package.IsApplied(), Is.True);
+            Assert.That(_shopCenter.Packages(), Is.Empty);
+        }
     }
 }

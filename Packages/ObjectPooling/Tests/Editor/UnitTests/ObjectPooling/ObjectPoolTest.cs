@@ -36,11 +36,13 @@ namespace Arman.ObjectPooling.Tests
     public class TestableObjectPool : ObjectPool<FakePoolable>
     {
         public bool CreateMethodIsCalled = false;
+        public int CreatedCount = 0;
 
         protected override FakePoolable CreateObject()
         {
             this.CreateMethodIsCalled = true;
-            return new FakePoolable(1);
+            CreatedCount++;
+            return new FakePoolable(CreatedCount);
         }
 
         protected override void DeactivateObject(FakePoolable obj)
@@ -120,6 +122,77 @@ namespace Arman.ObjectPooling.Tests
             _pool.Acquire();
 
             Assert.That(_pool.Size(), Is.EqualTo(2));
+        }
+
+        [Test]
+        public void ReservedObjectsShouldHaveBeenReleasedIntoThePool()
+        {
+            _pool.Reserve(2);
+
+            var first = _pool.Acquire();
+            var second = _pool.Acquire();
+
+            Assert.That(_pool.CreatedCount, Is.EqualTo(2));
+            Assert.That(first.OnReleaseIsCalled, Is.True);
+            Assert.That(second.OnReleaseIsCalled, Is.True);
+        }
+
+        [Test]
+        public void AcquiringShouldNotCreateANewObjectWhileReservedObjectsRemain()
+        {
+            _pool.Reserve(2);
+
+            _pool.Acquire();
+            _pool.Acquire();
+
+            Assert.That(_pool.CreatedCount, Is.EqualTo(2));
+            Assert.That(_pool.Size(), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void AcquiringFromAnEmptiedPoolShouldCreateANewObject()
+        {
+            _pool.Reserve(1);
+            _pool.Acquire();
+
+            var obj = _pool.Acquire();
+
+            Assert.That(_pool.CreatedCount, Is.EqualTo(2));
+            Assert.That(obj.IsActive, Is.True);
+        }
+
+        [Test]
+        public void AcquiringShouldReturnTheMostRecentlyReleasedObjectFirst()
+        {
+            var first = _pool.Acquire();
+            var second = _pool.Acquire();
+
+            _pool.Release(first);
+            _pool.Release(second);
+
+            Assert.That(_pool.Acquire(), Is.SameAs(second));
+            Assert.That(_pool.Acquire(), Is.SameAs(first));
+        }
+
+        [Test]
+        public void AcquiringAReleasedObjectShouldActivateItAgain()
+        {
+            var obj = _pool.Acquire();
+            _pool.Release(obj);
+            obj.OnAcquiredIsCalled = false;
+
+            var reacquired = _pool.Acquire();
+
+            Assert.That(reacquired.IsActive, Is.True);
+            Assert.That(reacquired.OnAcquiredIsCalled, Is.True);
+        }
+
+        [Test]
+        public void AcquiringShouldNotChangeTheSizeOfAnEmptyPool()
+        {
+            _pool.Acquire();
+
+            Assert.That(_pool.Size(), Is.EqualTo(0));
         }
     }
 }

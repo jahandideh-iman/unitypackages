@@ -18,10 +18,12 @@ namespace Arman.ConfigurationManagement.Tests
     class FakeConfigurer<T> : IConfigurer<T>
     {
         public bool ConfigurationCalled = false;
+        public T ConfiguredEntity = default!;
 
         public void Configure(T entity)
         {
             ConfigurationCalled = true;
+            ConfiguredEntity = entity;
         }
 
         public void RegisterSelf(IConfigurationManager manager) { }
@@ -93,6 +95,47 @@ namespace Arman.ConfigurationManagement.Tests
             Assert.That(removedA, Is.SameAs(configurerAB));
             Assert.That(_configManager.FindConfigurer<TypeA>(), Is.Null);
             Assert.That(_configManager.FindConfigurer<TypeB>(), Is.SameAs(configurerAB));
+        }
+
+        [Test]
+        public void ConfiguringShouldGiveTheTargetToTheConfigurer()
+        {
+            _configManager.Register(_configurerA);
+
+            var target = new TypeA();
+            _configManager.Configure(target);
+
+            Assert.That(_configurerA.ConfiguredEntity, Is.SameAs(target));
+        }
+
+        [Test]
+        public void FindingAnUnregisteredConfigurerShouldReturnNull()
+        {
+            Assert.That(_configManager.FindConfigurer<TypeA>(), Is.Null);
+        }
+
+        [Test]
+        public void RemovingAnUnregisteredConfigurerShouldReturnNull()
+        {
+            _configManager.Register(_configurerB);
+
+            Assert.That(_configManager.RemoveConfigurer<TypeA>(), Is.Null);
+            Assert.That(_configManager.FindConfigurer<TypeB>(), Is.SameAs(_configurerB));
+        }
+
+        [Test]
+        public void RegisteringAConfigurerForAnAlreadyRegisteredTypeShouldReplaceIt()
+        {
+            var replacement = new FakeConfigurer<TypeA>();
+
+            _configManager.Register(_configurerA);
+            _configManager.Register(replacement);
+
+            _configManager.Configure(new TypeA());
+
+            Assert.That(_configManager.FindConfigurer<TypeA>(), Is.SameAs(replacement));
+            Assert.That(replacement.ConfigurationCalled, Is.True);
+            Assert.That(_configurerA.ConfigurationCalled, Is.False);
         }
     }
 }

@@ -41,5 +41,36 @@ namespace Arman.PersistentDataManagement.Tests
 
             // TODO: Should I not assert that serializerA is not registered in channelB?
         }
+
+        [Test]
+        public void RegisteringASerializerTwiceOnTheSameChannelShouldRaiseAnException()
+        {
+            Manager.Register(SerializerA.Object, Channel1);
+
+            Assert.That(
+                () => Manager.Register(SerializerA.Object, Channel1),
+                Throws.Exception.InstanceOf<PersistentDataSerializerAlreadyRegisterException>()
+            );
+        }
+
+        [Test]
+        public void TheAlreadyRegisteredExceptionShouldCarryTheSerializer()
+        {
+            Manager.Register(SerializerA.Object);
+
+            var exception = Assert.Throws<PersistentDataSerializerAlreadyRegisterException>(() =>
+                Manager.Register(SerializerA.Object)
+            );
+
+            Assert.That(exception.Serializer, Is.SameAs(SerializerA.Object));
+        }
+
+        [Test]
+        public void DoesNotHaveSerializersThatWereNeverRegistered()
+        {
+            Manager.Register(SerializerA.Object);
+
+            Assert.That(Manager.Contains(SerializerB.Object), Is.False);
+        }
     }
 }

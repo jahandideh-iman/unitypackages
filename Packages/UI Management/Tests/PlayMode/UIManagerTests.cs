@@ -495,6 +495,58 @@ namespace Arman.UIManagement.Tests
             LogAssert.NoUnexpectedReceived();
         }
 
+        [UnityTest]
+        public IEnumerator BackButtonOnAPopupThatClosesOnBack_ClosesIt()
+        {
+            _manager.SetMainWindow(CreateWindow("Main"));
+            var popup = _manager.OpenPopUp(CreatePopup("Popup"));
+            SetField(popup, "CloseOnBackButtonPressed", true);
+
+            popup.OnBackButtonPressed();
+            yield return null;
+
+            Assert.That(popup == null, Is.True);
+            Assert.That(_backgroundPanel.gameObject.activeSelf, Is.False);
+        }
+
+        [UnityTest]
+        public IEnumerator BackButtonOnAPopupThatDoesNotCloseOnBack_KeepsItOpen()
+        {
+            _manager.SetMainWindow(CreateWindow("Main"));
+            var popup = _manager.OpenPopUp(CreatePopup("Popup"));
+
+            popup.OnBackButtonPressed();
+            yield return null;
+
+            Assert.That(popup == null, Is.False);
+            Assert.That(_backgroundPanel.gameObject.activeSelf, Is.True);
+        }
+
+        [UnityTest]
+        public IEnumerator ClosingAPopupItself_ClosesItThroughItsManager()
+        {
+            _manager.SetMainWindow(CreateWindow("Main"));
+            var lower = _manager.OpenPopUp(CreatePopup("Lower"));
+            var upper = _manager.OpenPopUp(CreatePopup("Upper"));
+            var lowerFocusedBefore = lower.FocusedCount;
+
+            upper.Close();
+            yield return null;
+
+            Assert.That(upper == null, Is.True);
+            Assert.That(lower.FocusedCount, Is.EqualTo(lowerFocusedBefore + 1));
+        }
+
+        [Test]
+        public void SetMainCamera_RendersTheManagersCanvasThroughThatCamera()
+        {
+            var camera = CreateGameObject("Camera").AddComponent<Camera>();
+
+            _manager.SetMainCamera(camera);
+
+            Assert.That(_manager.GetComponent<Canvas>().worldCamera, Is.SameAs(camera));
+        }
+
         private TestWindow CreateWindow(string name)
         {
             return CreateGameObject(name).AddComponent<TestWindow>();
