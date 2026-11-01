@@ -22,6 +22,11 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Renamed private fields that Unity does not serialize to `_camelCase`. No public API or serialized data changes.
 
+### Fixed
+
+- `JSONPersistentDataEncoder` saves floats with a `.` decimal separator on every device locale. On a comma-decimal locale such as German or French it wrote `1,5`, which produced invalid JSON that failed to load.
+- `JSONPersistentDataEncoder.ReadBoolean` returns the given `defaultValue` for a missing key instead of always `false`.
+
 ## [0.3.0] - 2026-09-05
 
 ### Removed

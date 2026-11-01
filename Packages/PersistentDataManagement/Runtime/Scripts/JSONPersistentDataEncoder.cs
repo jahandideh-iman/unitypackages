@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using NiceJson;
 
@@ -73,13 +74,13 @@ namespace Arman.PersistentDataManagement
 
         public IWritablePersistentDataEncoder WriteFloat(string key, float value)
         {
-            CurrentBlock().Add(key, value);
+            CurrentBlock().Add(key, ToDecimal(value));
             return this;
         }
 
         public bool ReadBoolean(string key, bool defaultValue = false)
         {
-            return HasKey(key) ? (bool)CurrentBlock()[key] : default;
+            return HasKey(key) ? (bool)CurrentBlock()[key] : defaultValue;
         }
 
         public IWritablePersistentDataEncoder WriteBoolean(string key, bool value)
@@ -114,6 +115,19 @@ namespace Arman.PersistentDataManagement
         public void EndReadingBlock()
         {
             PopBlock();
+        }
+
+        // NiceJson writes a decimal with the invariant culture but a float with the device's,
+        // which puts a comma decimal separator into the JSON on locales such as de-DE. Reading
+        // parses every fractional number back as a decimal either way. The round-trip "R"
+        // string keeps every digit the float needs; a direct (decimal) cast keeps only seven.
+        private static decimal ToDecimal(float value)
+        {
+            return decimal.Parse(
+                value.ToString("R", CultureInfo.InvariantCulture),
+                NumberStyles.Float,
+                CultureInfo.InvariantCulture
+            );
         }
 
         private JsonObject CurrentBlock()

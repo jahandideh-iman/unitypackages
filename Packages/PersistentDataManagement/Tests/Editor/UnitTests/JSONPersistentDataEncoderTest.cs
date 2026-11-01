@@ -1,5 +1,7 @@
-﻿using System.IO;
+﻿using System.Globalization;
+using System.IO;
 using System.Text;
+using System.Threading;
 using NUnit.Framework;
 
 namespace Arman.PersistentDataManagement.Tests
@@ -39,6 +41,57 @@ namespace Arman.PersistentDataManagement.Tests
 
             Assert.That(_dataEncoder.ReadBoolean("Key"), Is.EqualTo(true));
             Assert.That(_dataEncoder.HasKey("Key"), Is.True);
+        }
+
+        [Test]
+        public void ReadBooleanShouldReturnTheDefaultValueForAMissingKey()
+        {
+            Assert.That(_dataEncoder.ReadBoolean("Missing", true), Is.True);
+        }
+
+        [Test]
+        [TestCase("de-DE")]
+        [TestCase("fr-FR")]
+        public void AFloatWrittenUnderACommaDecimalCultureShouldReadBackFromTheStream(
+            string cultureName
+        )
+        {
+            var originalCulture = Thread.CurrentThread.CurrentCulture;
+            Thread.CurrentThread.CurrentCulture = new CultureInfo(cultureName);
+            try
+            {
+                _dataEncoder.WriteFloat("Key", 1.5f);
+                _dataEncoder.WriteInt("Other", 2);
+
+                var json = WriteToString();
+                Assert.That(json, Does.Contain("1.5"));
+
+                _dataEncoder.Clear();
+                _dataEncoder.ReadFrom(ReaderOver(json));
+
+                Assert.That(_dataEncoder.ReadFloat("Key"), Is.EqualTo(1.5f));
+                Assert.That(_dataEncoder.ReadInt("Other"), Is.EqualTo(2));
+            }
+            finally
+            {
+                Thread.CurrentThread.CurrentCulture = originalCulture;
+            }
+        }
+
+        [Test]
+        [TestCase(16777215f)]
+        [TestCase(0.1f)]
+        [TestCase(-123.456789f)]
+        [TestCase(3.14159274f)]
+        public void AFloatShouldReadBackExactlyFromTheStream(float value)
+        {
+            _dataEncoder.WriteFloat("Key", value);
+
+            var json = WriteToString();
+            _dataEncoder.Clear();
+            _dataEncoder.ReadFrom(ReaderOver(json));
+
+            Assert.That(_dataEncoder.ReadFloat("Key"), Is.EqualTo(value));
         }
 
         [Test]
@@ -191,6 +244,17 @@ namespace Arman.PersistentDataManagement.Tests
             _dataEncoder.EndReadingBlock();
 
             Assert.That(_dataEncoder.ReadInt("outerKey"), Is.EqualTo(1));
+        }
+
+        private string WriteToString()
+        {
+            using (var stream = new MemoryStream())
+            using (var streamWriter = new StreamWriter(stream))
+            {
+                _dataEncoder.WriteTo(streamWriter);
+                streamWriter.Flush();
+                return Encoding.UTF8.GetString(stream.ToArray());
+            }
         }
 
         private static StreamReader ReaderOver(string content)
