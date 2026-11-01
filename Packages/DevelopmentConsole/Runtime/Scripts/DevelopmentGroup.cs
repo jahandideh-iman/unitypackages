@@ -2,24 +2,27 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace Arman.DevelopmentConsole
 {
     public class DevelopmentGroup : MonoBehaviour
     {
-        public DevelopmentCommand commandPrefab;
+        [FormerlySerializedAs("commandPrefab")]
+        public DevelopmentCommand CommandPrefab;
 
-        public Text gourpNameText;
+        [FormerlySerializedAs("gourpNameText")]
+        public Text GourpNameText;
 
         public void Init(string groupName)
         {
-            this.gourpNameText.text = groupName;
+            this.GourpNameText.text = groupName;
         }
 
         public void AddCommand(CommandInfo commandInfo)
         {
-            var commandObject = Instantiate(commandPrefab, this.transform, false);
+            var commandObject = Instantiate(CommandPrefab, this.transform, false);
             commandObject.Init(commandInfo);
         }
     }

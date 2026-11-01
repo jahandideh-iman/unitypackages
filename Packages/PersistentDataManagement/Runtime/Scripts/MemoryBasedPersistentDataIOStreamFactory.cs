@@ -6,13 +6,14 @@ namespace Arman.PersistentDataManagement
 {
     public class MemoryBasedPersistentDataIOStreamFactory : IPersistentDataIOStreamFactory
     {
-        Dictionary<IChannel, MemoryStream> memoryStreams = new Dictionary<IChannel, MemoryStream>();
+        Dictionary<IChannel, MemoryStream> _memoryStreams =
+            new Dictionary<IChannel, MemoryStream>();
 
         public StreamReader CreateReadStreamFor(IChannel channel)
         {
             MemoryStream? memoryStream = null;
 
-            memoryStreams.TryGetValue(channel, out memoryStream);
+            _memoryStreams.TryGetValue(channel, out memoryStream);
             if (memoryStream == null)
                 memoryStream = new MemoryStream();
 
@@ -22,7 +23,7 @@ namespace Arman.PersistentDataManagement
         public StreamWriter CreateWriteStreamFor(IChannel channel)
         {
             var memoryStream = new MemoryStream();
-            memoryStreams[channel] = memoryStream;
+            _memoryStreams[channel] = memoryStream;
             return new StreamWriter(memoryStream);
         }
 
@@ -33,7 +34,7 @@ namespace Arman.PersistentDataManagement
 
         public void Delete(IChannel channel)
         {
-            memoryStreams.Remove(channel);
+            _memoryStreams.Remove(channel);
         }
     }
 }

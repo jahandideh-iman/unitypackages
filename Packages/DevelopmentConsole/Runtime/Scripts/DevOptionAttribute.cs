@@ -6,13 +6,13 @@ namespace Arman.DevelopmentConsole
     [AttributeUsage(System.AttributeTargets.Method, AllowMultiple = false)]
     public class DevOptionAttribute : PreserveAttribute
     {
-        public readonly string group;
-        public readonly string commandName;
+        public readonly string Group;
+        public readonly string CommandName;
 
         public DevOptionAttribute(string group, string commandName)
         {
-            this.group = group;
-            this.commandName = commandName;
+            this.Group = group;
+            this.CommandName = commandName;
         }
     }
 }

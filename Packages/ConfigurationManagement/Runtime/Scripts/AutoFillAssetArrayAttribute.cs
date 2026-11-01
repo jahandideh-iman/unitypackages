@@ -5,11 +5,11 @@ namespace Arman.ConfigurationManagement
 {
     public class AutoFillAssetArrayAttribute : PropertyAttribute
     {
-        public readonly string propertyName;
+        public readonly string PropertyName;
 
         public AutoFillAssetArrayAttribute(string propertyName)
         {
-            this.propertyName = propertyName;
+            this.PropertyName = propertyName;
         }
     }
 }

@@ -1,44 +1,47 @@
 ﻿using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Arman.ObjectPooling
 {
     public class ScriptableObjectPool<T> : ScriptableObject, IObjectPool<T>
         where T : Component, IPoolable
     {
+        [FormerlySerializedAs("componentPrefab")]
         [SerializeField]
-        T componentPrefab = default;
+        T ComponentPrefab = default;
 
+        [FormerlySerializedAs("initialReserve")]
         [SerializeField]
-        int initialReserve = default;
+        int InitialReserve = default;
 
-        protected UnityComponentObjectPool<T> internalPool = new UnityComponentObjectPool<T>();
+        protected UnityComponentObjectPool<T> InternalPool = new UnityComponentObjectPool<T>();
 
         public void Setup(Transform poolingContainer)
         {
-            internalPool.SetComponentPrefab(componentPrefab);
-            internalPool.SetPoolingContainer(poolingContainer);
+            InternalPool.SetComponentPrefab(ComponentPrefab);
+            InternalPool.SetPoolingContainer(poolingContainer);
 
-            internalPool.Reserve(initialReserve);
+            InternalPool.Reserve(InitialReserve);
         }
 
         public T Acquire()
         {
-            return internalPool.Acquire();
+            return InternalPool.Acquire();
         }
 
         public void Release(T obj)
         {
-            internalPool.Release(obj);
+            InternalPool.Release(obj);
         }
 
         public void Reserve(int count)
         {
-            internalPool.Reserve(count);
+            InternalPool.Reserve(count);
         }
 
         public int Size()
         {
-            return internalPool.Size();
+            return InternalPool.Size();
         }
     }
 }

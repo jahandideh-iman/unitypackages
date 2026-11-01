@@ -5,13 +5,13 @@ namespace Arman.DevelopmentConsole
 {
     public class ShortCutInfo
     {
-        public KeyCode[] keyCodes;
-        public Action action;
+        public KeyCode[] KeyCodes;
+        public Action Action;
 
         public ShortCutInfo(KeyCode[] keyCodes, Action action)
         {
-            this.keyCodes = keyCodes;
-            this.action = action;
+            this.KeyCodes = keyCodes;
+            this.Action = action;
         }
     }
 }

@@ -6,32 +6,32 @@ namespace Arman.PersistentDataManagement.Tests
 {
     public class PersistentDataManagerTestContext
     {
-        protected PersistentDataManager manager;
+        protected PersistentDataManager Manager;
 
         // The collaborators the default manager was built with. A test that wants to
         // observe one of them builds a new manager, passing the other one through.
-        protected IPersistentDataIOStreamFactory emptyStreamFactory;
-        protected IPersistentDataEncoder emptyDataEncoder;
+        protected IPersistentDataIOStreamFactory EmptyStreamFactory;
+        protected IPersistentDataEncoder EmptyDataEncoder;
 
-        protected Mock<IPersistentDataSerializer> serializerA;
-        protected Mock<IPersistentDataSerializer> serializerB;
+        protected Mock<IPersistentDataSerializer> SerializerA;
+        protected Mock<IPersistentDataSerializer> SerializerB;
 
-        protected IChannel channel1;
-        protected IChannel channel2;
+        protected IChannel Channel1;
+        protected IChannel Channel2;
 
         [SetUp]
         public void Setup()
         {
-            serializerA = Serializer("A");
-            serializerB = Serializer("B");
+            SerializerA = Serializer("A");
+            SerializerB = Serializer("B");
 
-            channel1 = new NamedChannel("ChannelA");
-            channel2 = new NamedChannel("ChannelB");
+            Channel1 = new NamedChannel("ChannelA");
+            Channel2 = new NamedChannel("ChannelB");
 
-            emptyStreamFactory = new EmptyPersistentDataIOStreamFactory();
-            emptyDataEncoder = new EmptyPersistentDataEncoder();
+            EmptyStreamFactory = new EmptyPersistentDataIOStreamFactory();
+            EmptyDataEncoder = new EmptyPersistentDataEncoder();
 
-            manager = CreateManager(emptyStreamFactory, emptyDataEncoder);
+            Manager = CreateManager(EmptyStreamFactory, EmptyDataEncoder);
 
             InternalSetup();
         }

@@ -1,56 +1,61 @@
 ﻿using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Arman.ObjectPooling
 {
     public class MonoBehaviourObjectPool<T> : MonoBehaviour, IObjectPool<T>
         where T : Component, IPoolable
     {
+        [FormerlySerializedAs("componentPrefab")]
         [SerializeField]
-        T componentPrefab = default;
+        T ComponentPrefab = default;
 
+        [FormerlySerializedAs("poolingContainer")]
         [SerializeField]
-        Transform poolingContainer = default;
+        Transform PoolingContainer = default;
 
+        [FormerlySerializedAs("initialReserve")]
         [SerializeField]
-        int initialReserve = default;
+        int InitialReserve = default;
 
+        [FormerlySerializedAs("autoSetup")]
         [SerializeField]
-        bool autoSetup = default;
+        bool AutoSetup = default;
 
-        protected UnityComponentObjectPool<T> internalPool = new UnityComponentObjectPool<T>();
+        protected UnityComponentObjectPool<T> InternalPool = new UnityComponentObjectPool<T>();
 
         void Awake()
         {
-            if (autoSetup)
+            if (AutoSetup)
                 Setup();
         }
 
         public void Setup()
         {
-            internalPool.SetComponentPrefab(componentPrefab);
-            internalPool.SetPoolingContainer(poolingContainer);
+            InternalPool.SetComponentPrefab(ComponentPrefab);
+            InternalPool.SetPoolingContainer(PoolingContainer);
 
-            internalPool.Reserve(initialReserve);
+            InternalPool.Reserve(InitialReserve);
         }
 
         public T Acquire()
         {
-            return internalPool.Acquire();
+            return InternalPool.Acquire();
         }
 
         public void Release(T obj)
         {
-            internalPool.Release(obj);
+            InternalPool.Release(obj);
         }
 
         public void Reserve(int count)
         {
-            internalPool.Reserve(count);
+            InternalPool.Reserve(count);
         }
 
         public int Size()
         {
-            return internalPool.Size();
+            return InternalPool.Size();
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Arman.ConfigurationManagement
 {
@@ -8,14 +9,16 @@ namespace Arman.ConfigurationManagement
     )]
     public class UnityConfigurationMaster : ScriptableConfiguration
     {
-        [AutoFillAssetArray("scriptableConfigurers")]
-        public string temp;
+        [FormerlySerializedAs("temp")]
+        [AutoFillAssetArray("ScriptableConfigurers")]
+        public string Temp;
 
-        public ScriptableConfiguration[] scriptableConfigurers;
+        [FormerlySerializedAs("scriptableConfigurers")]
+        public ScriptableConfiguration[] ScriptableConfigurers;
 
         public override void RegisterSelf(IConfigurationManager manager)
         {
-            foreach (var config in scriptableConfigurers)
+            foreach (var config in ScriptableConfigurers)
                 config.RegisterSelf(manager);
         }
     }

@@ -7,23 +7,23 @@ namespace Arman.AssetProviding
 {
     public class TableBasedAssetProvider : ISyncUnityAssetProvider, IAsyncUnityAssetProvider
     {
-        Dictionary<string, Object> objectTable;
+        Dictionary<string, Object> _objectTable;
 
         public TableBasedAssetProvider(Dictionary<string, Object> objectTable)
         {
-            this.objectTable = objectTable;
+            this._objectTable = objectTable;
         }
 
         public T LoadAssetById<T>(string id)
             where T : Object
         {
-            return UnityAssetUtilities.CastToAsset<T>(objectTable[id]);
+            return UnityAssetUtilities.CastToAsset<T>(_objectTable[id]);
         }
 
         public T LoadAssetByType<T>()
             where T : Object
         {
-            foreach (var obj in objectTable.Values)
+            foreach (var obj in _objectTable.Values)
                 if (UnityAssetUtilities.IsOfAssetType<T>(obj, out var tObj))
                     return tObj;
 

@@ -4,13 +4,13 @@ namespace Arman.ComponentSystem
 {
     public class Entity : IEntity
     {
-        IComponent[] compArray = new IComponent[0];
-        List<IComponent> compList = new List<IComponent>(32);
+        IComponent[] _compArray = new IComponent[0];
+        List<IComponent> _compList = new List<IComponent>(32);
 
         public void AddComponent(IComponent component)
         {
-            compList.Add(component);
-            compArray = compList.ToArray();
+            _compList.Add(component);
+            _compArray = _compList.ToArray();
             OnComponentAdded(component);
         }
 
@@ -20,26 +20,26 @@ namespace Arman.ComponentSystem
             for (int i = 0; i < length; ++i)
             {
                 var component = components[i];
-                compList.Add(component);
+                _compList.Add(component);
                 OnComponentAdded(component);
             }
-            compArray = compList.ToArray();
+            _compArray = _compList.ToArray();
         }
 
         protected virtual void OnComponentAdded(IComponent component) { }
 
         public IEnumerable<IComponent> AllComponents()
         {
-            return compArray;
+            return _compArray;
         }
 
         public T GetComponent<T>()
             where T : IComponent
         {
-            var count = compArray.Length;
+            var count = _compArray.Length;
             for (int i = 0; i < count; ++i)
-                if (compArray[i] is T)
-                    return (T)compArray[i];
+                if (_compArray[i] is T)
+                    return (T)_compArray[i];
 
             return default(T);
         }
@@ -47,10 +47,10 @@ namespace Arman.ComponentSystem
         public T GetComponentFromEnd<T>()
             where T : IComponent
         {
-            var count = compArray.Length;
+            var count = _compArray.Length;
             for (int i = count - 1; i >= 0; --i)
-                if (compArray[i] is T)
-                    return (T)compArray[i];
+                if (_compArray[i] is T)
+                    return (T)_compArray[i];
 
             return default(T);
         }
@@ -58,7 +58,7 @@ namespace Arman.ComponentSystem
         public T GetComponent<T>(int index)
             where T : IComponent
         {
-            return (T)compArray[index];
+            return (T)_compArray[index];
         }
     }
 }

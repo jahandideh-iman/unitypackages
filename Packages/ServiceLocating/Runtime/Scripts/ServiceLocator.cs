@@ -5,36 +5,36 @@ namespace Arman.ServiceLocating
 {
     public class ServiceLocator
     {
-        private static ServiceLocator instance;
+        private static ServiceLocator _instance;
 
-        private List<object> services = new List<object>();
+        private List<object> _services = new List<object>();
 
         public static void Init()
         {
-            if (instance == null)
-                instance = new ServiceLocator();
+            if (_instance == null)
+                _instance = new ServiceLocator();
         }
 
         public static bool IsInited()
         {
-            return instance != null;
+            return _instance != null;
         }
 
         public static void Clear()
         {
-            instance = null;
+            _instance = null;
         }
 
         public static void Register<TInterface, TImplementation>(TImplementation implementation)
             where TImplementation : TInterface
         {
-            instance.services.Add(implementation);
+            _instance._services.Add(implementation);
         }
 
         public static void UnRegister<T>()
         {
             var service = Find<T>();
-            instance.services.Remove(service);
+            _instance._services.Remove(service);
         }
 
         public static void Replace<TInterface, TImplementation>(TImplementation implementation)
@@ -46,7 +46,7 @@ namespace Arman.ServiceLocating
 
         public static T Find<T>()
         {
-            foreach (var service in instance.services)
+            foreach (var service in _instance._services)
                 if (service is T)
                     return (T)service;
 

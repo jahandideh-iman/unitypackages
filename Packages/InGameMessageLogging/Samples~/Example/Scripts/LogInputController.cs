@@ -1,18 +1,22 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace Arman.InGameMessageLogging.Samples
 {
     public class LogInputController : MonoBehaviour
     {
-        public UnityInGameMessageLogger inGameMessageLogger;
-        public InputField inputField;
+        [FormerlySerializedAs("inGameMessageLogger")]
+        public UnityInGameMessageLogger InGameMessageLogger;
+
+        [FormerlySerializedAs("inputField")]
+        public InputField InputField;
 
         public void Log()
         {
-            inGameMessageLogger.Log(inputField.text);
+            InGameMessageLogger.Log(InputField.text);
         }
     }
 }

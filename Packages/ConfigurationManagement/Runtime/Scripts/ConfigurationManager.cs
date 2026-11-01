@@ -5,11 +5,11 @@ namespace Arman.ConfigurationManagement
 {
     public class ConfigurationManager : IConfigurationManager
     {
-        private Dictionary<Type, IConfigurer> configurers = new Dictionary<Type, IConfigurer>();
+        private Dictionary<Type, IConfigurer> _configurers = new Dictionary<Type, IConfigurer>();
 
         public void Register<T>(IConfigurer<T> configurer)
         {
-            configurers[typeof(T)] = configurer;
+            _configurers[typeof(T)] = configurer;
         }
 
         public void Configure<T>(T target)
@@ -19,15 +19,15 @@ namespace Arman.ConfigurationManagement
 
         public bool Contains<T>(IConfigurer<T> configurer)
         {
-            return configurers.ContainsKey(typeof(T));
+            return _configurers.ContainsKey(typeof(T));
         }
 
         public IConfigurer<T> FindConfigurer<T>()
         {
-            if (configurers.ContainsKey(typeof(T)) == false)
+            if (_configurers.ContainsKey(typeof(T)) == false)
                 return null;
 
-            return configurers[typeof(T)] as IConfigurer<T>;
+            return _configurers[typeof(T)] as IConfigurer<T>;
         }
 
         public IConfigurer<T> RemoveConfigurer<T>()
@@ -35,7 +35,7 @@ namespace Arman.ConfigurationManagement
             var configurer = FindConfigurer<T>();
 
             if (configurer != null)
-                configurers.Remove(typeof(T));
+                _configurers.Remove(typeof(T));
 
             return configurer;
         }

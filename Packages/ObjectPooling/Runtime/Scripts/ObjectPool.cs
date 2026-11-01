@@ -5,13 +5,13 @@ namespace Arman.ObjectPooling
     public abstract class ObjectPool<T> : IObjectPool<T>
         where T : IPoolable
     {
-        Stack<T> pooledObjects = new Stack<T>();
+        Stack<T> _pooledObjects = new Stack<T>();
 
         public T Acquire()
         {
             T obj = default(T);
 
-            if (pooledObjects.Count > 0)
+            if (_pooledObjects.Count > 0)
                 obj = RemoveAnObjectFromPool();
             else
                 obj = CreateObject();
@@ -24,12 +24,12 @@ namespace Arman.ObjectPooling
 
         private T RemoveAnObjectFromPool()
         {
-            return pooledObjects.Pop();
+            return _pooledObjects.Pop();
         }
 
         public void Release(T obj)
         {
-            pooledObjects.Push(obj);
+            _pooledObjects.Push(obj);
             DeactivateObject(obj);
             obj.OnReleased();
         }
@@ -42,7 +42,7 @@ namespace Arman.ObjectPooling
 
         public int Size()
         {
-            return pooledObjects.Count;
+            return _pooledObjects.Count;
         }
 
         protected abstract T CreateObject();
