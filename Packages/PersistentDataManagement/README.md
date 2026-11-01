@@ -10,7 +10,7 @@ the world's, or load only settings on boot.
 
 ## What it provides
 
-Namespace `Arman.Foundation.Core.PersistentDataManagement`:
+Namespace `Arman.PersistentDataManagement`:
 
 | Type                                                               | Purpose                                                                                           |
 | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
@@ -21,7 +21,7 @@ Namespace `Arman.Foundation.Core.PersistentDataManagement`:
 | `MemoryBasedPersistentDataIOStreamFactory`                         | In-memory streams — for tests.                                                                    |
 | `EmptyPersistentDataEncoder`, `EmptyPersistentDataIOStreamFactory` | No-op stand-ins.                                                                                  |
 
-Namespace `Arman.Foundation.Unity.PersistentDataManagement`:
+The same namespace holds the file, JSON and `PlayerPrefs` encoders and streams:
 
 | Type                                     | Purpose                                                        |
 | ---------------------------------------- | -------------------------------------------------------------- |
@@ -34,7 +34,7 @@ Namespace `Arman.Foundation.Unity.PersistentDataManagement`:
 Implement a serializer for each thing that has state. `Key()` names its block in the save:
 
 ```csharp
-using Arman.Foundation.Core.PersistentDataManagement;
+using Arman.PersistentDataManagement;
 
 public class PlayerProgress : IPersistentDataSerializer
 {
@@ -63,8 +63,8 @@ public class PlayerProgress : IPersistentDataSerializer
 Assemble a manager and register against channels:
 
 ```csharp
-using Arman.Foundation.Unity.PersistentDataManagement;
-using Arman.Utility.Core;
+using Arman.PackageBasics;
+using Arman.PersistentDataManagement;
 using UnityEngine;
 
 var manager = new PersistentDataManager(
@@ -78,6 +78,9 @@ IChannel settings = new NamedChannel("settings");
 manager.Register(new PlayerProgress(), player);
 manager.Register(new AudioSettings(), settings);
 ```
+
+`PersistentDataManagerFactory.CreateDefault(saveVersion)` builds the same JSON-file manager under
+`Application.persistentDataPath`, for when the defaults are what you want.
 
 Save and load, whole or by channel:
 
@@ -138,9 +141,10 @@ var manager = new PersistentDataManager(
   which is why `DeserializeFrom` should supply sensible fallbacks.
 - **A serializer with no matching block in the file is skipped**, not reset. Adding a new serializer
   to an existing save works without a migration.
-- **A truncated or empty save file loads as "nothing saved yet".** `JSONPersistentDataEncoder` treats
-  empty content, and a block key that is not present, as absent rather than an error — so a save
-  interrupted mid-write costs you that channel's data, not every later load of it.
+- **An empty save file loads as "nothing saved yet".** `JSONPersistentDataEncoder` treats empty or
+  whitespace-only content as absent, and a block key that is not present as absent rather than an error.
+  A file cut off mid-write is not valid JSON, so `Load` throws while parsing it and applies none of
+  its data.
 - **The save version is written but never verified on load.** The `saveVersion` passed to the
   constructor records a `Version` in the metadata block for your own migration logic; the manager
   itself does not compare it.
